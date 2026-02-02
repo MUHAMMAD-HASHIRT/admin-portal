@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Academus Portal v73.0</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <div id="mobile-backdrop" class="overlay-backdrop" onclick="Mobile.toggleMenu()"></div>
+
+    <div id="app-login">
+        <div class="login-box">
+            <div class="login-header">
+                <i class="fas fa-graduation-cap fa-3x" style="color:var(--text-main)"></i>
+                <h2>Academus Portal</h2>
+                <p>Report Management System</p>
+            </div>
+            <form id="loginForm">
+                <div class="input-group"><input type="text" id="username" placeholder="Username" required></div>
+                <div class="input-group"><input type="password" id="password" placeholder="Password" required></div>
+                <button type="submit" class="btn btn-primary btn-block">Login</button>
+            </form>
+            <div class="login-footer">
+                <p>Default Credentials:</p>
+                <small>Admin: <b>admin / admin</b></small><br>
+                <small>Teacher: <b>teacher / teacher</b></small>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-dashboard" class="hidden">
+        <aside class="sidebar" id="app-sidebar">
+            <div class="sidebar-header">ACADEMUS</div>
+            <ul class="nav-menu hidden" id="adminNav">
+                <li class="nav-category">Overview</li>
+                <li onclick="UI.show('admin-dashboard'); Mobile.toggleMenu();" class="nav-item active"><i class="fas fa-th-large"></i> Dashboard</li>
+                
+                <li class="nav-category">Management</li>
+                <li onclick="UI.show('admin-classes'); Mobile.toggleMenu();" class="nav-item"><i class="fas fa-sitemap"></i> Classes</li>
+                <li onclick="UI.show('admin-students'); Mobile.toggleMenu();" class="nav-item"><i class="fas fa-user-graduate"></i> Students</li>
+                <li onclick="UI.show('admin-teachers'); Mobile.toggleMenu();" class="nav-item"><i class="fas fa-chalkboard-teacher"></i> Teachers</li>
+                
+                <li class="nav-category">System</li>
+                <li onclick="UI.show('admin-template'); Mobile.toggleMenu();" class="nav-item"><i class="fas fa-file-contract"></i> Templates</li>
+                <li onclick="DB.export(); Mobile.toggleMenu();" class="nav-item"><i class="fas fa-cloud-download-alt"></i> Backup</li>
+            </ul>
+            <ul class="nav-menu hidden" id="teacherNav">
+                <li class="nav-category">My Classroom</li>
+                <li onclick="UI.show('teacher-dashboard'); Mobile.toggleMenu();" class="nav-item active"><i class="fas fa-book-reader"></i> Evaluations</li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <nav class="navbar">
+                <div style="display:flex; align-items:center;">
+                    <button class="mobile-menu-btn" onclick="Mobile.toggleMenu()"><i class="fas fa-bars"></i></button>
+                    <div style="font-size:20px; font-weight:800; color:var(--text-main); display:flex; align-items:center; gap:10px;">
+                        <i class="fas fa-graduation-cap" style="color:var(--accent)"></i> <span class="desktop-only">ACADEMUS</span>
+                    </div>
+                </div>
+
+                <div style="display:flex; align-items:center; gap:15px;">
+                    <button onclick="Theme.toggle()" class="btn btn-sm btn-accent" style="border-radius:50%; width:35px; height:35px; padding:0; display:flex; justify-content:center; align-items:center;">
+                        <i id="theme-icon" class="fas fa-moon"></i>
+                    </button>
+                    <div style="text-align:right;">
+                        <div id="userDisplay" style="font-weight:700; font-size:13px; color:var(--text-main);">User</div>
+                        <div id="roleDisplay" style="font-size:10px; color:var(--text-secondary); text-transform:uppercase;">Role</div>
+                    </div>
+                    <button onclick="Auth.logout()" class="btn btn-sm btn-danger"><i class="fas fa-power-off"></i></button>
+                </div>
+            </nav>
+
+            <div id="view-admin-dashboard" class="page-section">
+                <div class="card">
+                    <h3><i class="fas fa-chart-pie"></i> Academic Progress</h3>
+                    <div style="overflow-x:auto;"><table class="data-table"><thead><tr><th>Roll</th><th>Student</th><th>Class (Sec)</th><th>Status</th><th>Actions</th></tr></thead><tbody id="admin-status-table"></tbody></table></div>
+                </div>
+            </div>
+
+            <div id="view-admin-teachers" class="page-section hidden">
+                <div class="card"><h3>Register Teacher</h3><div class="form-grid"><div class="form-group"><label>Name</label><input id="new-t-name"></div><div class="form-group"><label>ID</label><input id="new-t-user"></div><div class="form-group"><label>Pass</label><input id="new-t-pass"></div></div><button onclick="Admin.addTeacher()" class="btn btn-primary btn-block">Register</button><h4 style="margin-top:20px;">Teachers</h4><div style="overflow-x:auto;"><table class="data-table"><tbody id="teacher-list-body"></tbody></table></div></div>
+                <div class="card"><h3>Assign Class</h3><div class="form-grid"><div class="form-group"><label>Class</label><select id="assign-class-select" onchange="Admin.onAssignClassChange()"></select></div><div class="form-group"><label>Section</label><select id="assign-section-select"></select></div><div class="form-group"><label>Subject</label><select id="assign-subject-select"></select></div><div class="form-group"><label>Teacher</label><select id="assign-teacher-select"></select></div></div><button onclick="Admin.assignTeacher()" class="btn btn-success btn-block" style="margin-top:10px;">Assign</button></div>
+                <div class="card"><h3>Assignments</h3><div style="overflow-x:auto;"><table class="data-table"><tbody id="assignment-list-table"></tbody></table></div></div>
+            </div>
+
+            <div id="view-admin-students" class="page-section hidden">
+                <div class="card"><h3>Import</h3><input type="file" id="csv-upload"><button onclick="Admin.importCSV()" class="btn btn-primary">Upload</button></div>
+                <div class="card"><h3>Register Student</h3><div class="form-grid"><div class="form-group"><label>Info</label><input id="stu-name" placeholder="Name"><input id="stu-roll" placeholder="Roll"></div><div class="form-group"><label>Class</label><select id="stu-class-select" onchange="Admin.onStudentClassChange()"></select><select id="stu-section-select"></select></div><div class="form-group"><label>Parents</label><input id="stu-p1" placeholder="Father"><input id="stu-p2" placeholder="Mother"></div><div class="form-group"><label>Bio</label><select id="stu-gender"><option value="M">Male</option><option value="F">Female</option></select><input id="stu-age-y" placeholder="Yrs"><input id="stu-age-m" placeholder="Mon"></div><div class="form-group"><label>Stats</label><input id="stu-height" placeholder="cm"><input id="stu-weight" placeholder="kg"></div><div class="form-group"><label>Att</label><input id="stu-att-p" placeholder="Pres"><input id="stu-att-a" placeholder="Abs"></div><div class="form-group"><label>Conf</label><select id="stu-pt1"><option>No</option><option>Yes</option></select><select id="stu-pt2"><option>No</option><option>Yes</option></select></div></div><button onclick="Admin.addStudent()" class="btn btn-success btn-block" style="margin-top:15px;">Save</button></div>
+                <div class="card"><h3>Directory</h3><div style="overflow-x:auto;"><table class="data-table"><tbody id="admin-student-list"></tbody></table></div></div>
+            </div>
+
+            <div id="view-admin-classes" class="page-section hidden">
+                <div style="display:flex; gap:25px; flex-wrap:wrap;"><div class="card" style="flex:1.5; min-width:300px;"><h3>Structure</h3><div id="class-hierarchy-view"></div></div><div class="card" style="flex:1; min-width:300px;"><h3>Create Grade</h3><input id="new-class-name" placeholder="Name"><button onclick="Admin.addClass()" class="btn btn-primary btn-block">Create</button><hr><h3>Add Subject</h3><select id="subject-class-select"></select><input id="new-subject-name" placeholder="Subject"><button onclick="Admin.addSubject()" class="btn btn-success btn-block">Add</button></div></div>
+            </div>
+
+            <div id="view-admin-template" class="page-section hidden">
+                <div class="template-container">
+                    <div class="card scroll-panel">
+                        <div style="display:flex; gap:10px; margin-bottom:15px;">
+                            <select id="tpl-class-select" onchange="Template.onClassChange()"></select>
+                            <select id="tpl-subject-select" onchange="Template.load()"></select>
+                            <button onclick="Template.save()" class="btn btn-success">Save</button>
+                        </div>
+                        <label>Main Title</label><input id="tpl-title"><label>Sub Title</label><input id="tpl-sub"><label>Description</label><textarea id="tpl-desc"></textarea><hr><label>Totals</label><div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:5px;"><input id="qt-1" placeholder="1st" type="number"><input id="qt-2" placeholder="2nd" type="number"><input id="qt-3" placeholder="Mid" type="number"><input id="qt-4" placeholder="Tot" type="number"></div><hr><div id="template-rows"></div><div style="margin-top:15px; display:flex; gap:5px;"><button onclick="Template.add('header')" class="btn btn-sm btn-accent">H</button><button onclick="Template.add('data')" class="btn btn-sm btn-success">R</button><button onclick="Template.add('break')" class="btn btn-sm btn-danger">B</button></div>
+                    </div>
+                    <div class="card scroll-panel preview-card">
+                        <div class="preview-label">LIVE PREVIEW</div>
+                        <div id="preview-wrapper">
+                            <div id="editor-preview"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-teacher-dashboard" class="page-section hidden">
+                <div class="card"><h3>My Classes</h3><select id="teacher-subject-select" onchange="Teacher.loadStudents()"></select><div style="overflow-x:auto;"><table class="data-table"><tbody id="teacher-student-list"></tbody></table></div></div>
+            </div>
+            
+            <div id="view-evaluation" class="page-section hidden">
+                <div class="card"><button onclick="UI.show('teacher-dashboard')" class="btn">Back</button> <span id="eval-student-name"></span><button onclick="Teacher.saveReport()" class="btn btn-success" style="float:right">Save</button><hr><div id="teacher-workspace" style="display:flex;justify-content:center; color:black; overflow-x:auto;"></div></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+    <script>window.onload = () => { DB.init(); Theme.init(); Auth.check(); }; document.getElementById('loginForm').addEventListener('submit', (e)=>{ e.preventDefault(); Auth.login(); });</script>
+</body>
+</html>
