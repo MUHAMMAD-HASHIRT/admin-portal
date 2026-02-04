@@ -1,9 +1,9 @@
 /* ==========================================================================
-   APP ENGINE (v81.0) - LIVE CLOUD CONNECTED
+   APP ENGINE (v82.0) - ROBUST FIREBASE FIX
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   YOUR LIVE FIREBASE KEYS (Extracted from your screenshot)
+   YOUR LIVE FIREBASE KEYS
    -------------------------------------------------------------------------- */
 const firebaseConfig = {
     apiKey: "AIzaSyDhe2ZNsrpyIZPNJyVwY0wF9c_svtWWTQY",
@@ -16,63 +16,58 @@ const firebaseConfig = {
     measurementId: "G-801VB4ZZZ1"
 };
 
-// Initialize Firebase (Checks if already running to prevent errors)
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 const dbRef = firebase.database().ref('schoolData');
 
-/* --- MOBILE MENU --- */
+/* --- MENU & THEME --- */
 const Mobile = { toggleMenu: () => { document.getElementById('app-sidebar').classList.toggle('active'); document.getElementById('mobile-backdrop').classList.toggle('active'); } };
-
-/* --- THEME --- */
 const Theme = { init: () => { const t = localStorage.getItem('academus_theme'); if (t === 'dark') { document.body.setAttribute('data-theme', 'dark'); const i = document.getElementById('theme-icon'); if(i) i.className = 'fas fa-sun'; } else { document.body.removeAttribute('data-theme'); const i = document.getElementById('theme-icon'); if(i) i.className = 'fas fa-moon'; } }, toggle: () => { const d = document.body.hasAttribute('data-theme'); if (d) { document.body.removeAttribute('data-theme'); localStorage.setItem('academus_theme', 'light'); document.getElementById('theme-icon').className = 'fas fa-moon'; } else { document.body.setAttribute('data-theme', 'dark'); localStorage.setItem('academus_theme', 'dark'); document.getElementById('theme-icon').className = 'fas fa-sun'; } } };
 
-/* --- CLOUD DATABASE LOGIC --- */
+/* --- CLOUD DATABASE (SAFE MODE) --- */
 const DB = {
+    // Default Empty State
     data: { users: [{ id: 'admin', pass: 'admin', role: 'admin', name: 'Administrator' }], classes: [], subjects: {}, assignments: [], students: [], marks: {} },
+    
     init: (callback) => {
-        // 1. PULL DATA FROM GOOGLE CLOUD
         dbRef.once('value', (snapshot) => {
             const val = snapshot.val();
             if (val) {
                 DB.data = val;
+                // FIX: Ensure arrays exist even if Firebase returns null
+                if (!DB.data.classes) DB.data.classes = [];
+                if (!DB.data.students) DB.data.students = [];
                 if (!DB.data.assignments) DB.data.assignments = [];
+                if (!DB.data.subjects) DB.data.subjects = {};
+                if (!DB.data.marks) DB.data.marks = {};
             } else {
-                // First time? Save the default Admin user to the cloud
                 DB.save(); 
             }
             if (callback) callback();
         });
         
-        // 2. LISTEN FOR LIVE CHANGES (Sync across devices)
         dbRef.on('value', (snapshot) => {
             const val = snapshot.val();
             if (val) {
-                DB.data = val; 
-                // Note: We don't auto-refresh UI here to prevent disrupting user typing
+                DB.data = val;
+                // FIX: Re-apply safety checks on live sync
+                if (!DB.data.classes) DB.data.classes = [];
+                if (!DB.data.students) DB.data.students = [];
             }
         });
     },
     save: () => {
-        // PUSH DATA TO GOOGLE CLOUD
-        dbRef.set(DB.data).then(() => {
-            console.log("Synced to Firebase!");
-        }).catch((error) => {
-            console.error("Sync Error: " + error.message);
-        });
+        dbRef.set(DB.data).then(() => { console.log("Saved."); }).catch(e => alert(e.message));
     },
     backup: () => {
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(DB.data));
-        const dlAnchorElem = document.createElement('a');
-        dlAnchorElem.setAttribute("href", dataStr);
-        dlAnchorElem.setAttribute("download", "school_backup_" + Date.now() + ".json");
-        dlAnchorElem.click();
+        const a = document.createElement('a'); a.href = dataStr; a.download = "backup.json"; a.click();
     },
     createDefaultTemplate: (t) => { return { title: t||'REPORT CARD', sub: 'TERM EVALUATION', desc: 'Student performance report.', qTotals: { t1:25, t2:25, mid:50, tot:100 }, items: [{type:'header',text:'ACADEMIC PERFORMANCE'},{type:'data',text:'Concept Understanding'},{type:'data',text:'Application of Skills'}] }; }
 };
 
-/* --- UI --- */
+/* --- UI ROUTER --- */
 const UI = { show: (id) => { document.querySelectorAll('.page-section').forEach(e => e.classList.add('hidden')); document.getElementById('view-' + id)?.classList.remove('hidden'); if(id === 'admin-dashboard') Admin.loadDashboard(); if(id === 'admin-classes') Admin.loadClassesHierarchy(); if(id === 'admin-teachers') Admin.loadTeachers(); if(id === 'admin-students') Admin.loadStudents(); if(id === 'admin-template') Template.initSelect(); if(id === 'teacher-dashboard') Teacher.init(); } };
 
 /* --- AUTH --- */
@@ -80,15 +75,13 @@ const Auth = {
     user: null,
     check: () => {
         const u = sessionStorage.getItem('uid');
-        const l = document.getElementById('app-login');
-        const d = document.getElementById('app-dashboard');
-        
-        // Wait for Cloud Data before checking login
         DB.init(() => {
             if (u) {
                 Auth.user = DB.data.users.find(x => x.id === u);
                 if(Auth.user) {
-                    l.style.display = 'none'; d.classList.remove('hidden'); d.style.display = 'block'; 
+                    document.getElementById('app-login').style.display = 'none'; 
+                    document.getElementById('app-dashboard').classList.remove('hidden'); 
+                    document.getElementById('app-dashboard').style.display = 'block'; 
                     document.getElementById('userDisplay').innerText = Auth.user.name; 
                     document.getElementById('roleDisplay').innerText = Auth.user.role; 
                     if (Auth.user.role === 'admin') { document.getElementById('adminNav').classList.remove('hidden'); UI.show('admin-dashboard'); } 
@@ -96,7 +89,8 @@ const Auth = {
                     return; 
                 }
             }
-            d.style.display = 'none'; l.style.display = 'flex';
+            document.getElementById('app-dashboard').style.display = 'none'; 
+            document.getElementById('app-login').style.display = 'flex';
         });
     },
     login: () => {
@@ -143,12 +137,21 @@ const Admin = {
     loadDashboard: () => { const t = document.getElementById('admin-status-table'); if(!t) return; t.innerHTML = ''; let hasStudents = false; DB.data.classes.forEach(cls => { const classStudents = DB.data.students.filter(s => s.classId === cls.id); if (classStudents.length > 0) hasStudents = true; classStudents.forEach(s => { let btns = '', cCount = 0; cls.subjects.forEach(sid => { const m = (DB.data.marks[s.id] && DB.data.marks[s.id][sid]); if(m && m.completed) cCount++; const sub = DB.data.subjects[sid]; if(sub) { const btnColor = (m && m.completed) ? '#10b981' : '#cbd5e1'; const txtColor = (m && m.completed) ? 'white' : '#333'; btns += `<button onclick="ReportEngine.openPrintView(${s.id}, '${sid}')" class="btn btn-sm" style="background:${btnColor}; color:${txtColor}; margin-right:4px;">${sub.name.substring(0,3)}</button>`; } }); const st = (cls.subjects.length > 0 && cCount === cls.subjects.length) ? '<span style="color:#10b981;font-weight:bold">COMPLETED</span>' : '<span style="color:#f59e0b">PENDING</span>'; t.innerHTML += `<tr><td>${s.roll}</td><td>${s.name}</td><td>${cls.name} (${s.section || 'A'})</td><td>${st}</td><td><button onclick="ReportEngine.openFullPrintView(${s.id})" class="btn btn-sm btn-primary">FULL REPORT</button> ${btns}</td></tr>`; }); }); if (!hasStudents) { t.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:30px; color:#64748b;">No students found. <br><button onclick="UI.show('admin-students')" class="btn btn-sm btn-accent" style="margin-top:10px;">+ Register Student</button></td></tr>`; } },
     loadClassesHierarchy: () => { 
         const c=document.getElementById('class-hierarchy-view');if(!c)return;c.innerHTML='';Admin.refreshDropdowns();
+        
+        // SAFE LOAD: Check if DB.data.classes exists
+        if (!DB.data.classes || DB.data.classes.length === 0) {
+            c.innerHTML = '<div style="padding:20px; text-align:center; color:#888;">No classes created yet. Use "Create Grade" on the right.</div>';
+            return;
+        }
+
         DB.data.classes.forEach(cls=>{
             let subH='';
-            if(cls.subjects.length>0) cls.subjects.forEach(sid=>{const sb=DB.data.subjects[sid];if(sb)subH+=`<span class="subj-tag">${sb.name} <button onclick="Admin.deleteSubject('${cls.id}','${sid}')" style="border:none;background:none;color:red;cursor:pointer;">&times;</button></span>`});
+            if(cls.subjects && cls.subjects.length>0) cls.subjects.forEach(sid=>{const sb=DB.data.subjects[sid];if(sb)subH+=`<span class="subj-tag">${sb.name} <button onclick="Admin.deleteSubject('${cls.id}','${sid}')" style="border:none;background:none;color:red;cursor:pointer;">&times;</button></span>`});
             else subH='<span style="font-size:11px;color:#999;">No Subj</span>';
+            
             let secH='';
-            cls.sections.forEach(sec=>{secH+=`<div class="tree-section"><div class="tree-sec-name">SECTION ${sec}</div><button onclick="Admin.deleteSection('${cls.id}','${sec}')" class="btn-xs-danger">X</button></div>`});
+            if (cls.sections) cls.sections.forEach(sec=>{secH+=`<div class="tree-section"><div class="tree-sec-name">SECTION ${sec}</div><button onclick="Admin.deleteSection('${cls.id}','${sec}')" class="btn-xs-danger">X</button></div>`});
+            
             c.innerHTML+=`
             <div class="class-tree-item">
                 <div class="tree-header">
@@ -163,11 +166,22 @@ const Admin = {
             </div>`;
         }); 
     },
-    addClass: () => { const n=document.getElementById('new-class-name').value.toUpperCase(); if(n){DB.data.classes.push({id:'c'+Date.now(),name:n,sections:['A'],subjects:[]});DB.save();Admin.loadClassesHierarchy();} },
+    addClass: () => { 
+        const n=document.getElementById('new-class-name').value.toUpperCase(); 
+        if(n){
+            const newClass = {id:'c_'+Date.now(),name:n,sections:['A'],subjects:[]};
+            if (!DB.data.classes) DB.data.classes = [];
+            DB.data.classes.push(newClass);
+            DB.save();
+            Admin.loadClassesHierarchy();
+            // Clear input
+            document.getElementById('new-class-name').value = '';
+        } 
+    },
     deleteClass: (id) => { if(confirm("Delete Class?")){DB.data.classes=DB.data.classes.filter(c=>c.id!==id);DB.save();Admin.loadClassesHierarchy();} },
     addSectionPrompt: (id) => { const s=prompt("Section:"); if(s){const c=DB.data.classes.find(x=>x.id===id); if(!c.sections.includes(s.toUpperCase())){c.sections.push(s.toUpperCase());DB.save();Admin.loadClassesHierarchy();}} },
     deleteSection: (cid, sec) => { if(confirm("Del?")){const c=DB.data.classes.find(x=>x.id===cid);c.sections=c.sections.filter(s=>s!==sec);DB.save();Admin.loadClassesHierarchy();} },
-    addSubject: () => { const cid=document.getElementById('subject-class-select').value, n=document.getElementById('new-subject-name').value.toUpperCase(); if(cid&&n){const sid='s_'+Date.now(); DB.data.subjects[sid]={name:n,template:DB.createDefaultTemplate(n)}; DB.data.classes.find(c=>c.id===cid).subjects.push(sid); DB.save(); Admin.loadClassesHierarchy();} },
+    addSubject: () => { const cid=document.getElementById('subject-class-select').value, n=document.getElementById('new-subject-name').value.toUpperCase(); if(cid&&n){const sid='s_'+Date.now(); if(!DB.data.subjects) DB.data.subjects = {}; DB.data.subjects[sid]={name:n,template:DB.createDefaultTemplate(n)}; DB.data.classes.find(c=>c.id===cid).subjects.push(sid); DB.save(); Admin.loadClassesHierarchy(); document.getElementById('new-subject-name').value='';} },
     deleteSubject: (cid, sid) => { if(confirm("Del Subject?")){const c=DB.data.classes.find(x=>x.id===cid);c.subjects=c.subjects.filter(s=>s!==sid);delete DB.data.subjects[sid];DB.save();Admin.loadClassesHierarchy();} },
     onAssignClassChange: () => { const cid = document.getElementById('assign-class-select').value; const sec = document.getElementById('assign-section-select'); sec.innerHTML='<option value="">Sec</option>'; const sub = document.getElementById('assign-subject-select'); sub.innerHTML='<option value="">Subj</option>'; if(!cid) return; const cls = DB.data.classes.find(c => c.id === cid); cls.sections.forEach(s => sec.innerHTML += `<option value="${s}">${s}</option>`); cls.subjects.forEach(sid => { if(DB.data.subjects[sid]) sub.innerHTML += `<option value="${sid}">${DB.data.subjects[sid].name}</option>`; }); },
     loadTeachers: () => { const t=document.getElementById('teacher-list-body'); const s=document.getElementById('assign-teacher-select'); t.innerHTML=''; s.innerHTML='<option value="">Select</option>'; DB.data.users.filter(u=>u.role==='teacher').forEach(u => { t.innerHTML+=`<tr><td>${u.name}</td><td>${u.id}</td><td>${u.pass}</td><td><button onclick="Admin.delTeacher('${u.id}')" class="btn btn-sm btn-danger">X</button></td></tr>`; s.innerHTML+=`<option value="${u.id}">${u.name}</option>`; }); Admin.refreshDropdowns(); Admin.loadAssignmentsList(); },
@@ -176,78 +190,7 @@ const Admin = {
     assignTeacher: () => { const tid=document.getElementById('assign-teacher-select').value, cid=document.getElementById('assign-class-select').value, s=document.getElementById('assign-section-select').value, sub=document.getElementById('assign-subject-select').value; if(tid&&cid&&s&&sub){ DB.data.assignments.push({teacherId:tid, classId:cid, section:s, subjectId:sub}); DB.save(); Admin.loadAssignmentsList(); alert("Assigned"); } },
     loadAssignmentsList: () => { const l=document.getElementById('assignment-list-table'); if(l){l.innerHTML=''; DB.data.assignments.forEach((a, i) => { const t=DB.data.users.find(u=>u.id===a.teacherId), c=DB.data.classes.find(x=>x.id===a.classId), s=DB.data.subjects[a.subjectId]; if(t&&c&&s) l.innerHTML+=`<tr><td>${c.name}</td><td>${a.section}</td><td>${s.name}</td><td><span style="font-weight:bold; color:var(--text-main);">${t.name}</span></td><td><button onclick="Admin.remAssign(${i})" class="btn-xs-danger">Remove</button></td></tr>`; });} },
     remAssign: (i) => { DB.data.assignments.splice(i,1); DB.save(); Admin.loadAssignmentsList(); },
-    
-    // --- CSV IMPORT LOGIC ---
-    importCSV: () => {
-        const fileInput = document.getElementById('csv-upload');
-        const file = fileInput.files[0];
-        if (!file) { alert("Please select a file first."); return; }
-
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const text = e.target.result;
-            const rows = text.split('\n');
-            if (rows.length < 2) return; // Empty or just header
-
-            let count = 0;
-            // Skip header (i=1)
-            for (let i = 1; i < rows.length; i++) {
-                const row = rows[i].trim();
-                if (!row) continue;
-                
-                const cols = row.split(',');
-                // CSV Format: Roll,Name,Grade,Section,FatherName,MotherName,Gender,AgeY,AgeM,Height,Weight,Present,Absent
-                // Indexes: 0,1,2,3,4,5,6,7,8,9,10,11,12
-                
-                if (cols.length < 13) continue;
-
-                const gradeName = cols[2].toUpperCase().trim();
-                const sectionName = cols[3].toUpperCase().trim();
-
-                // 1. Find or Create Class
-                let classId = null;
-                let cls = DB.data.classes.find(c => c.name === gradeName);
-                if (!cls) {
-                    classId = 'c_' + Date.now() + Math.random().toString(36).substr(2, 5);
-                    cls = { id: classId, name: gradeName, sections: [sectionName], subjects: [] };
-                    DB.data.classes.push(cls);
-                } else {
-                    classId = cls.id;
-                    if (!cls.sections.includes(sectionName)) {
-                        cls.sections.push(sectionName);
-                    }
-                }
-
-                // 2. Add Student
-                const student = {
-                    id: Date.now() + i,
-                    roll: cols[0].trim(),
-                    name: cols[1].trim().toUpperCase(),
-                    classId: classId,
-                    section: sectionName,
-                    parent1: cols[4].trim(),
-                    parent2: cols[5].trim(),
-                    gender: cols[6].trim(),
-                    ageY: cols[7].trim(),
-                    ageM: cols[8].trim(),
-                    height: cols[9].trim(),
-                    weight: cols[10].trim(),
-                    attendanceP: cols[11].trim(),
-                    attendanceA: cols[12].trim(),
-                    pt1: false,
-                    pt2: false
-                };
-                DB.data.students.push(student);
-                count++;
-            }
-            DB.save();
-            alert(`Successfully imported ${count} students!`);
-            Admin.loadStudents();
-            Admin.loadClassesHierarchy(); // Update structure view
-        };
-        reader.readAsText(file);
-    },
-
+    importCSV: () => { const i = document.getElementById('csv-upload'); const f = i.files[0]; if (!f) { alert("Select file"); return; } const r = new FileReader(); r.onload = function(e) { const t = e.target.result; const rows = t.split('\n'); if (rows.length < 2) return; for (let i = 1; i < rows.length; i++) { const row = rows[i].trim(); if (!row) continue; const c = row.split(','); if (c.length < 13) continue; const gName = c[2].toUpperCase().trim(); const sName = c[3].toUpperCase().trim(); let cid = null; let cls = DB.data.classes.find(c => c.name === gName); if (!cls) { cid = 'c_' + Date.now() + Math.random().toString(36).substr(2, 5); cls = { id: cid, name: gName, sections: [sName], subjects: [] }; DB.data.classes.push(cls); } else { cid = cls.id; if (!cls.sections.includes(sName)) { cls.sections.push(sName); } } DB.data.students.push({ id: Date.now() + i, roll: c[0].trim(), name: c[1].trim().toUpperCase(), classId: cid, section: sName, parent1: c[4].trim(), parent2: c[5].trim(), gender: c[6].trim(), ageY: c[7].trim(), ageM: c[8].trim(), height: c[9].trim(), weight: c[10].trim(), attendanceP: c[11].trim(), attendanceA: c[12].trim(), pt1: false, pt2: false }); } DB.save(); alert("Imported!"); Admin.loadStudents(); Admin.loadClassesHierarchy(); }; r.readAsText(f); },
     onStudentClassChange: () => { const cid = document.getElementById('stu-class-select').value; const sec = document.getElementById('stu-section-select'); sec.innerHTML = '<option value="">Sec</option>'; const cls = DB.data.classes.find(c => c.id === cid); if(cls) cls.sections.forEach(s => sec.innerHTML += `<option value="${s}">${s}</option>`); },
     loadStudents: () => { const t = document.getElementById('admin-student-list'); if(!t) return; t.innerHTML = ''; Admin.refreshDropdowns(); DB.data.students.forEach((s, idx) => { const cls = DB.data.classes.find(c => c.id === s.classId)?.name || '-'; t.innerHTML += `<tr><td>${s.roll}</td><td>${s.name}</td><td>${cls} [${s.section}]</td><td>${s.parent1 || '-'}</td><td><button onclick="Admin.delStudent(${idx})" class="btn btn-sm btn-danger">X</button></td></tr>`; }); },
     addStudent: () => { const s = { id: Date.now(), name: document.getElementById('stu-name').value.toUpperCase(), roll: document.getElementById('stu-roll').value, classId: document.getElementById('stu-class-select').value, section: document.getElementById('stu-section-select').value, parent1: document.getElementById('stu-p1').value.toUpperCase(), parent2: document.getElementById('stu-p2').value.toUpperCase(), gender: document.getElementById('stu-gender').value, ageY: document.getElementById('stu-age-y').value, ageM: document.getElementById('stu-age-m').value, height: document.getElementById('stu-height').value, weight: document.getElementById('stu-weight').value, attendanceP: document.getElementById('stu-att-p').value, attendanceA: document.getElementById('stu-att-a').value, pt1: document.getElementById('stu-pt1').value === "Yes", pt2: document.getElementById('stu-pt2').value === "Yes" }; if(!s.classId || !s.section || !s.name) { alert("Missing Details"); return; } DB.data.students.push(s); DB.save(); Admin.loadStudents(); alert("Student Saved"); },
