@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Academus Portal v73.0</title>
+    <title>Academus Portal v81.0 (Live)</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -32,6 +32,7 @@
     </div>
 
     <div id="app-dashboard" class="hidden">
+        
         <aside class="sidebar" id="app-sidebar">
             <div class="sidebar-header">ACADEMUS</div>
             <ul class="nav-menu hidden" id="adminNav">
@@ -45,7 +46,7 @@
                 
                 <li class="nav-category">System</li>
                 <li onclick="UI.show('admin-template'); Mobile.toggleMenu();" class="nav-item"><i class="fas fa-file-contract"></i> Templates</li>
-                <li onclick="DB.export(); Mobile.toggleMenu();" class="nav-item"><i class="fas fa-cloud-download-alt"></i> Backup</li>
+                <li onclick="DB.backup(); Mobile.toggleMenu();" class="nav-item"><i class="fas fa-cloud-download-alt"></i> Backup Data</li>
             </ul>
             <ul class="nav-menu hidden" id="teacherNav">
                 <li class="nav-category">My Classroom</li>
@@ -126,7 +127,9 @@
         </main>
     </div>
 
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    
     <script src="app.js"></script>
-    <script>window.onload = () => { DB.init(); Theme.init(); Auth.check(); }; document.getElementById('loginForm').addEventListener('submit', (e)=>{ e.preventDefault(); Auth.login(); });</script>
 </body>
 </html>
