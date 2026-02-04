@@ -1,5 +1,5 @@
 /* ==========================================================================
-   APP ENGINE (v83.0) - DATA SANITIZATION FIX
+   APP ENGINE (v84.0) - MISSING LIST FIX
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
@@ -25,30 +25,27 @@ const dbRef = firebase.database().ref('schoolData');
 const Mobile = { toggleMenu: () => { document.getElementById('app-sidebar').classList.toggle('active'); document.getElementById('mobile-backdrop').classList.toggle('active'); } };
 const Theme = { init: () => { const t = localStorage.getItem('academus_theme'); if (t === 'dark') { document.body.setAttribute('data-theme', 'dark'); const i = document.getElementById('theme-icon'); if(i) i.className = 'fas fa-sun'; } else { document.body.removeAttribute('data-theme'); const i = document.getElementById('theme-icon'); if(i) i.className = 'fas fa-moon'; } }, toggle: () => { const d = document.body.hasAttribute('data-theme'); if (d) { document.body.removeAttribute('data-theme'); localStorage.setItem('academus_theme', 'light'); document.getElementById('theme-icon').className = 'fas fa-moon'; } else { document.body.setAttribute('data-theme', 'dark'); localStorage.setItem('academus_theme', 'dark'); document.getElementById('theme-icon').className = 'fas fa-sun'; } } };
 
-/* --- CLOUD DATABASE (WITH SANITIZER) --- */
+/* --- CLOUD DATABASE --- */
 const DB = {
     data: { users: [{ id: 'admin', pass: 'admin', role: 'admin', name: 'Administrator' }], classes: [], subjects: {}, assignments: [], students: [], marks: {} },
     
-    // FIX: Helper to force Objects back into Arrays
+    // DATA CLEANER: Converts Firebase Objects back to Arrays
     sanitize: (val) => {
         if (!val) return val;
-        // If classes became an object (e.g. {0:..., 2:...}), turn it back to array
-        if (val.classes && !Array.isArray(val.classes)) {
-            val.classes = Object.values(val.classes).filter(x => x);
-        }
+        if (val.classes && !Array.isArray(val.classes)) val.classes = Object.values(val.classes).filter(x => x);
         if (!val.classes) val.classes = [];
-
-        // Same for students
-        if (val.students && !Array.isArray(val.students)) {
-            val.students = Object.values(val.students).filter(x => x);
-        }
+        if (val.students && !Array.isArray(val.students)) val.students = Object.values(val.students).filter(x => x);
         if (!val.students) val.students = [];
-
-        // Ensure other objects exist
         if (!val.subjects) val.subjects = {};
         if (!val.assignments) val.assignments = [];
         if (!val.marks) val.marks = {};
         
+        // Deep Clean: Ensure every class has subjects/sections arrays
+        val.classes.forEach(c => {
+            if (!c.subjects) c.subjects = [];
+            if (!c.sections) c.sections = [];
+        });
+
         return val;
     },
 
@@ -56,7 +53,6 @@ const DB = {
         dbRef.once('value', (snapshot) => {
             let val = snapshot.val();
             if (val) {
-                // Apply the fix immediately upon loading
                 DB.data = DB.sanitize(val);
             } else {
                 DB.save(); 
@@ -67,13 +63,14 @@ const DB = {
         dbRef.on('value', (snapshot) => {
             let val = snapshot.val();
             if (val) {
-                // Fix live updates too
                 DB.data = DB.sanitize(val);
+                // Refresh UI if on specific pages
+                if (!document.getElementById('view-admin-classes').classList.contains('hidden')) Admin.loadClassesHierarchy();
+                if (!document.getElementById('view-admin-dashboard').classList.contains('hidden')) Admin.loadDashboard();
             }
         });
     },
     save: () => {
-        // Save cleaned data back to cloud
         dbRef.set(DB.data).then(() => { console.log("Saved."); }).catch(e => alert(e.message));
     },
     backup: () => {
@@ -150,15 +147,24 @@ const ReportEngine = {
 /* --- ADMIN --- */
 const Admin = {
     refreshDropdowns: () => { const ids = ['subject-class-select', 'stu-class-select', 'assign-class-select', 'tpl-class-select']; ids.forEach(id => { const el = document.getElementById(id); if(!el) return; const cv = el.value; el.innerHTML = '<option value="">SELECT GRADE</option>'; DB.data.classes.forEach(c => el.innerHTML += `<option value="${c.id}">${c.name}</option>`); if(cv) el.value = cv; }); },
-    loadDashboard: () => { const t = document.getElementById('admin-status-table'); if(!t) return; t.innerHTML = ''; let hasStudents = false; DB.data.classes.forEach(cls => { const classStudents = DB.data.students.filter(s => s.classId === cls.id); if (classStudents.length > 0) hasStudents = true; classStudents.forEach(s => { let btns = '', cCount = 0; cls.subjects.forEach(sid => { const m = (DB.data.marks[s.id] && DB.data.marks[s.id][sid]); if(m && m.completed) cCount++; const sub = DB.data.subjects[sid]; if(sub) { const btnColor = (m && m.completed) ? '#10b981' : '#cbd5e1'; const txtColor = (m && m.completed) ? 'white' : '#333'; btns += `<button onclick="ReportEngine.openPrintView(${s.id}, '${sid}')" class="btn btn-sm" style="background:${btnColor}; color:${txtColor}; margin-right:4px;">${sub.name.substring(0,3)}</button>`; } }); const st = (cls.subjects.length > 0 && cCount === cls.subjects.length) ? '<span style="color:#10b981;font-weight:bold">COMPLETED</span>' : '<span style="color:#f59e0b">PENDING</span>'; t.innerHTML += `<tr><td>${s.roll}</td><td>${s.name}</td><td>${cls.name} (${s.section || 'A'})</td><td>${st}</td><td><button onclick="ReportEngine.openFullPrintView(${s.id})" class="btn btn-sm btn-primary">FULL REPORT</button> ${btns}</td></tr>`; }); }); if (!hasStudents) { t.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:30px; color:#64748b;">No students found. <br><button onclick="UI.show('admin-students')" class="btn btn-sm btn-accent" style="margin-top:10px;">+ Register Student</button></td></tr>`; } },
+    loadDashboard: () => { const t = document.getElementById('admin-status-table'); if(!t) return; t.innerHTML = ''; let hasStudents = false; DB.data.classes.forEach(cls => { const classStudents = DB.data.students.filter(s => s.classId === cls.id); if (classStudents.length > 0) hasStudents = true; classStudents.forEach(s => { let btns = '', cCount = 0; if (cls.subjects) { cls.subjects.forEach(sid => { const m = (DB.data.marks[s.id] && DB.data.marks[s.id][sid]); if(m && m.completed) cCount++; const sub = DB.data.subjects[sid]; if(sub) { const btnColor = (m && m.completed) ? '#10b981' : '#cbd5e1'; const txtColor = (m && m.completed) ? 'white' : '#333'; btns += `<button onclick="ReportEngine.openPrintView(${s.id}, '${sid}')" class="btn btn-sm" style="background:${btnColor}; color:${txtColor}; margin-right:4px;">${sub.name.substring(0,3)}</button>`; } }); } const st = (cls.subjects && cls.subjects.length > 0 && cCount === cls.subjects.length) ? '<span style="color:#10b981;font-weight:bold">COMPLETED</span>' : '<span style="color:#f59e0b">PENDING</span>'; t.innerHTML += `<tr><td>${s.roll}</td><td>${s.name}</td><td>${cls.name} (${s.section || 'A'})</td><td>${st}</td><td><button onclick="ReportEngine.openFullPrintView(${s.id})" class="btn btn-sm btn-primary">FULL REPORT</button> ${btns}</td></tr>`; }); }); if (!hasStudents) { t.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:30px; color:#64748b;">No students found. <br><button onclick="UI.show('admin-students')" class="btn btn-sm btn-accent" style="margin-top:10px;">+ Register Student</button></td></tr>`; } },
     loadClassesHierarchy: () => { 
         const c=document.getElementById('class-hierarchy-view');if(!c)return;c.innerHTML='';Admin.refreshDropdowns();
+        
+        // SAFE LOAD
+        if (!DB.data.classes || DB.data.classes.length === 0) {
+            c.innerHTML = '<div style="padding:20px; text-align:center; color:#888;">No classes created yet. Use "Create Grade" on the right.</div>';
+            return;
+        }
+
         DB.data.classes.forEach(cls=>{
             let subH='';
-            if(cls.subjects.length>0) cls.subjects.forEach(sid=>{const sb=DB.data.subjects[sid];if(sb)subH+=`<span class="subj-tag">${sb.name} <button onclick="Admin.deleteSubject('${cls.id}','${sid}')" style="border:none;background:none;color:red;cursor:pointer;">&times;</button></span>`});
+            if(cls.subjects && cls.subjects.length>0) cls.subjects.forEach(sid=>{const sb=DB.data.subjects[sid];if(sb)subH+=`<span class="subj-tag">${sb.name} <button onclick="Admin.deleteSubject('${cls.id}','${sid}')" style="border:none;background:none;color:red;cursor:pointer;">&times;</button></span>`});
             else subH='<span style="font-size:11px;color:#999;">No Subj</span>';
+            
             let secH='';
-            cls.sections.forEach(sec=>{secH+=`<div class="tree-section"><div class="tree-sec-name">SECTION ${sec}</div><button onclick="Admin.deleteSection('${cls.id}','${sec}')" class="btn-xs-danger">X</button></div>`});
+            if (cls.sections) cls.sections.forEach(sec=>{secH+=`<div class="tree-section"><div class="tree-sec-name">SECTION ${sec}</div><button onclick="Admin.deleteSection('${cls.id}','${sec}')" class="btn-xs-danger">X</button></div>`});
+            
             c.innerHTML+=`
             <div class="class-tree-item">
                 <div class="tree-header">
@@ -181,16 +187,40 @@ const Admin = {
             if (!DB.data.classes) DB.data.classes = [];
             DB.data.classes.push(newClass);
             DB.save();
-            Admin.loadClassesHierarchy();
             // Clear input
             document.getElementById('new-class-name').value = '';
         } 
     },
-    deleteClass: (id) => { if(confirm("Delete Class?")){DB.data.classes=DB.data.classes.filter(c=>c.id!==id);DB.save();Admin.loadClassesHierarchy();} },
-    addSectionPrompt: (id) => { const s=prompt("Section:"); if(s){const c=DB.data.classes.find(x=>x.id===id); if(!c.sections.includes(s.toUpperCase())){c.sections.push(s.toUpperCase());DB.save();Admin.loadClassesHierarchy();}} },
-    deleteSection: (cid, sec) => { if(confirm("Del?")){const c=DB.data.classes.find(x=>x.id===cid);c.sections=c.sections.filter(s=>s!==sec);DB.save();Admin.loadClassesHierarchy();} },
-    addSubject: () => { const cid=document.getElementById('subject-class-select').value, n=document.getElementById('new-subject-name').value.toUpperCase(); if(cid&&n){const sid='s_'+Date.now(); if(!DB.data.subjects) DB.data.subjects = {}; DB.data.subjects[sid]={name:n,template:DB.createDefaultTemplate(n)}; DB.data.classes.find(c=>c.id===cid).subjects.push(sid); DB.save(); Admin.loadClassesHierarchy(); document.getElementById('new-subject-name').value='';} },
-    deleteSubject: (cid, sid) => { if(confirm("Del Subject?")){const c=DB.data.classes.find(x=>x.id===cid);c.subjects=c.subjects.filter(s=>s!==sid);delete DB.data.subjects[sid];DB.save();Admin.loadClassesHierarchy();} },
+    deleteClass: (id) => { if(confirm("Delete Class?")){DB.data.classes=DB.data.classes.filter(c=>c.id!==id);DB.save();} },
+    addSectionPrompt: (id) => { 
+        const s=prompt("Section:"); 
+        if(s){
+            const c=DB.data.classes.find(x=>x.id===id); 
+            if(!c.sections) c.sections = []; // FIX MISSING
+            if(!c.sections.includes(s.toUpperCase())){
+                c.sections.push(s.toUpperCase());
+                DB.save();
+            }
+        } 
+    },
+    deleteSection: (cid, sec) => { if(confirm("Del?")){const c=DB.data.classes.find(x=>x.id===cid);c.sections=c.sections.filter(s=>s!==sec);DB.save();} },
+    addSubject: () => { 
+        const cid=document.getElementById('subject-class-select').value, n=document.getElementById('new-subject-name').value.toUpperCase(); 
+        if(cid&&n){
+            const sid='s_'+Date.now(); 
+            if(!DB.data.subjects) DB.data.subjects = {}; 
+            DB.data.subjects[sid]={name:n,template:DB.createDefaultTemplate(n)}; 
+            
+            // FIX: Ensure subjects array exists
+            const c = DB.data.classes.find(x=>x.id===cid);
+            if (!c.subjects) c.subjects = [];
+            
+            c.subjects.push(sid); 
+            DB.save(); 
+            document.getElementById('new-subject-name').value='';
+        } 
+    },
+    deleteSubject: (cid, sid) => { if(confirm("Del Subject?")){const c=DB.data.classes.find(x=>x.id===cid);c.subjects=c.subjects.filter(s=>s!==sid);delete DB.data.subjects[sid];DB.save();} },
     onAssignClassChange: () => { const cid = document.getElementById('assign-class-select').value; const sec = document.getElementById('assign-section-select'); sec.innerHTML='<option value="">Sec</option>'; const sub = document.getElementById('assign-subject-select'); sub.innerHTML='<option value="">Subj</option>'; if(!cid) return; const cls = DB.data.classes.find(c => c.id === cid); cls.sections.forEach(s => sec.innerHTML += `<option value="${s}">${s}</option>`); cls.subjects.forEach(sid => { if(DB.data.subjects[sid]) sub.innerHTML += `<option value="${sid}">${DB.data.subjects[sid].name}</option>`; }); },
     loadTeachers: () => { const t=document.getElementById('teacher-list-body'); const s=document.getElementById('assign-teacher-select'); t.innerHTML=''; s.innerHTML='<option value="">Select</option>'; DB.data.users.filter(u=>u.role==='teacher').forEach(u => { t.innerHTML+=`<tr><td>${u.name}</td><td>${u.id}</td><td>${u.pass}</td><td><button onclick="Admin.delTeacher('${u.id}')" class="btn btn-sm btn-danger">X</button></td></tr>`; s.innerHTML+=`<option value="${u.id}">${u.name}</option>`; }); Admin.refreshDropdowns(); Admin.loadAssignmentsList(); },
     addTeacher: () => { const n=document.getElementById('new-t-name').value.toUpperCase(), u=document.getElementById('new-t-user').value, p=document.getElementById('new-t-pass').value; if(n){DB.data.users.push({id:u,pass:p,role:'teacher',name:n}); DB.save(); Admin.loadTeachers();} },
