@@ -1,12 +1,112 @@
 /* ==========================================================================
-   APP ENGINE (v74.0) - FIXED INPUTS
+   APP ENGINE (v81.0) - LIVE CLOUD CONNECTED
    ========================================================================== */
 
-const Mobile = { toggleMenu: () => { const s = document.getElementById('app-sidebar'); const b = document.getElementById('mobile-backdrop'); s.classList.toggle('active'); b.classList.toggle('active'); } };
+/* --------------------------------------------------------------------------
+   YOUR LIVE FIREBASE KEYS (Extracted from your screenshot)
+   -------------------------------------------------------------------------- */
+const firebaseConfig = {
+    apiKey: "AIzaSyDhe2ZNsrpyIZPNJyVwY0wF9c_svtWWTQY",
+    authDomain: "academus-portal.firebaseapp.com",
+    databaseURL: "https://academus-portal-default-rtdb.firebaseio.com",
+    projectId: "academus-portal",
+    storageBucket: "academus-portal.firebasestorage.app",
+    messagingSenderId: "415564219534",
+    appId: "1:415564219534:web:a80d06da98dad38572b5df",
+    measurementId: "G-801VB4ZZZ1"
+};
+
+// Initialize Firebase (Checks if already running to prevent errors)
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const dbRef = firebase.database().ref('schoolData');
+
+/* --- MOBILE MENU --- */
+const Mobile = { toggleMenu: () => { document.getElementById('app-sidebar').classList.toggle('active'); document.getElementById('mobile-backdrop').classList.toggle('active'); } };
+
+/* --- THEME --- */
 const Theme = { init: () => { const t = localStorage.getItem('academus_theme'); if (t === 'dark') { document.body.setAttribute('data-theme', 'dark'); const i = document.getElementById('theme-icon'); if(i) i.className = 'fas fa-sun'; } else { document.body.removeAttribute('data-theme'); const i = document.getElementById('theme-icon'); if(i) i.className = 'fas fa-moon'; } }, toggle: () => { const d = document.body.hasAttribute('data-theme'); if (d) { document.body.removeAttribute('data-theme'); localStorage.setItem('academus_theme', 'light'); document.getElementById('theme-icon').className = 'fas fa-moon'; } else { document.body.setAttribute('data-theme', 'dark'); localStorage.setItem('academus_theme', 'dark'); document.getElementById('theme-icon').className = 'fas fa-sun'; } } };
-const DB = { data: { users: [{ id: 'admin', pass: 'admin', role: 'admin', name: 'Administrator' }], classes: [], subjects: {}, assignments: [], students: [], marks: {} }, init: () => { const s = localStorage.getItem('academus_v29'); if(s) try{DB.data=JSON.parse(s); if(!DB.data.assignments) DB.data.assignments=[];}catch(e){} }, save: () => { localStorage.setItem('academus_v29', JSON.stringify(DB.data)) }, createDefaultTemplate: (t) => { return { title: t||'REPORT CARD', sub: 'TERM EVALUATION', desc: 'Student performance report.', qTotals: { t1:25, t2:25, mid:50, tot:100 }, items: [{type:'header',text:'ACADEMIC PERFORMANCE'},{type:'data',text:'Concept Understanding'},{type:'data',text:'Application of Skills'}] }; }, addDemoData: () => { const cid = 'c_'+Date.now(); DB.data.classes.push({id:cid, name:'GRADE 1', sections:['A'], subjects:[]}); DB.data.students.push({id:1, name:'HASHIR', roll:'22', classId:cid, section:'A', parent1:'Mr. Father', parent2:'Mrs. Mother', gender:'M', ageY:6, ageM:5, height:115, weight:22, attendanceP:180, attendanceA:5, pt1:true, pt2:false}); DB.save(); location.reload(); } };
+
+/* --- CLOUD DATABASE LOGIC --- */
+const DB = {
+    data: { users: [{ id: 'admin', pass: 'admin', role: 'admin', name: 'Administrator' }], classes: [], subjects: {}, assignments: [], students: [], marks: {} },
+    init: (callback) => {
+        // 1. PULL DATA FROM GOOGLE CLOUD
+        dbRef.once('value', (snapshot) => {
+            const val = snapshot.val();
+            if (val) {
+                DB.data = val;
+                if (!DB.data.assignments) DB.data.assignments = [];
+            } else {
+                // First time? Save the default Admin user to the cloud
+                DB.save(); 
+            }
+            if (callback) callback();
+        });
+        
+        // 2. LISTEN FOR LIVE CHANGES (Sync across devices)
+        dbRef.on('value', (snapshot) => {
+            const val = snapshot.val();
+            if (val) {
+                DB.data = val; 
+                // Note: We don't auto-refresh UI here to prevent disrupting user typing
+            }
+        });
+    },
+    save: () => {
+        // PUSH DATA TO GOOGLE CLOUD
+        dbRef.set(DB.data).then(() => {
+            console.log("Synced to Firebase!");
+        }).catch((error) => {
+            console.error("Sync Error: " + error.message);
+        });
+    },
+    backup: () => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(DB.data));
+        const dlAnchorElem = document.createElement('a');
+        dlAnchorElem.setAttribute("href", dataStr);
+        dlAnchorElem.setAttribute("download", "school_backup_" + Date.now() + ".json");
+        dlAnchorElem.click();
+    },
+    createDefaultTemplate: (t) => { return { title: t||'REPORT CARD', sub: 'TERM EVALUATION', desc: 'Student performance report.', qTotals: { t1:25, t2:25, mid:50, tot:100 }, items: [{type:'header',text:'ACADEMIC PERFORMANCE'},{type:'data',text:'Concept Understanding'},{type:'data',text:'Application of Skills'}] }; }
+};
+
+/* --- UI --- */
 const UI = { show: (id) => { document.querySelectorAll('.page-section').forEach(e => e.classList.add('hidden')); document.getElementById('view-' + id)?.classList.remove('hidden'); if(id === 'admin-dashboard') Admin.loadDashboard(); if(id === 'admin-classes') Admin.loadClassesHierarchy(); if(id === 'admin-teachers') Admin.loadTeachers(); if(id === 'admin-students') Admin.loadStudents(); if(id === 'admin-template') Template.initSelect(); if(id === 'teacher-dashboard') Teacher.init(); } };
-const Auth = { user: null, check: () => { const u = sessionStorage.getItem('uid'); const l = document.getElementById('app-login'); const d = document.getElementById('app-dashboard'); if (u) { DB.init(); Auth.user = DB.data.users.find(x => x.id === u); if(Auth.user) { l.style.display = 'none'; d.classList.remove('hidden'); d.style.display = 'block'; document.getElementById('userDisplay').innerText = Auth.user.name; document.getElementById('roleDisplay').innerText = Auth.user.role; if (Auth.user.role === 'admin') { document.getElementById('adminNav').classList.remove('hidden'); UI.show('admin-dashboard'); } else { document.getElementById('teacherNav').classList.remove('hidden'); UI.show('teacher-dashboard'); } return; } } d.style.display = 'none'; l.style.display = 'flex'; }, login: () => { const u = document.getElementById('username').value; const p = document.getElementById('password').value; DB.init(); const f = DB.data.users.find(x => x.id === u && x.pass === p); if (f) { sessionStorage.setItem('uid', f.id); location.reload(); } else { alert('Invalid Credentials'); } }, logout: () => { sessionStorage.clear(); location.reload(); } };
+
+/* --- AUTH --- */
+const Auth = {
+    user: null,
+    check: () => {
+        const u = sessionStorage.getItem('uid');
+        const l = document.getElementById('app-login');
+        const d = document.getElementById('app-dashboard');
+        
+        // Wait for Cloud Data before checking login
+        DB.init(() => {
+            if (u) {
+                Auth.user = DB.data.users.find(x => x.id === u);
+                if(Auth.user) {
+                    l.style.display = 'none'; d.classList.remove('hidden'); d.style.display = 'block'; 
+                    document.getElementById('userDisplay').innerText = Auth.user.name; 
+                    document.getElementById('roleDisplay').innerText = Auth.user.role; 
+                    if (Auth.user.role === 'admin') { document.getElementById('adminNav').classList.remove('hidden'); UI.show('admin-dashboard'); } 
+                    else { document.getElementById('teacherNav').classList.remove('hidden'); UI.show('teacher-dashboard'); } 
+                    return; 
+                }
+            }
+            d.style.display = 'none'; l.style.display = 'flex';
+        });
+    },
+    login: () => {
+        const u = document.getElementById('username').value;
+        const p = document.getElementById('password').value;
+        const f = DB.data.users.find(x => x.id === u && x.pass === p);
+        if (f) { sessionStorage.setItem('uid', f.id); location.reload(); } else { alert('Invalid Credentials'); }
+    },
+    logout: () => { sessionStorage.clear(); location.reload(); }
+};
 
 /* --- REPORT ENGINE --- */
 const ReportEngine = {
@@ -17,14 +117,7 @@ const ReportEngine = {
         const container = document.getElementById(c) || document.createElement('div'); container.innerHTML = '';
         const chk = (id, v) => a ? `<input type="checkbox" id="${id}" class="inp-mark" ${v?'checked':''}>` : (v?'<span style="font-family:sans-serif;font-weight:bold;color:#002060;">&#10003;</span>':'');
         const qT = t.qTotals || { t1:25, t2:25, mid:50, tot:100 };
-        // FIXED INPUT STYLE: Removed 12px padding conflict, Increased width
-        const qInp = (id, v, max) => a ? 
-            `<div style="display:flex;align-items:center;justify-content:center;gap:4px;">
-                <input type="number" id="${id}" class="inp-mark" value="${v||''}" style="width:60px; text-align:center; margin:0; padding:5px; height:35px;" max="${max}" oninput="if(parseInt(this.value)>${max}) this.value=${max}">
-                <span style="font-size:12px; font-weight:bold;">/${max}</span>
-             </div>` 
-            : `<span style="font-weight:bold;">${v||'-'} / ${max}</span>`;
-        
+        const qInp = (id, v, max) => a ? `<div style="display:flex;align-items:center;justify-content:center;gap:4px;"><input type="number" id="${id}" class="inp-mark" value="${v||''}" style="width:60px; text-align:center; margin:0; padding:5px; height:35px;" max="${max}" oninput="if(parseInt(this.value)>${max}) this.value=${max}"><span style="font-size:12px; font-weight:bold;">/${max}</span></div>` : `<span style="font-weight:bold;">${v||'-'} / ${max}</span>`;
         const box = (id, v) => a ? `<textarea id="${id}" class="inp-mark" style="width:100%; min-height:40px; border:none; resize:none; background:transparent;" oninput="this.style.height='';this.style.height=this.scrollHeight+'px'">${v||''}</textarea>` : `<div style="padding:5px;white-space:pre-wrap;">${v||''}</div>`;
         const LIMIT = 1080; const FOOTER_H = 150;
         let pg = ReportEngine.pg(), cnt = pg.querySelector('.content-area');
