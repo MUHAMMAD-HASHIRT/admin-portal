@@ -1,5 +1,5 @@
 /* ==========================================================================
-   APP ENGINE (v82.0) - ROBUST FIREBASE FIX
+   APP ENGINE (v83.0) - DATA SANITIZATION FIX
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
@@ -25,22 +25,39 @@ const dbRef = firebase.database().ref('schoolData');
 const Mobile = { toggleMenu: () => { document.getElementById('app-sidebar').classList.toggle('active'); document.getElementById('mobile-backdrop').classList.toggle('active'); } };
 const Theme = { init: () => { const t = localStorage.getItem('academus_theme'); if (t === 'dark') { document.body.setAttribute('data-theme', 'dark'); const i = document.getElementById('theme-icon'); if(i) i.className = 'fas fa-sun'; } else { document.body.removeAttribute('data-theme'); const i = document.getElementById('theme-icon'); if(i) i.className = 'fas fa-moon'; } }, toggle: () => { const d = document.body.hasAttribute('data-theme'); if (d) { document.body.removeAttribute('data-theme'); localStorage.setItem('academus_theme', 'light'); document.getElementById('theme-icon').className = 'fas fa-moon'; } else { document.body.setAttribute('data-theme', 'dark'); localStorage.setItem('academus_theme', 'dark'); document.getElementById('theme-icon').className = 'fas fa-sun'; } } };
 
-/* --- CLOUD DATABASE (SAFE MODE) --- */
+/* --- CLOUD DATABASE (WITH SANITIZER) --- */
 const DB = {
-    // Default Empty State
     data: { users: [{ id: 'admin', pass: 'admin', role: 'admin', name: 'Administrator' }], classes: [], subjects: {}, assignments: [], students: [], marks: {} },
     
+    // FIX: Helper to force Objects back into Arrays
+    sanitize: (val) => {
+        if (!val) return val;
+        // If classes became an object (e.g. {0:..., 2:...}), turn it back to array
+        if (val.classes && !Array.isArray(val.classes)) {
+            val.classes = Object.values(val.classes).filter(x => x);
+        }
+        if (!val.classes) val.classes = [];
+
+        // Same for students
+        if (val.students && !Array.isArray(val.students)) {
+            val.students = Object.values(val.students).filter(x => x);
+        }
+        if (!val.students) val.students = [];
+
+        // Ensure other objects exist
+        if (!val.subjects) val.subjects = {};
+        if (!val.assignments) val.assignments = [];
+        if (!val.marks) val.marks = {};
+        
+        return val;
+    },
+
     init: (callback) => {
         dbRef.once('value', (snapshot) => {
-            const val = snapshot.val();
+            let val = snapshot.val();
             if (val) {
-                DB.data = val;
-                // FIX: Ensure arrays exist even if Firebase returns null
-                if (!DB.data.classes) DB.data.classes = [];
-                if (!DB.data.students) DB.data.students = [];
-                if (!DB.data.assignments) DB.data.assignments = [];
-                if (!DB.data.subjects) DB.data.subjects = {};
-                if (!DB.data.marks) DB.data.marks = {};
+                // Apply the fix immediately upon loading
+                DB.data = DB.sanitize(val);
             } else {
                 DB.save(); 
             }
@@ -48,16 +65,15 @@ const DB = {
         });
         
         dbRef.on('value', (snapshot) => {
-            const val = snapshot.val();
+            let val = snapshot.val();
             if (val) {
-                DB.data = val;
-                // FIX: Re-apply safety checks on live sync
-                if (!DB.data.classes) DB.data.classes = [];
-                if (!DB.data.students) DB.data.students = [];
+                // Fix live updates too
+                DB.data = DB.sanitize(val);
             }
         });
     },
     save: () => {
+        // Save cleaned data back to cloud
         dbRef.set(DB.data).then(() => { console.log("Saved."); }).catch(e => alert(e.message));
     },
     backup: () => {
@@ -137,21 +153,12 @@ const Admin = {
     loadDashboard: () => { const t = document.getElementById('admin-status-table'); if(!t) return; t.innerHTML = ''; let hasStudents = false; DB.data.classes.forEach(cls => { const classStudents = DB.data.students.filter(s => s.classId === cls.id); if (classStudents.length > 0) hasStudents = true; classStudents.forEach(s => { let btns = '', cCount = 0; cls.subjects.forEach(sid => { const m = (DB.data.marks[s.id] && DB.data.marks[s.id][sid]); if(m && m.completed) cCount++; const sub = DB.data.subjects[sid]; if(sub) { const btnColor = (m && m.completed) ? '#10b981' : '#cbd5e1'; const txtColor = (m && m.completed) ? 'white' : '#333'; btns += `<button onclick="ReportEngine.openPrintView(${s.id}, '${sid}')" class="btn btn-sm" style="background:${btnColor}; color:${txtColor}; margin-right:4px;">${sub.name.substring(0,3)}</button>`; } }); const st = (cls.subjects.length > 0 && cCount === cls.subjects.length) ? '<span style="color:#10b981;font-weight:bold">COMPLETED</span>' : '<span style="color:#f59e0b">PENDING</span>'; t.innerHTML += `<tr><td>${s.roll}</td><td>${s.name}</td><td>${cls.name} (${s.section || 'A'})</td><td>${st}</td><td><button onclick="ReportEngine.openFullPrintView(${s.id})" class="btn btn-sm btn-primary">FULL REPORT</button> ${btns}</td></tr>`; }); }); if (!hasStudents) { t.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:30px; color:#64748b;">No students found. <br><button onclick="UI.show('admin-students')" class="btn btn-sm btn-accent" style="margin-top:10px;">+ Register Student</button></td></tr>`; } },
     loadClassesHierarchy: () => { 
         const c=document.getElementById('class-hierarchy-view');if(!c)return;c.innerHTML='';Admin.refreshDropdowns();
-        
-        // SAFE LOAD: Check if DB.data.classes exists
-        if (!DB.data.classes || DB.data.classes.length === 0) {
-            c.innerHTML = '<div style="padding:20px; text-align:center; color:#888;">No classes created yet. Use "Create Grade" on the right.</div>';
-            return;
-        }
-
         DB.data.classes.forEach(cls=>{
             let subH='';
-            if(cls.subjects && cls.subjects.length>0) cls.subjects.forEach(sid=>{const sb=DB.data.subjects[sid];if(sb)subH+=`<span class="subj-tag">${sb.name} <button onclick="Admin.deleteSubject('${cls.id}','${sid}')" style="border:none;background:none;color:red;cursor:pointer;">&times;</button></span>`});
+            if(cls.subjects.length>0) cls.subjects.forEach(sid=>{const sb=DB.data.subjects[sid];if(sb)subH+=`<span class="subj-tag">${sb.name} <button onclick="Admin.deleteSubject('${cls.id}','${sid}')" style="border:none;background:none;color:red;cursor:pointer;">&times;</button></span>`});
             else subH='<span style="font-size:11px;color:#999;">No Subj</span>';
-            
             let secH='';
-            if (cls.sections) cls.sections.forEach(sec=>{secH+=`<div class="tree-section"><div class="tree-sec-name">SECTION ${sec}</div><button onclick="Admin.deleteSection('${cls.id}','${sec}')" class="btn-xs-danger">X</button></div>`});
-            
+            cls.sections.forEach(sec=>{secH+=`<div class="tree-section"><div class="tree-sec-name">SECTION ${sec}</div><button onclick="Admin.deleteSection('${cls.id}','${sec}')" class="btn-xs-danger">X</button></div>`});
             c.innerHTML+=`
             <div class="class-tree-item">
                 <div class="tree-header">
@@ -170,6 +177,7 @@ const Admin = {
         const n=document.getElementById('new-class-name').value.toUpperCase(); 
         if(n){
             const newClass = {id:'c_'+Date.now(),name:n,sections:['A'],subjects:[]};
+            // FIX: Ensure classes exists
             if (!DB.data.classes) DB.data.classes = [];
             DB.data.classes.push(newClass);
             DB.save();
