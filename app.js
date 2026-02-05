@@ -1,5 +1,5 @@
 /* ==========================================================================
-   APP ENGINE (v99.0) - A4 PRINT PERFECT
+   APP ENGINE (v100.0) - A4 MASTER FIX
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
@@ -129,10 +129,11 @@ const ReportEngine = {
         const qInp = (id, v, max) => a ? `<div style="display:flex;align-items:center;justify-content:center;gap:4px;"><input type="number" id="${id}" class="inp-mark" value="${v||''}" style="width:60px; text-align:center; margin:0; padding:5px; height:35px;" max="${max}" oninput="if(parseInt(this.value)>${max}) this.value=${max}"><span style="font-size:12px; font-weight:bold;">/${max}</span></div>` : `<span style="font-weight:bold;">${v||'-'} / ${max}</span>`;
         const box = (id, v) => a ? `<textarea id="${id}" class="inp-mark" style="width:100%; min-height:40px; border:none; resize:none; background:transparent;" oninput="this.style.height='';this.style.height=this.scrollHeight+'px'">${v||''}</textarea>` : `<div style="padding:5px;white-space:pre-wrap;">${v||''}</div>`;
         
-        // --- SAFE ZONE CALCULATION ---
-        // Top padding is 180px. Bottom padding 80px.
-        // Available space = 1123 - 180 - 80 = 863px.
-        const LIMIT = 850; 
+        // --- PRECISE LIMITS FOR A4 SIZE (In Pixels roughly: 1123px total) ---
+        // Header space used = ~180px. Footer space used = ~100px.
+        // Usable space = 1123 - 180 - 100 = 843px.
+        // We set LIMIT to 830px to be safe.
+        const LIMIT = 830; 
         const FOOTER_REQUIRED_SPACE = 280; 
         
         let pg = ReportEngine.pg(), cnt = pg.querySelector('.content-area');
@@ -189,7 +190,7 @@ const ReportEngine = {
         cnt.innerHTML += `<div class="footer-block"><div class="quant-header">Quantitative</div><table class="report-table"><tr><th>1st Term</th><th>2nd Term</th><th>Mid Term</th><th>Total</th><th>%</th></tr><tr><td style="text-align:center;">${qInp('sc1',m.sc1, qT.t1)}</td><td style="text-align:center;">${qInp('sc2',m.sc2, qT.t2)}</td><td style="text-align:center;">${qInp('sc3',m.sc3, qT.mid)}</td><td style="text-align:center;">${qInp('sc4',m.sc4, qT.tot)}</td><td style="text-align:center;">${qInp('sc5',m.sc5, 100)}</td></tr></table><div class="remarks-box"><div class="remarks-label">TEACHER REMARKS</div>${box('rem',m.rem)}</div></div>`;
         container.appendChild(pg); return container.innerHTML;
     },
-    // NEW PAGE GENERATOR WITH HTML HEADER/FOOTER AND LION
+    // NEW PAGE GENERATOR (Using logo2.png and background.png)
     pg: () => { 
         const d = document.createElement('div'); 
         d.className = 'report-page'; 
