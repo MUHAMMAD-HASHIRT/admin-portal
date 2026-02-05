@@ -26,6 +26,7 @@
 
 body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-main); height: 100vh; overflow: hidden; transition: all 0.3s ease; }
 
+/* UTILITIES */
 .hidden { display: none !important; }
 .btn { padding: 10px 18px; border: none; border-radius: var(--radius-md); cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
 .btn:active { transform: scale(0.98); }
@@ -61,20 +62,20 @@ input:focus { outline: none; border-color: var(--accent); }
 .data-table td { padding: 14px 16px; border-bottom: 1px solid rgba(0,0,0,0.05); color: var(--text-main); }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
 
-/* TREE VIEW */
+/* TREE STRUCTURE */
 .class-tree-item { margin-bottom: 16px; border-radius: var(--radius-md); overflow: hidden; background: var(--glass-card); border: var(--glass-border); box-shadow: var(--shadow-sm); }
 .tree-header { background: rgba(0,0,0,0.03); color: var(--text-main); padding: 14px 20px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.05); }
 .tree-subjects { padding: 15px 20px; background: transparent; border-bottom: 1px solid rgba(0,0,0,0.05); }
 .tree-section { padding: 12px 20px; border-bottom: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--text-secondary); }
 .subj-tag { display: inline-flex; align-items: center; background: rgba(37, 99, 235, 0.1); color: var(--accent); padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-right: 6px; margin-bottom: 6px; border: 1px solid rgba(37, 99, 235, 0.2); }
 
-/* TEMPLATE */
+/* TEMPLATE BUILDER */
 .template-container { display: flex; gap: 20px; height: 100%; flex-direction: row; }
 .preview-label { text-align: center; font-weight: bold; color: var(--text-secondary); margin-bottom: 10px; }
 #preview-wrapper { width: 100%; display: flex; justify-content: center; background: #d1d5db; padding: 20px; border-radius: 8px; }
 #editor-preview { transform: scale(0.75); transform-origin: top center; width: 794px; min-height: 1123px; background: white; margin: 0 auto; color: black; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
 
-/* LOGIN */
+/* LOGIN SCREEN */
 #app-login { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at top right, #1e293b, #0f172a); display: flex; align-items: center; justify-content: center; z-index: 10000; }
 #app-login::before { content: ''; position: absolute; width: 120%; height: 120%; background: radial-gradient(circle, rgba(37,99,235,0.1) 0%, transparent 60%); top: -50%; left: -50%; z-index: -1; }
 .login-box { background: rgba(255, 255, 255, 1); width: 380px; padding: 40px; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); text-align: center; border: 1px solid rgba(255,255,255,0.1); position: relative; overflow: hidden; }
@@ -84,7 +85,7 @@ input:focus { outline: none; border-color: var(--accent); }
 .login-header h2 { margin: 10px 0 5px; color: var(--text-main); font-family: 'Poppins', sans-serif; font-weight: 700; } 
 .login-footer { margin-top: 30px; font-size: 12px; color: var(--text-secondary); }
 
-/* MOBILE */
+/* MOBILE RESPONSIVE */
 .mobile-menu-btn { display: none; background: none; border: none; font-size: 24px; color: var(--text-main); cursor: pointer; padding: 5px; }
 .overlay-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 55; }
 @media screen and (max-width: 768px) {
@@ -103,7 +104,7 @@ input:focus { outline: none; border-color: var(--accent); }
     .login-box { width: 85%; padding: 30px 20px; }
 }
 
-/* --- REPLICA PAGE STRUCTURE --- */
+/* --- A4 REPORT PAGE CONFIGURATION --- */
 .report-page, .details-page { 
     width: 794px; 
     height: 1123px; 
@@ -115,15 +116,15 @@ input:focus { outline: none; border-color: var(--accent); }
     position: relative; 
     overflow: hidden; 
     color: #1d1d1f; 
-    padding: 0; 
+    padding: 0; /* Reset padding to handle absolute positioning */
 }
 
-/* HEADER (Matches uploaded image exactly) */
+/* 1. HEADER (Top Right Logo + Line) */
 .page-header {
     position: absolute;
     top: 40px;
     right: 40px;
-    width: 350px;
+    width: 350px; /* Space for logo */
     height: 90px;
     display: flex;
     justify-content: flex-end;
@@ -133,62 +134,64 @@ input:focus { outline: none; border-color: var(--accent); }
     height: 100%;
     object-fit: contain;
 }
-/* Header Blue Line */
+/* Blue Line Under Header */
 .page-header::after {
     content: '';
     position: absolute;
     bottom: 0;
-    right: -40px; /* To edge */
-    width: 794px;
+    right: -40px; /* Extend to edge */
+    width: 794px; /* Full width */
     height: 2px;
     background: #002060;
 }
 
-/* FOOTER (Matches uploaded image exactly) */
+/* 2. FOOTER (Bottom Blue Line) */
 .page-footer {
     position: absolute;
     bottom: 50px;
-    left: 40px;
-    right: 40px;
+    left: 0;
+    width: 100%;
     height: 2px;
     background: #002060;
     z-index: 20;
 }
-/* Footer Blue Line Extension */
+/* Extend visually if needed */
 .page-footer::before {
     content: '';
     position: absolute;
     top: 0;
-    left: -40px;
-    width: 794px;
+    left: 0;
+    width: 100%;
     height: 2px;
     background: #002060;
 }
 
-/* LION BACKGROUND (Fixed Visibility) */
+/* 3. LION WATERMARK (Fixed: High Visibility & Correct Layer) */
 .layer-lion { 
     position: absolute; 
     top: 50%; 
     left: 50%; 
     transform: translate(-50%, -50%); 
-    width: 70%; 
-    opacity: 50; /* INCREASED VISIBILITY HERE */
+    width: 65%; /* Adjusted size */
+    opacity: 0.06; /* VERY FAINT (6%) - Like a real watermark */
     pointer-events: none; 
-    z-index: 5; 
+    z-index: 0; /* Behind everything */
 }
 
-/* CONTENT */
-.content-area { 
+/* 4. CONTENT AREA (Safe Zone) */
+.content-area, .details-content { 
     position: absolute;
-    top: 150px; 
-    left: 50px;
-    right: 50px;
-    bottom: 80px; 
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* PADDING IS KEY: Top 180px clears the header. Bottom 80px clears footer. */
+    padding: 180px 50px 80px 50px; 
     box-sizing: border-box; 
-    z-index: 10;
+    z-index: 10; /* Above the lion */
 }
 
-/* REPORT STYLES */
+/* Report Internal Styles */
 .cover-page { background-image: url('cover.jpg'); background-size: cover; }
 .cover-field { position: absolute; left: 200px; font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 700; color: #002060; text-transform: uppercase; }
 .cover-name { bottom: 135px; } .cover-class { bottom: 75px; }
@@ -196,18 +199,33 @@ input:focus { outline: none; border-color: var(--accent); }
 .dt-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; border-bottom: 1px solid #eee; }
 .main-title { font-size: 14pt; font-weight: bold; color: #002060; text-transform: uppercase; margin-bottom: 5px; }
 .sub-title { font-size: 11pt; font-weight: normal; color: #002060; text-transform: uppercase; margin-bottom: 8px; border-bottom: 1px solid #ccc; padding-bottom:5px; }
-.description { font-size: 10pt; line-height: 1.3; color: #333; margin-bottom: 15px; text-align: justify; white-space: pre-wrap; width: 98%; }
-.report-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+.description { font-size: 10pt; line-height: 1.3; color: #333; margin-bottom: 15px; text-align: justify; white-space: pre-wrap; width: 100%; }
+.report-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; background: rgba(255,255,255,0.8); }
 .report-table th, .report-table td { border: 1px solid #8FAADC; padding: 6px; }
 .main-header th { background: #002060; color: white; font-size: 10pt; text-align: left; }
-.section-row td { background: rgba(233, 239, 247, 0.85); color: #002060; font-weight: bold; font-size: 12pt; }
+.section-row td { background: rgba(233, 239, 247, 0.95); color: #002060; font-weight: bold; font-size: 12pt; }
 .data-row td { font-size: 10pt; color: #002060; padding: 8px; }
 .check-box { text-align: center; color: #002060; font-weight: bold; }
 .quant-header { background: #002060; color: white; font-weight: bold; padding: 5px; font-size: 10pt; }
 
-.footer-block { margin-top: 20px; padding-top: 10px; break-inside: avoid; page-break-inside: avoid; background: transparent; }
-.remarks-box { margin-top: 15px; border: 2px solid #002060; min-height: 100px; background: rgba(255,255,255,0.5); padding: 35px 10px 10px 10px; font-size: 10pt; position: relative; }
-.remarks-label { position: absolute; top: 0; left: 0; width: 100%; font-size: 10pt; font-weight: bold; color: #002060; padding: 5px; border-bottom: 1px solid #002060; background: rgba(255,255,255,0.8); }
+/* Footer Block */
+.footer-block { 
+    margin-top: 20px; 
+    padding-top: 10px; 
+    break-inside: avoid; 
+    page-break-inside: avoid; 
+    background: transparent;
+}
+.remarks-box { 
+    margin-top: 15px; 
+    border: 2px solid #002060; 
+    min-height: 100px; 
+    background: rgba(255,255,255,0.7); 
+    padding: 35px 10px 10px 10px; 
+    font-size: 10pt; 
+    position: relative; 
+}
+.remarks-label { position: absolute; top: 0; left: 0; width: 100%; font-size: 10pt; font-weight: bold; color: #002060; padding: 5px; border-bottom: 1px solid #002060; background: rgba(255,255,255,0.9); }
 .rubric-title { font-size: 20px; font-weight: 800; color: #002060; margin-bottom: 25px; }
 .rubric-text { font-size: 13px; text-align: justify; margin-bottom: 25px; color: #333; }
 .rubric-table th { background: #a0a0a0 !important; color: #002060 !important; padding: 12px; font-weight: 800; -webkit-print-color-adjust: exact; }
@@ -224,4 +242,3 @@ input:focus { outline: none; border-color: var(--accent); }
     .report-page, .cover-page, .details-page { margin: 0; box-shadow: none; width: 794px; height: 1122px; break-after: page; page-break-after: always; position: relative; overflow: hidden; transform-origin: top left; }
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 }
-
