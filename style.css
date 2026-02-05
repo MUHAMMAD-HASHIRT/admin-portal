@@ -53,24 +53,43 @@ input:focus { outline: none; border-color: var(--accent); }
 .main-content { margin-left: 260px; margin-top: 70px; padding: 40px; height: calc(100vh - 70px); overflow-y: auto; }
 
 /* COMPONENTS */
-.card { background: var(--glass-card); border-radius: 16px; padding: 30px; box-shadow: var(--shadow-sm); border: var(--glass-border); margin-bottom: 24px; }
+.card { background: var(--glass-card); border-radius: 16px; padding: 30px; box-shadow: var(--shadow-sm); border: var(--glass-border); margin-bottom: 24px; position: relative; }
 .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .data-table th { text-align: left; padding: 12px 16px; background: rgba(0,0,0,0.02); color: var(--text-secondary); font-weight: 600; font-size: 12px; text-transform: uppercase; border-bottom: 1px solid rgba(0,0,0,0.05); }
 .data-table td { padding: 14px 16px; border-bottom: 1px solid rgba(0,0,0,0.05); color: var(--text-main); }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
 
-/* TREE */
-.class-tree-item { margin-bottom: 16px; border-radius: var(--radius-md); overflow: hidden; background: var(--glass-card); border: var(--glass-border); box-shadow: var(--shadow-sm); }
-.tree-header { background: rgba(0,0,0,0.03); color: var(--text-main); padding: 14px 20px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.05); }
-.tree-subjects { padding: 15px 20px; background: transparent; border-bottom: 1px solid rgba(0,0,0,0.05); }
-.tree-section { padding: 12px 20px; border-bottom: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--text-secondary); }
-.subj-tag { display: inline-flex; align-items: center; background: rgba(37, 99, 235, 0.1); color: var(--accent); padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-right: 6px; margin-bottom: 6px; border: 1px solid rgba(37, 99, 235, 0.2); }
-
-/* TEMPLATE */
+/* TEMPLATE PREVIEW STYLES */
 .template-container { display: flex; gap: 20px; height: 100%; flex-direction: row; }
+.preview-card { display: flex; flex-direction: column; overflow: hidden; position: relative; }
 .preview-label { text-align: center; font-weight: bold; color: var(--text-secondary); margin-bottom: 10px; }
-#preview-wrapper { width: 100%; display: flex; justify-content: center; background: #d1d5db; padding: 20px; border-radius: 8px; }
-#editor-preview { transform: scale(0.42); transform-origin: top center; width: 210mm; min-height: 297mm; background: white; margin: 0 auto; color: black; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+
+/* NEW: Zoom Controls */
+.zoom-controls { position: absolute; top: 20px; right: 20px; display: flex; gap: 5px; z-index: 100; background: var(--glass-card); padding: 5px; border-radius: 8px; border: var(--glass-border); box-shadow: var(--shadow-sm); }
+.zoom-val { font-size: 12px; font-weight: bold; padding: 5px 10px; display: flex; align-items: center; min-width: 40px; justify-content: center; }
+
+#preview-wrapper { 
+    width: 100%; 
+    height: 100%; 
+    display: flex; 
+    justify-content: center; 
+    background: #d1d5db; 
+    padding: 40px; 
+    border-radius: 8px; 
+    overflow: auto; /* ALLOWS SCROLLING WHEN ZOOMED IN */
+}
+
+#editor-preview { 
+    transform: scale(0.42); 
+    transform-origin: top center; 
+    width: 794px; 
+    min-height: 1123px; 
+    background: white; 
+    margin: 0 auto; 
+    color: black; 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
+    transition: transform 0.2s ease; /* Smooth zoom */
+}
 
 /* LOGIN SCREEN */
 #app-login { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at top right, #1e293b, #0f172a); display: flex; align-items: center; justify-content: center; z-index: 10000; }
@@ -95,11 +114,11 @@ input:focus { outline: none; border-color: var(--accent); }
     .login-box { width: 85%; padding: 30px 20px; }
 }
 
-/* --- A4 REPORT PAGE (FIXED) --- */
+/* --- REPORT PAGE (V94 Logic - Image Based) --- */
 .report-page, .details-page { 
-    width: 210mm; 
-    height: 296mm; /* Exact A4 */
-    background: white !important; /* CRITICAL: PREVENTS PAGES MIXING */
+    width: 794px; 
+    height: 1123px; 
+    background: white !important; 
     box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
     margin-bottom: 40px; 
     flex-shrink: 0; 
@@ -112,39 +131,18 @@ input:focus { outline: none; border-color: var(--accent); }
     break-after: page;
 }
 
-/* 1. HEADER/FOOTER FRAME (Layer 5) */
-.layer-frame { 
-    position: absolute; 
-    top: 0; left: 0; 
-    width: 100%; height: 100%; 
-    z-index: 5; /* Behind text, above lion */
-    pointer-events: none; 
-}
+.layer-frame { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; pointer-events: none; }
+.layer-lion { position: absolute; top: 54%; left: 50%; transform: translate(-50%, -50%); width: 85%; opacity: 0.15; pointer-events: none; z-index: 1; }
 
-/* 2. LION WATERMARK (Layer 1) */
-.layer-lion { 
-    position: absolute; 
-    top: 54%; left: 50%; 
-    transform: translate(-50%, -50%); 
-    width: 85%; 
-    opacity: 0.15; 
-    pointer-events: none; 
-    z-index: 1; /* Bottom Layer */
-}
-
-/* 3. CONTENT AREA (Layer 10) */
 .content-area, .details-content { 
     position: relative;
-    z-index: 10; /* Top Layer */
+    z-index: 10; 
     width: 100%; height: 100%;
-    /* PADDING IS KEY: Keeps text away from the image lines */
-    /* Top: 180px, Bottom: 100px */
     padding: 180px 50px 100px 50px; 
     box-sizing: border-box; 
     background: transparent !important;
 }
 
-/* REPORT ELEMENTS */
 .cover-page { background-image: url('cover.jpg'); background-size: cover; z-index: 100; }
 .cover-field { position: absolute; left: 200px; font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 700; color: #002060; text-transform: uppercase; }
 .cover-name { bottom: 135px; } .cover-class { bottom: 75px; }
@@ -179,16 +177,8 @@ input:focus { outline: none; border-color: var(--accent); }
 @media print {
     .inp-mark { outline: none !important; }
     @page { size: A4 portrait; margin: 0; }
-    body { background: white; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .no-print-bar, .navbar, .sidebar, .login-wrapper, #app-login, .mobile-menu-btn { display: none !important; }
-    .print-container { margin: 0 !important; width: 210mm; }
-    
-    .report-page, .cover-page, .details-page { 
-        margin: 0; box-shadow: none; 
-        width: 210mm; height: 296mm; 
-        page-break-after: always; break-after: page; 
-        position: relative; overflow: hidden; 
-        transform-origin: top left;
-        background: white !important; /* Force separate pages */
-    }
+    body { background: white; margin: 0; padding: 0; }
+    .no-print-bar, .navbar, .sidebar, .login-wrapper, #app-login, .mobile-menu-btn, .zoom-controls { display: none !important; }
+    .print-container { margin: 0 !important; }
+    .report-page, .cover-page, .details-page { margin: 0; box-shadow: none; width: 794px; height: 1123px; page-break-after: always; break-after: page; position: relative; overflow: hidden; transform-origin: top left; background: white !important; }
 }
