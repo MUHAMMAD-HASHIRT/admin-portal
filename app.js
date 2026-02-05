@@ -1,5 +1,5 @@
 /* ==========================================================================
-   APP ENGINE (v87.0) - GENERATOR & UNIQUE ID
+   APP ENGINE (v88.0) - SECURITY & GENERATOR
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
@@ -36,7 +36,7 @@ const DB = {
         if (!val.subjects) val.subjects = {};
         if (!val.assignments) val.assignments = [];
         if (!val.marks) val.marks = {};
-        if (!val.users) val.users = DB.defaults.users; // Ensure users exist
+        if (!val.users) val.users = DB.defaults.users;
         val.classes.forEach(c => { if (!c.subjects) c.subjects = []; if (!c.sections) c.sections = []; if (!Array.isArray(c.subjects)) c.subjects = []; });
         return val;
     },
@@ -60,7 +60,7 @@ const DB = {
 /* --- UI ROUTER --- */
 const UI = { show: (id) => { document.querySelectorAll('.page-section').forEach(e => e.classList.add('hidden')); document.getElementById('view-' + id)?.classList.remove('hidden'); if(id === 'admin-dashboard') Admin.loadDashboard(); if(id === 'admin-classes') Admin.loadClassesHierarchy(); if(id === 'admin-teachers') Admin.loadTeachers(); if(id === 'admin-students') Admin.loadStudents(); if(id === 'admin-template') Template.initSelect(); if(id === 'teacher-dashboard') Teacher.init(); } };
 
-/* --- AUTH --- */
+/* --- AUTH (WITH ANIMATION) --- */
 const Auth = {
     user: null,
     check: () => {
