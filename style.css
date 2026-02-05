@@ -114,7 +114,7 @@ input:focus { outline: none; border-color: var(--accent); }
     .login-box { width: 85%; padding: 30px 20px; }
 }
 
-/* --- REPORT PAGE --- */
+/* --- REPORT PAGE (MAXIMIZED SPACE) --- */
 .report-page, .details-page { 
     width: 794px; 
     height: 1123px; 
@@ -138,8 +138,8 @@ input:focus { outline: none; border-color: var(--accent); }
     position: relative;
     z-index: 50; 
     width: 100%; height: 100%;
-    /* MINIMIZED GAP: Reduced top padding from 180px to 130px */
-    padding: 130px 50px 100px 50px; 
+    /* MINIMIZED GAP: Top padding 110px pushes text up. Bottom 60px clears footer line. */
+    padding: 110px 50px 60px 50px; 
     box-sizing: border-box; 
     background: transparent !important;
 }
@@ -164,7 +164,7 @@ input:focus { outline: none; border-color: var(--accent); }
 .quant-header { background: #002060; color: white; font-weight: bold; padding: 5px; font-size: 10pt; }
 
 .footer-block { margin-top: 20px; padding-top: 10px; break-inside: avoid; page-break-inside: avoid; background: transparent; }
-.remarks-box { margin-top: 15px; border: 2px solid #002060; min-height: 100px; background: rgba(255,255,255,0.7); padding: 35px 10px 10px 10px; font-size: 10pt; position: relative; }
+.remarks-box { margin-top: 15px; border: 2px solid #002060; min-height: 80px; background: rgba(255,255,255,0.7); padding: 35px 10px 10px 10px; font-size: 10pt; position: relative; }
 .remarks-label { position: absolute; top: 0; left: 0; width: 100%; font-size: 10pt; font-weight: bold; color: #002060; padding: 5px; border-bottom: 1px solid #002060; background: rgba(255,255,255,0.9); }
 
 .rubric-title { font-size: 20px; font-weight: 800; color: #002060; margin-bottom: 25px; }
