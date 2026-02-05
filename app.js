@@ -1,5 +1,5 @@
 /* ==========================================================================
-   APP ENGINE (v100.0) - A4 MASTER FIX
+   APP ENGINE (v101.0) - SOLID BACKGROUNDS & SAFE ZONES
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
@@ -107,7 +107,7 @@ const Auth = {
     logout: () => { sessionStorage.clear(); location.reload(); }
 };
 
-/* --- REPORT ENGINE (REPLICA HTML HEADER/FOOTER) --- */
+/* --- REPORT ENGINE (SAFE PADDING LOGIC) --- */
 const ReportEngine = {
     calcAvg: (classId, section, field) => { const students = DB.data.students.filter(s => s.classId === classId && s.section === section); if(!students.length) return 0; const total = students.reduce((sum, s) => sum + (parseFloat(s[field]) || 0), 0); return (total / students.length).toFixed(1); },
     radioBehavior: (el) => { if (el.checked) { const rowId = el.id.split('c')[0]; for(let i=1; i<=4; i++) { const siblingId = rowId + 'c' + i; const sibling = document.getElementById(siblingId); if (sibling && sibling !== el) { sibling.checked = false; } } } },
@@ -129,11 +129,11 @@ const ReportEngine = {
         const qInp = (id, v, max) => a ? `<div style="display:flex;align-items:center;justify-content:center;gap:4px;"><input type="number" id="${id}" class="inp-mark" value="${v||''}" style="width:60px; text-align:center; margin:0; padding:5px; height:35px;" max="${max}" oninput="if(parseInt(this.value)>${max}) this.value=${max}"><span style="font-size:12px; font-weight:bold;">/${max}</span></div>` : `<span style="font-weight:bold;">${v||'-'} / ${max}</span>`;
         const box = (id, v) => a ? `<textarea id="${id}" class="inp-mark" style="width:100%; min-height:40px; border:none; resize:none; background:transparent;" oninput="this.style.height='';this.style.height=this.scrollHeight+'px'">${v||''}</textarea>` : `<div style="padding:5px;white-space:pre-wrap;">${v||''}</div>`;
         
-        // --- PRECISE LIMITS FOR A4 SIZE (In Pixels roughly: 1123px total) ---
-        // Header space used = ~180px. Footer space used = ~100px.
-        // Usable space = 1123 - 180 - 100 = 843px.
-        // We set LIMIT to 830px to be safe.
-        const LIMIT = 830; 
+        // --- SAFE ZONE CALCULATION (UPDATED FOR 200px TOP PADDING) ---
+        // Top Padding = 200px. Bottom Padding = 80px. Total Height = ~1123px.
+        // Available Space = 1123 - 200 - 80 = 843px.
+        // LIMIT set to 820px for safety.
+        const LIMIT = 820; 
         const FOOTER_REQUIRED_SPACE = 280; 
         
         let pg = ReportEngine.pg(), cnt = pg.querySelector('.content-area');
@@ -148,12 +148,10 @@ const ReportEngine = {
             t.items.forEach((i, idx) => { 
                 const h = i.type === 'header' ? 45 : 35; 
                 
-                // PAGE BREAK CHECK
                 if (i.type === 'break' || y + h > LIMIT) { 
                     container.appendChild(pg); 
                     pg = ReportEngine.pg(); 
                     cnt = pg.querySelector('.content-area'); 
-                    // Add Title only
                     y = ReportEngine.addHeader(cnt, t.title, "", ""); 
                     
                     tbl = ReportEngine.createTable(); 
@@ -178,19 +176,17 @@ const ReportEngine = {
             });
         }
 
-        // --- FOOTER OVERLAP CHECK ---
+        // FOOTER CHECK
         if (y + FOOTER_REQUIRED_SPACE > LIMIT) { 
             container.appendChild(pg); 
             pg = ReportEngine.pg(); 
             cnt = pg.querySelector('.content-area'); 
-            // Header for footer-only page
             ReportEngine.addHeader(cnt, t.title, "", "");
         }
         
         cnt.innerHTML += `<div class="footer-block"><div class="quant-header">Quantitative</div><table class="report-table"><tr><th>1st Term</th><th>2nd Term</th><th>Mid Term</th><th>Total</th><th>%</th></tr><tr><td style="text-align:center;">${qInp('sc1',m.sc1, qT.t1)}</td><td style="text-align:center;">${qInp('sc2',m.sc2, qT.t2)}</td><td style="text-align:center;">${qInp('sc3',m.sc3, qT.mid)}</td><td style="text-align:center;">${qInp('sc4',m.sc4, qT.tot)}</td><td style="text-align:center;">${qInp('sc5',m.sc5, 100)}</td></tr></table><div class="remarks-box"><div class="remarks-label">TEACHER REMARKS</div>${box('rem',m.rem)}</div></div>`;
         container.appendChild(pg); return container.innerHTML;
     },
-    // NEW PAGE GENERATOR (Using logo2.png and background.png)
     pg: () => { 
         const d = document.createElement('div'); 
         d.className = 'report-page'; 
@@ -207,7 +203,7 @@ const ReportEngine = {
     buildAndOpen: (sid, subIds) => { const s = DB.data.students.find(x => x.id === sid); const cls = DB.data.classes.find(c => c.id === s.classId); const cover = `<div class="cover-page"><div class="cover-field cover-name">${s.name}</div><div class="cover-field cover-class">${cls.name} - ${s.section}</div></div>`; const details = ReportEngine.generateDetailsPage(s); const rubric = ReportEngine.generateRubricPage(); let reports = ''; subIds.forEach(id => { const sub = DB.data.subjects[id]; if (sub) { const m = (DB.data.marks[sid] && DB.data.marks[sid][id]) ? DB.data.marks[sid][id] : {}; reports += ReportEngine.render(null, sub.template, m, false); } }); const w = window.open('', '_blank'); w.document.write(`<html><head><title>${s.name}</title><link rel="stylesheet" href="style.css"></head><body><div class="no-print-bar" style="background:#333;padding:10px;text-align:center;"><button onclick="window.print()" class="btn btn-success">PRINT PDF</button></div><div class="print-container">${cover}${details}${rubric}${reports}</div></body></html>`); w.document.close(); }
 };
 
-/* --- ADMIN (SAME) --- */
+/* --- ADMIN --- */
 const Admin = {
     refreshDropdowns: () => { const ids = ['subject-class-select', 'stu-class-select', 'assign-class-select', 'tpl-class-select']; ids.forEach(id => { const el = document.getElementById(id); if(!el) return; const cv = el.value; el.innerHTML = '<option value="">SELECT GRADE</option>'; DB.data.classes.forEach(c => el.innerHTML += `<option value="${c.id}">${c.name}</option>`); if(cv) el.value = cv; }); },
     loadDashboard: () => { const t = document.getElementById('admin-status-table'); if(!t) return; t.innerHTML = ''; let hasStudents = false; DB.data.classes.forEach(cls => { const classStudents = DB.data.students.filter(s => s.classId === cls.id); if (classStudents.length > 0) hasStudents = true; classStudents.forEach(s => { let btns = '', cCount = 0; if(cls.subjects) { cls.subjects.forEach(sid => { const m = (DB.data.marks[s.id] && DB.data.marks[s.id][sid]); if(m && m.completed) cCount++; const sub = DB.data.subjects[sid]; if(sub) { const btnColor = (m && m.completed) ? '#10b981' : '#cbd5e1'; const txtColor = (m && m.completed) ? 'white' : '#333'; btns += `<button onclick="ReportEngine.openPrintView(${s.id}, '${sid}')" class="btn btn-sm" style="background:${btnColor}; color:${txtColor}; margin-right:4px;">${sub.name.substring(0,3)}</button>`; } }); } const st = (cls.subjects && cls.subjects.length > 0 && cCount === cls.subjects.length) ? '<span style="color:#10b981;font-weight:bold">COMPLETED</span>' : '<span style="color:#f59e0b">PENDING</span>'; t.innerHTML += `<tr><td>${s.roll}</td><td>${s.name}</td><td>${cls.name} (${s.section || 'A'})</td><td>${st}</td><td><button onclick="ReportEngine.openFullPrintView(${s.id})" class="btn btn-sm btn-primary">FULL REPORT</button> ${btns}</td></tr>`; }); }); if (!hasStudents) { t.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:30px; color:#64748b;">No students found. <br><button onclick="UI.show('admin-students')" class="btn btn-sm btn-accent" style="margin-top:10px;">+ Register Student</button></td></tr>`; } },
