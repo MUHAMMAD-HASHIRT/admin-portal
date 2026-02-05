@@ -1,5 +1,5 @@
 /* ==========================================================================
-   APP ENGINE (v91.0) - PRINT LAYOUT FIX
+   APP ENGINE (v94.0) - NO OVERLAP + PRO SUITE
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
@@ -107,7 +107,7 @@ const Auth = {
     logout: () => { sessionStorage.clear(); location.reload(); }
 };
 
-/* --- REPORT ENGINE (FIXED LAYOUT & BREAKS) --- */
+/* --- REPORT ENGINE (PRECISE LAYOUT MATH) --- */
 const ReportEngine = {
     calcAvg: (classId, section, field) => { const students = DB.data.students.filter(s => s.classId === classId && s.section === section); if(!students.length) return 0; const total = students.reduce((sum, s) => sum + (parseFloat(s[field]) || 0), 0); return (total / students.length).toFixed(1); },
     radioBehavior: (el) => { if (el.checked) { const rowId = el.id.split('c')[0]; for(let i=1; i<=4; i++) { const siblingId = rowId + 'c' + i; const sibling = document.getElementById(siblingId); if (sibling && sibling !== el) { sibling.checked = false; } } } },
@@ -129,14 +129,13 @@ const ReportEngine = {
         const qInp = (id, v, max) => a ? `<div style="display:flex;align-items:center;justify-content:center;gap:4px;"><input type="number" id="${id}" class="inp-mark" value="${v||''}" style="width:60px; text-align:center; margin:0; padding:5px; height:35px;" max="${max}" oninput="if(parseInt(this.value)>${max}) this.value=${max}"><span style="font-size:12px; font-weight:bold;">/${max}</span></div>` : `<span style="font-weight:bold;">${v||'-'} / ${max}</span>`;
         const box = (id, v) => a ? `<textarea id="${id}" class="inp-mark" style="width:100%; min-height:40px; border:none; resize:none; background:transparent;" oninput="this.style.height='';this.style.height=this.scrollHeight+'px'">${v||''}</textarea>` : `<div style="padding:5px;white-space:pre-wrap;">${v||''}</div>`;
         
-        // --- LAYOUT CONSTANTS ---
-        const LIMIT = 980; // Decreased from 1080 to prevent footer overlap
-        const FOOTER_H = 350; // Increased size to account for Remarks Box
+        // --- PRECISE LIMITS FOR A4 SIZE ---
+        const LIMIT = 950; // Use 950px as safe content area (Total A4 is ~1123px)
+        const FOOTER_REQUIRED_SPACE = 300; // Marks + Remarks need approx 300px
         
         let pg = ReportEngine.pg(), cnt = pg.querySelector('.content-area');
         let y = ReportEngine.addHeader(cnt, t.title, t.sub, t.desc); 
         
-        // Smart Table Logic
         if (t.items && t.items.length > 0) {
             let tbl = ReportEngine.createTable(); 
             cnt.appendChild(tbl); 
@@ -146,13 +145,10 @@ const ReportEngine = {
             t.items.forEach((i, idx) => { 
                 const h = i.type === 'header' ? 45 : 35; 
                 
-                // PAGE BREAK CHECK
                 if (i.type === 'break' || y + h > LIMIT) { 
                     container.appendChild(pg); 
                     pg = ReportEngine.pg(); 
                     cnt = pg.querySelector('.content-area'); 
-                    
-                    // RE-ADD TITLE ON NEW PAGE
                     y = ReportEngine.addHeader(cnt, t.title + " (Continued)", "", ""); 
                     
                     tbl = ReportEngine.createTable(); 
@@ -160,7 +156,7 @@ const ReportEngine = {
                     tbody = tbl.querySelector('tbody'); 
                     y += 40; 
                     
-                    if (i.type === 'break') return; // Skip rendering the break item itself
+                    if (i.type === 'break') return; 
                 } 
                 
                 const tr = document.createElement('tr'); 
@@ -177,13 +173,13 @@ const ReportEngine = {
             });
         }
 
-        // FOOTER CHECK
-        if (y + FOOTER_H > LIMIT) { 
+        // --- FOOTER OVERLAP PREVENTION ---
+        // If current position + required footer space > LIMIT, force new page
+        if (y + FOOTER_REQUIRED_SPACE > LIMIT) { 
             container.appendChild(pg); 
             pg = ReportEngine.pg(); 
             cnt = pg.querySelector('.content-area'); 
-            // Header for footer page
-            ReportEngine.addHeader(cnt, t.title + " (Summary)", "", "");
+            // Removed header on split
         }
         
         cnt.innerHTML += `<div class="footer-block"><div class="quant-header">Quantitative</div><table class="report-table"><tr><th>1st Term</th><th>2nd Term</th><th>Mid Term</th><th>Total</th><th>%</th></tr><tr><td style="text-align:center;">${qInp('sc1',m.sc1, qT.t1)}</td><td style="text-align:center;">${qInp('sc2',m.sc2, qT.t2)}</td><td style="text-align:center;">${qInp('sc3',m.sc3, qT.mid)}</td><td style="text-align:center;">${qInp('sc4',m.sc4, qT.tot)}</td><td style="text-align:center;">${qInp('sc5',m.sc5, 100)}</td></tr></table><div class="remarks-box"><div class="remarks-label">TEACHER REMARKS</div>${box('rem',m.rem)}</div></div>`;
