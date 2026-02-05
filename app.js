@@ -1,5 +1,5 @@
 /* ==========================================================================
-   APP ENGINE (v108.0) - MAX SPACE & CLEAN CONTINUATION
+   APP ENGINE (v109.0) - ADMIN UI & PRINT FIXES
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
@@ -129,9 +129,9 @@ const ReportEngine = {
         const qInp = (id, v, max) => a ? `<div style="display:flex;align-items:center;justify-content:center;gap:4px;"><input type="number" id="${id}" class="inp-mark" value="${v||''}" style="width:60px; text-align:center; margin:0; padding:5px; height:35px;" max="${max}" oninput="if(parseInt(this.value)>${max}) this.value=${max}"><span style="font-size:12px; font-weight:bold;">/${max}</span></div>` : `<span style="font-weight:bold;">${v||'-'} / ${max}</span>`;
         const box = (id, v) => a ? `<textarea id="${id}" class="inp-mark" style="width:100%; min-height:40px; border:none; resize:none; background:transparent;" oninput="this.style.height='';this.style.height=this.scrollHeight+'px'">${v||''}</textarea>` : `<div style="padding:5px;white-space:pre-wrap;">${v||''}</div>`;
         
-        // --- OPTIMIZED PAGE LIMITS ---
-        const LIMIT = 940; // MAXIMIZED writing space
-        const FOOTER_REQUIRED_SPACE = 200; // MINIMIZED footer reservation
+        // --- SAFE ZONE CALCULATION ---
+        const LIMIT = 960; // Maximize usage
+        const FOOTER_REQUIRED_SPACE = 200; 
         
         let pg = ReportEngine.pg(), cnt = pg.querySelector('.content-area');
         let y = ReportEngine.addHeader(cnt, t.title, t.sub, t.desc); 
@@ -150,7 +150,7 @@ const ReportEngine = {
                     pg = ReportEngine.pg(); 
                     cnt = pg.querySelector('.content-area'); 
                     
-                    // FIXED: NO HEADER ON PAGE 2
+                    // FIXED: NO SUBJECT HEADING ON PAGE 2
                     y = 20; 
                     
                     tbl = ReportEngine.createTable(); 
@@ -180,7 +180,7 @@ const ReportEngine = {
             container.appendChild(pg); 
             pg = ReportEngine.pg(); 
             cnt = pg.querySelector('.content-area'); 
-            // NO HEADER ON FOOTER PAGE
+            // CLEAN PAGE 2
         }
         
         cnt.innerHTML += `<div class="footer-block"><div class="quant-header">Quantitative</div><table class="report-table"><tr><th>1st Term</th><th>2nd Term</th><th>Mid Term</th><th>Total</th><th>%</th></tr><tr><td style="text-align:center;">${qInp('sc1',m.sc1, qT.t1)}</td><td style="text-align:center;">${qInp('sc2',m.sc2, qT.t2)}</td><td style="text-align:center;">${qInp('sc3',m.sc3, qT.mid)}</td><td style="text-align:center;">${qInp('sc4',m.sc4, qT.tot)}</td><td style="text-align:center;">${qInp('sc5',m.sc5, 100)}</td></tr></table><div class="remarks-box"><div class="remarks-label">TEACHER REMARKS</div>${box('rem',m.rem)}</div></div>`;
