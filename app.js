@@ -1,5 +1,5 @@
 /* ==========================================================================
-   APP ENGINE (v94.0) - NO OVERLAP + PRO SUITE
+   APP ENGINE (v94.0) - NO OVERLAP & PRO SUITE
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
@@ -179,7 +179,7 @@ const ReportEngine = {
             container.appendChild(pg); 
             pg = ReportEngine.pg(); 
             cnt = pg.querySelector('.content-area'); 
-            // Removed header on split
+            // New page for footer starts fresh (No header needed, just the block)
         }
         
         cnt.innerHTML += `<div class="footer-block"><div class="quant-header">Quantitative</div><table class="report-table"><tr><th>1st Term</th><th>2nd Term</th><th>Mid Term</th><th>Total</th><th>%</th></tr><tr><td style="text-align:center;">${qInp('sc1',m.sc1, qT.t1)}</td><td style="text-align:center;">${qInp('sc2',m.sc2, qT.t2)}</td><td style="text-align:center;">${qInp('sc3',m.sc3, qT.mid)}</td><td style="text-align:center;">${qInp('sc4',m.sc4, qT.tot)}</td><td style="text-align:center;">${qInp('sc5',m.sc5, 100)}</td></tr></table><div class="remarks-box"><div class="remarks-label">TEACHER REMARKS</div>${box('rem',m.rem)}</div></div>`;
