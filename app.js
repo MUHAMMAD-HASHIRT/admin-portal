@@ -1,5 +1,5 @@
 /* ==========================================================================
-   APP ENGINE (v97.0) - REPLICA DESIGN (FINAL FIX)
+   APP ENGINE (v99.0) - A4 PRINT PERFECT
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
@@ -130,9 +130,9 @@ const ReportEngine = {
         const box = (id, v) => a ? `<textarea id="${id}" class="inp-mark" style="width:100%; min-height:40px; border:none; resize:none; background:transparent;" oninput="this.style.height='';this.style.height=this.scrollHeight+'px'">${v||''}</textarea>` : `<div style="padding:5px;white-space:pre-wrap;">${v||''}</div>`;
         
         // --- SAFE ZONE CALCULATION ---
-        // Header occupies 130px. Footer start at bottom 60px.
-        // Content Area Height = 1123 - 130 - 60 = 933px.
-        const LIMIT = 900; 
+        // Top padding is 180px. Bottom padding 80px.
+        // Available space = 1123 - 180 - 80 = 863px.
+        const LIMIT = 850; 
         const FOOTER_REQUIRED_SPACE = 280; 
         
         let pg = ReportEngine.pg(), cnt = pg.querySelector('.content-area');
