@@ -1,5 +1,5 @@
 /* ==========================================================================
-   APP ENGINE (v105.0) - RESTORED IMAGE LOADER + SAFETY
+   APP ENGINE (v106.0) - ZOOM ENABLED
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
@@ -107,7 +107,7 @@ const Auth = {
     logout: () => { sessionStorage.clear(); location.reload(); }
 };
 
-/* --- REPORT ENGINE (REVERTED TO IMAGE LOADER) --- */
+/* --- REPORT ENGINE (ZOOM + V94 LOGIC) --- */
 const ReportEngine = {
     calcAvg: (classId, section, field) => { const students = DB.data.students.filter(s => s.classId === classId && s.section === section); if(!students.length) return 0; const total = students.reduce((sum, s) => sum + (parseFloat(s[field]) || 0), 0); return (total / students.length).toFixed(1); },
     radioBehavior: (el) => { if (el.checked) { const rowId = el.id.split('c')[0]; for(let i=1; i<=4; i++) { const siblingId = rowId + 'c' + i; const sibling = document.getElementById(siblingId); if (sibling && sibling !== el) { sibling.checked = false; } } } },
@@ -136,7 +136,6 @@ const ReportEngine = {
         let pg = ReportEngine.pg(), cnt = pg.querySelector('.content-area');
         let y = ReportEngine.addHeader(cnt, t.title, t.sub, t.desc); 
         
-        // Render rows even if empty so header/footer show
         if (t.items && t.items.length > 0) {
             let tbl = ReportEngine.createTable(); 
             cnt.appendChild(tbl); 
@@ -185,7 +184,6 @@ const ReportEngine = {
         cnt.innerHTML += `<div class="footer-block"><div class="quant-header">Quantitative</div><table class="report-table"><tr><th>1st Term</th><th>2nd Term</th><th>Mid Term</th><th>Total</th><th>%</th></tr><tr><td style="text-align:center;">${qInp('sc1',m.sc1, qT.t1)}</td><td style="text-align:center;">${qInp('sc2',m.sc2, qT.t2)}</td><td style="text-align:center;">${qInp('sc3',m.sc3, qT.mid)}</td><td style="text-align:center;">${qInp('sc4',m.sc4, qT.tot)}</td><td style="text-align:center;">${qInp('sc5',m.sc5, 100)}</td></tr></table><div class="remarks-box"><div class="remarks-label">TEACHER REMARKS</div>${box('rem',m.rem)}</div></div>`;
         container.appendChild(pg); return container.innerHTML;
     },
-    // REVERTED TO IMAGE LOADER
     pg: () => { 
         const d = document.createElement('div'); 
         d.className = 'report-page'; 
@@ -301,7 +299,30 @@ const Admin = {
     delStudent: (i) => { if(confirm("Delete?")) { DB.data.students.splice(i, 1); DB.save(); Admin.loadStudents(); } }
 };
 
-const Template = { initSelect:()=>{Admin.refreshDropdowns()}, onClassChange:()=>{const c=document.getElementById('tpl-class-select').value,s=document.getElementById('tpl-subject-select');s.innerHTML='<option>Subj</option>';const cl=DB.data.classes.find(x=>x.id===c);if(cl)cl.subjects.forEach(sid=>{if(DB.data.subjects[sid])s.innerHTML+=`<option value="${sid}">${DB.data.subjects[sid].name}</option>`})}, load:()=>{const sid=document.getElementById('tpl-subject-select').value;if(!sid)return;Template.currentSubjectId=sid;const t=DB.data.subjects[sid].template;document.getElementById('tpl-title').value=t.title;document.getElementById('tpl-sub').value=t.sub;document.getElementById('tpl-desc').value=t.desc;const qt=t.qTotals||{t1:25,t2:25,mid:50,tot:100};document.getElementById('qt-1').value=qt.t1;document.getElementById('qt-2').value=qt.t2;document.getElementById('qt-3').value=qt.mid;document.getElementById('qt-4').value=qt.tot;Template.renderRows(t.items);ReportEngine.render('editor-preview',t,{},false)}, syncToDB:()=>{if(!Template.currentSubjectId)return;const i=[];document.querySelectorAll('#template-rows .row-item').forEach(r=>i.push({type:r.dataset.type,text:r.querySelector('input').value}));const t=DB.data.subjects[Template.currentSubjectId].template;t.title=document.getElementById('tpl-title').value;t.sub=document.getElementById('tpl-sub').value;t.desc=document.getElementById('tpl-desc').value;t.items=i;t.qTotals={t1:document.getElementById('qt-1').value,t2:document.getElementById('qt-2').value,mid:document.getElementById('qt-3').value,tot:document.getElementById('qt-4').value}}, liveUpdate:()=>{if(!Template.currentSubjectId)return;Template.syncToDB();ReportEngine.render('editor-preview',DB.data.subjects[Template.currentSubjectId].template,{},false)}, renderRows:(i)=>{const c=document.getElementById('template-rows');c.innerHTML='';i.forEach((item,idx)=>{c.innerHTML+=`<div class="row-item" data-type="${item.type}" style="display:flex;gap:5px;margin-bottom:5px;"><span style="font-size:10px;width:15px;font-weight:bold;">${item.type[0].toUpperCase()}</span><input value="${item.text||''}" oninput="Template.liveUpdate()"><button onclick="Template.delItem(${idx})" style="color:red;border:none;">x</button></div>`})}, add:(t)=>{if(Template.currentSubjectId){Template.syncToDB();DB.data.subjects[Template.currentSubjectId].template.items.push({type:t,text:''});Template.load()}}, delItem:(i)=>{Template.syncToDB();DB.data.subjects[Template.currentSubjectId].template.items.splice(i,1);Template.load()}, save:()=>{if(Template.currentSubjectId){Template.syncToDB();DB.save();alert('Saved')}} };
+const Template = { 
+    initSelect:()=>{Admin.refreshDropdowns()}, 
+    onClassChange:()=>{const c=document.getElementById('tpl-class-select').value,s=document.getElementById('tpl-subject-select');s.innerHTML='<option>Subj</option>';const cl=DB.data.classes.find(x=>x.id===c);if(cl)cl.subjects.forEach(sid=>{if(DB.data.subjects[sid])s.innerHTML+=`<option value="${sid}">${DB.data.subjects[sid].name}</option>`})}, 
+    
+    // UPDATED: Added Zoom Functionality
+    scale: 0.42,
+    zoom: (delta) => {
+        Template.scale += delta;
+        if(Template.scale < 0.1) Template.scale = 0.1;
+        if(Template.scale > 2) Template.scale = 2;
+        const el = document.getElementById('editor-preview');
+        if(el) el.style.transform = `scale(${Template.scale})`;
+        const lbl = document.getElementById('zoom-label');
+        if(lbl) lbl.innerText = Math.round(Template.scale * 100) + '%';
+    },
+
+    load:()=>{const sid=document.getElementById('tpl-subject-select').value;if(!sid)return;Template.currentSubjectId=sid;const t=DB.data.subjects[sid].template;document.getElementById('tpl-title').value=t.title;document.getElementById('tpl-sub').value=t.sub;document.getElementById('tpl-desc').value=t.desc;const qt=t.qTotals||{t1:25,t2:25,mid:50,tot:100};document.getElementById('qt-1').value=qt.t1;document.getElementById('qt-2').value=qt.t2;document.getElementById('qt-3').value=qt.mid;document.getElementById('qt-4').value=qt.tot;Template.renderRows(t.items);ReportEngine.render('editor-preview',t,{},false)}, 
+    syncToDB:()=>{if(!Template.currentSubjectId)return;const i=[];document.querySelectorAll('#template-rows .row-item').forEach(r=>i.push({type:r.dataset.type,text:r.querySelector('input').value}));const t=DB.data.subjects[Template.currentSubjectId].template;t.title=document.getElementById('tpl-title').value;t.sub=document.getElementById('tpl-sub').value;t.desc=document.getElementById('tpl-desc').value;t.items=i;t.qTotals={t1:document.getElementById('qt-1').value,t2:document.getElementById('qt-2').value,mid:document.getElementById('qt-3').value,tot:document.getElementById('qt-4').value}}, 
+    liveUpdate:()=>{if(!Template.currentSubjectId)return;Template.syncToDB();ReportEngine.render('editor-preview',DB.data.subjects[Template.currentSubjectId].template,{},false)}, 
+    renderRows:(i)=>{const c=document.getElementById('template-rows');c.innerHTML='';i.forEach((item,idx)=>{c.innerHTML+=`<div class="row-item" data-type="${item.type}" style="display:flex;gap:5px;margin-bottom:5px;"><span style="font-size:10px;width:15px;font-weight:bold;">${item.type[0].toUpperCase()}</span><input value="${item.text||''}" oninput="Template.liveUpdate()"><button onclick="Template.delItem(${idx})" style="color:red;border:none;">x</button></div>`})}, 
+    add:(t)=>{if(Template.currentSubjectId){Template.syncToDB();DB.data.subjects[Template.currentSubjectId].template.items.push({type:t,text:''});Template.load()}}, 
+    delItem:(i)=>{Template.syncToDB();DB.data.subjects[Template.currentSubjectId].template.items.splice(i,1);Template.load()}, 
+    save:()=>{if(Template.currentSubjectId){Template.syncToDB();DB.save();alert('Saved')}} 
+};
 const Teacher = { init:()=>{const t=Auth.user.id,s=document.getElementById('teacher-subject-select');s.innerHTML='<option>Class</option>';DB.data.assignments.filter(a=>a.teacherId===t).forEach((a,i)=>{const c=DB.data.classes.find(x=>x.id===a.classId),sub=DB.data.subjects[a.subjectId];if(c&&sub)s.innerHTML+=`<option value="${i}">${c.name} (${a.section}) - ${sub.name}</option>`})}, loadStudents:()=>{const i=document.getElementById('teacher-subject-select').value;if(i==="")return;const a=DB.data.assignments.filter(as=>as.teacherId===Auth.user.id)[i];Teacher.currSub=a.subjectId;const l=document.getElementById('teacher-student-list');l.innerHTML='';DB.data.students.filter(s=>s.classId===a.classId&&s.section===a.section).forEach(s=>{const d=DB.data.marks[s.id]?.[a.subjectId]?.completed;l.innerHTML+=`<tr><td>${s.roll}</td><td>${s.name}</td><td>${d?'Done':'Pending'}</td><td><button onclick="Teacher.openReport(${s.id})" class="btn btn-sm btn-accent">Edit</button></td></tr>`})}, openReport:(sid)=>{Teacher.currStudent=sid;const s=DB.data.students.find(x=>x.id===sid),sub=DB.data.subjects[Teacher.currSub];document.getElementById('eval-student-name').innerText=`${s.name} - ${sub.name}`;UI.show('evaluation');const m=DB.data.marks[sid]?.[Teacher.currSub]||{};ReportEngine.render('teacher-workspace',sub.template,m,true)}, saveReport:()=>{const s=Teacher.currStudent,sub=Teacher.currSub;if(!DB.data.marks[s])DB.data.marks[s]={};if(!DB.data.marks[s][sub])DB.data.marks[s][sub]={};const d=DB.data.marks[s][sub];document.querySelectorAll('.inp-mark').forEach(i=>{d[i.id]=i.type==='checkbox'?i.checked:i.value});d.completed=true;DB.save();alert('Saved');UI.show('teacher-dashboard');Teacher.loadStudents()} };
 
 window.onload = () => { DB.init(); Theme.init(); Auth.check(); }; 
