@@ -1,7 +1,7 @@
+/* ... (Keep top standard CSS for Login/Dashboard) ... */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;600;700&display=swap');
 
 :root {
-    /* LIGHT MODE PALETTE */
     --bg-color: #f1f5f9;
     --primary: #0f172a;
     --accent: #2563eb;
@@ -15,7 +15,6 @@
 }
 
 [data-theme="dark"] {
-    /* DARK MODE PALETTE */
     --bg-color: #0f172a;
     --primary: #f8fafc;
     --accent: #60a5fa;
@@ -28,7 +27,6 @@
 
 body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-main); height: 100vh; overflow: hidden; transition: all 0.3s ease; }
 
-/* UTILS */
 .hidden { display: none !important; }
 .btn { padding: 10px 18px; border: none; border-radius: var(--radius-md); cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
 .btn:active { transform: scale(0.98); }
@@ -77,20 +75,17 @@ input:focus { outline: none; border-color: var(--accent); }
 #preview-wrapper { width: 100%; display: flex; justify-content: center; background: #d1d5db; padding: 20px; border-radius: 8px; }
 #editor-preview { transform: scale(0.75); transform-origin: top center; width: 794px; min-height: 1123px; background: white; margin: 0 auto; color: black; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
 
-/* --- PROFESSIONAL LOGIN SCREEN (Deep Blue Theme) --- */
+/* --- LOGIN SCREEN --- */
 #app-login { 
     position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-    /* Deep Corporate Blue Gradient */
     background: radial-gradient(circle at top right, #1e293b, #0f172a);
     display: flex; align-items: center; justify-content: center; z-index: 10000; 
 }
-/* Subtle Background Shape */
 #app-login::before {
     content: ''; position: absolute; width: 120%; height: 120%;
     background: radial-gradient(circle, rgba(37,99,235,0.1) 0%, transparent 60%);
     top: -50%; left: -50%; z-index: -1;
 }
-
 .login-box { 
     background: rgba(255, 255, 255, 1); 
     width: 380px; padding: 40px; border-radius: 16px; 
@@ -104,27 +99,14 @@ input:focus { outline: none; border-color: var(--accent); }
     border: 1px solid #334155;
     box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); 
 }
-
-/* Floating Icon Animation */
-@keyframes float { 
-    0% { transform: translateY(0px); } 
-    50% { transform: translateY(-8px); } 
-    100% { transform: translateY(0px); } 
-}
-.login-icon-wrap {
-    display: inline-block;
-    color: var(--accent);
-    margin-bottom: 15px;
-    animation: float 3s ease-in-out infinite;
-}
-
+@keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-8px); } 100% { transform: translateY(0px); } }
+.login-icon-wrap { display: inline-block; color: var(--accent); margin-bottom: 15px; animation: float 3s ease-in-out infinite; }
 .login-header h2 { margin: 10px 0 5px; color: var(--text-main); font-family: 'Poppins', sans-serif; font-weight: 700; } 
 .login-footer { margin-top: 30px; font-size: 12px; color: var(--text-secondary); }
 
 /* MOBILE RESPONSIVE */
 .mobile-menu-btn { display: none; background: none; border: none; font-size: 24px; color: var(--text-main); cursor: pointer; padding: 5px; }
 .overlay-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 55; }
-
 @media screen and (max-width: 768px) {
     body { overflow-y: auto; }
     .main-content { margin-left: 0; padding: 15px; height: auto; overflow: visible; margin-top: 60px; padding-bottom: 80px; }
@@ -141,7 +123,7 @@ input:focus { outline: none; border-color: var(--accent); }
     .login-box { width: 85%; padding: 30px 20px; }
 }
 
-/* --- REPORT ENGINE - A4 PAGE --- */
+/* --- THE REPLICA REPORT PAGE (CSS HEADER & FOOTER) --- */
 .report-page, .details-page { 
     width: 794px; 
     height: 1123px; 
@@ -153,18 +135,73 @@ input:focus { outline: none; border-color: var(--accent); }
     position: relative; 
     overflow: hidden; 
     color: #1d1d1f; 
+    /* Padding to mimic margins */
+    padding: 0; 
 }
-.layer-frame { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
-.layer-lion { position: absolute; top: 54%; left: 50%; transform: translate(-50%, -50%); width: 85%; opacity: 0.45; pointer-events: none; }
-.content-area, .details-content { position: relative; z-index: 10; padding: 160px 60px 0px 60px; width: 100%; height: 100%; box-sizing: border-box; }
+
+/* 1. Header Replica */
+.page-header {
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    width: 300px;
+    height: 80px;
+    display: flex;
+    justify-content: flex-end;
+}
+.page-header img {
+    height: 100%;
+    object-fit: contain;
+}
+/* The Blue Line under Header */
+.page-header::after {
+    content: '';
+    position: absolute;
+    bottom: -15px;
+    right: -30px; /* Extend to edge */
+    width: 794px; /* Full page width */
+    height: 2px;
+    background: #002060;
+}
+
+/* 2. Footer Replica */
+.page-footer {
+    position: absolute;
+    bottom: 40px;
+    left: 30px;
+    right: 30px;
+}
+/* The Blue Line for Footer */
+.page-footer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -30px;
+    width: 794px;
+    height: 2px;
+    background: #002060;
+}
+
+/* 3. Content Area - Safe Zone */
+.content-area { 
+    position: absolute;
+    top: 130px; /* Below Header */
+    left: 40px;
+    right: 40px;
+    bottom: 60px; /* Above Footer */
+    box-sizing: border-box; 
+}
+
+/* Report Styles */
+.layer-lion { position: absolute; top: 54%; left: 50%; transform: translate(-50%, -50%); width: 85%; opacity: 0.05; pointer-events: none; }
 .cover-page { background-image: url('cover.jpg'); background-size: cover; }
 .cover-field { position: absolute; left: 200px; font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 700; color: #002060; text-transform: uppercase; }
 .cover-name { bottom: 135px; } .cover-class { bottom: 75px; }
 .dt-title { background: #002060; color: white; padding: 5px 10px; font-weight: bold; font-size: 14px; margin-bottom: 10px; display: inline-block; width: 100%; }
 .dt-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; border-bottom: 1px solid #eee; }
-.main-title { font-size: 14pt; font-weight: bold; color: #002060; text-transform: uppercase; margin-bottom: 5px; border-bottom: 2px solid #ccc; }
-.sub-title { font-size: 11pt; font-weight: normal; color: #002060; text-transform: uppercase; margin-bottom: 8px; }
-.description { font-size: 10pt; line-height: 1.3; color: #333; margin-bottom: 15px; text-align: justify; white-space: pre-wrap; width: 95%; }
+.main-title { font-size: 14pt; font-weight: bold; color: #002060; text-transform: uppercase; margin-bottom: 5px; }
+.sub-title { font-size: 11pt; font-weight: normal; color: #002060; text-transform: uppercase; margin-bottom: 8px; border-bottom: 1px solid #ccc; padding-bottom:5px; }
+.description { font-size: 10pt; line-height: 1.3; color: #333; margin-bottom: 15px; text-align: justify; white-space: pre-wrap; width: 98%; }
 .report-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
 .report-table th, .report-table td { border: 1px solid #8FAADC; padding: 6px; }
 .main-header th { background: #002060; color: white; font-size: 10pt; text-align: left; }
@@ -173,15 +210,14 @@ input:focus { outline: none; border-color: var(--accent); }
 .check-box { text-align: center; color: #002060; font-weight: bold; }
 .quant-header { background: #002060; color: white; font-weight: bold; padding: 5px; font-size: 10pt; }
 
-/* FIX: Footer block logic */
+/* Footer Block */
 .footer-block { 
     margin-top: 20px; 
     padding-top: 10px; 
     break-inside: avoid; 
-    page-break-inside: avoid; /* Prevents splitting marks/remarks across pages */
+    page-break-inside: avoid; 
     background: transparent;
 }
-
 .remarks-box { 
     margin-top: 15px; 
     border: 2px solid #002060; 
@@ -198,7 +234,6 @@ input:focus { outline: none; border-color: var(--accent); }
 .rubric-row-grey td { background: #e5e7eb !important; padding: 12px; -webkit-print-color-adjust: exact; }
 .rubric-row-white td { background: #ffffff !important; padding: 12px; -webkit-print-color-adjust: exact; }
 
-/* FIX: Force Input Colors on Report to be BLACK even in Dark Mode */
 .inp-mark { 
     color: black !important; 
     background: transparent !important; 
@@ -207,14 +242,10 @@ input:focus { outline: none; border-color: var(--accent); }
 }
 @media print {
     .inp-mark { outline: none !important; }
-}
-
-@media print {
     @page { size: A4 portrait; margin: 0; }
     body { background: white; margin: 0; padding: 0; }
     .no-print-bar, .navbar, .sidebar, .login-wrapper, #app-login, .mobile-menu-btn { display: none !important; }
     .print-container { margin: 0 !important; }
     .report-page, .cover-page, .details-page { margin: 0; box-shadow: none; width: 794px; height: 1122px; break-after: page; page-break-after: always; position: relative; overflow: hidden; transform-origin: top left; }
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-    input, textarea { border: none !important; resize: none; background: transparent !important; padding: 0; margin: 0; }
 }
