@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Academus Portal v85.0 (Final Fix)</title>
+    <title>Academus Portal v86.0 (Pro Login)</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -21,7 +21,7 @@
             <form id="loginForm">
                 <div class="input-group"><input type="text" id="username" placeholder="Username" required></div>
                 <div class="input-group"><input type="password" id="password" placeholder="Password" required></div>
-                <button type="submit" class="btn btn-primary btn-block">Login</button>
+                <button type="submit" id="login-btn" class="btn btn-primary btn-block">Login</button>
             </form>
             <div class="login-footer">
                 <p>Default Credentials:</p>
@@ -48,7 +48,7 @@
                 <li onclick="UI.show('admin-template'); Mobile.toggleMenu();" class="nav-item"><i class="fas fa-file-contract"></i> Templates</li>
                 <li onclick="DB.backup(); Mobile.toggleMenu();" class="nav-item"><i class="fas fa-cloud-download-alt"></i> Backup Data</li>
                 
-                <li onclick="DB.reset(); Mobile.toggleMenu();" class="nav-item" style="color:red; font-weight:bold; border:1px solid red;">
+                <li onclick="DB.reset(); Mobile.toggleMenu();" class="nav-item" style="color:red; font-weight:bold; border:1px solid red; margin-top:20px;">
                     <i class="fas fa-exclamation-triangle"></i> RESET DATABASE
                 </li>
             </ul>
