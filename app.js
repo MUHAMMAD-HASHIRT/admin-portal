@@ -1,5 +1,5 @@
 /* ==========================================================================
-   APP ENGINE (v85.0) - FACTORY RESET & SAFETY EDITION
+   APP ENGINE (v86.0) - SINGLE CHOICE & PRO LOGIN
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
@@ -27,87 +27,39 @@ const Theme = { init: () => { const t = localStorage.getItem('academus_theme'); 
 
 /* --- CLOUD DATABASE --- */
 const DB = {
-    // Default Data Structure
     defaults: { users: [{ id: 'admin', pass: 'admin', role: 'admin', name: 'Administrator' }], classes: [], subjects: {}, assignments: [], students: [], marks: {} },
-    data: {}, // Will be loaded from cloud
-
-    // DATA SANITIZER (Fixes Broken Arrays)
+    data: {}, 
     sanitize: (val) => {
         if (!val) return DB.defaults;
-        
-        // 1. Force Classes to be an Array
-        if (val.classes) {
-            if (!Array.isArray(val.classes)) val.classes = Object.values(val.classes).filter(x => x); // Convert Object to Array
-        } else {
-            val.classes = [];
-        }
-
-        // 2. Force Students to be an Array
-        if (val.students) {
-            if (!Array.isArray(val.students)) val.students = Object.values(val.students).filter(x => x);
-        } else {
-            val.students = [];
-        }
-
-        // 3. Ensure other objects exist
+        if (val.classes) { if (!Array.isArray(val.classes)) val.classes = Object.values(val.classes).filter(x => x); } else { val.classes = []; }
+        if (val.students) { if (!Array.isArray(val.students)) val.students = Object.values(val.students).filter(x => x); } else { val.students = []; }
         if (!val.subjects) val.subjects = {};
         if (!val.assignments) val.assignments = [];
         if (!val.marks) val.marks = {};
-
-        // 4. DEEP CLEAN: Check every class for missing lists
-        val.classes.forEach(c => {
-            if (!c.subjects) c.subjects = [];
-            if (!c.sections) c.sections = [];
-            if (!Array.isArray(c.subjects)) c.subjects = []; // Fix if subject list is broken
-        });
-
+        val.classes.forEach(c => { if (!c.subjects) c.subjects = []; if (!c.sections) c.sections = []; if (!Array.isArray(c.subjects)) c.subjects = []; });
         return val;
     },
-
     init: (callback) => {
         dbRef.once('value', (snapshot) => {
             const val = snapshot.val();
-            if (val) {
-                DB.data = DB.sanitize(val);
-            } else {
-                DB.data = DB.defaults;
-                DB.save(); 
-            }
+            if (val) { DB.data = DB.sanitize(val); } else { DB.data = DB.defaults; DB.save(); }
             if (callback) callback();
         });
-        
         dbRef.on('value', (snapshot) => {
             const val = snapshot.val();
-            if (val) {
-                DB.data = DB.sanitize(val);
-                // Auto-refresh views if they are open
-                if (!document.getElementById('view-admin-classes').classList.contains('hidden')) Admin.loadClassesHierarchy();
-            }
+            if (val) { DB.data = DB.sanitize(val); if (!document.getElementById('view-admin-classes').classList.contains('hidden')) Admin.loadClassesHierarchy(); }
         });
     },
-    save: () => {
-        dbRef.set(DB.data).then(() => { console.log("Cloud Saved."); }).catch(e => alert("Save Error: " + e.message));
-    },
-    // NEW: FACTORY RESET BUTTON
-    reset: () => {
-        if(confirm("⚠️ DANGER: This will delete ALL data (Classes, Students, etc) and reset to fresh state.\n\nAre you sure?")) {
-            DB.data = DB.defaults;
-            DB.save();
-            alert("Database has been reset. Loading fresh...");
-            location.reload();
-        }
-    },
-    backup: () => {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(DB.data));
-        const a = document.createElement('a'); a.href = dataStr; a.download = "backup.json"; a.click();
-    },
+    save: () => { dbRef.set(DB.data).then(() => { console.log("Cloud Saved."); }).catch(e => alert("Save Error: " + e.message)); },
+    reset: () => { if(confirm("⚠️ DANGER: This will delete ALL data (Classes, Students, etc) and reset to fresh state.\n\nAre you sure?")) { DB.data = DB.defaults; DB.save(); alert("Database has been reset. Loading fresh..."); location.reload(); } },
+    backup: () => { const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(DB.data)); const a = document.createElement('a'); a.href = dataStr; a.download = "backup.json"; a.click(); },
     createDefaultTemplate: (t) => { return { title: t||'REPORT CARD', sub: 'TERM EVALUATION', desc: 'Student performance report.', qTotals: { t1:25, t2:25, mid:50, tot:100 }, items: [{type:'header',text:'ACADEMIC PERFORMANCE'},{type:'data',text:'Concept Understanding'},{type:'data',text:'Application of Skills'}] }; }
 };
 
 /* --- UI ROUTER --- */
 const UI = { show: (id) => { document.querySelectorAll('.page-section').forEach(e => e.classList.add('hidden')); document.getElementById('view-' + id)?.classList.remove('hidden'); if(id === 'admin-dashboard') Admin.loadDashboard(); if(id === 'admin-classes') Admin.loadClassesHierarchy(); if(id === 'admin-teachers') Admin.loadTeachers(); if(id === 'admin-students') Admin.loadStudents(); if(id === 'admin-template') Template.initSelect(); if(id === 'teacher-dashboard') Teacher.init(); } };
 
-/* --- AUTH --- */
+/* --- AUTH (WITH ANIMATION) --- */
 const Auth = {
     user: null,
     check: () => {
@@ -133,20 +85,70 @@ const Auth = {
     login: () => {
         const u = document.getElementById('username').value;
         const p = document.getElementById('password').value;
-        const f = DB.data.users.find(x => x.id === u && x.pass === p);
-        if (f) { sessionStorage.setItem('uid', f.id); location.reload(); } else { alert('Invalid Credentials'); }
+        const btn = document.getElementById('login-btn');
+        
+        // 1. Start Animation
+        const originalText = btn.innerText;
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Verifying...';
+        btn.disabled = true;
+        btn.style.opacity = "0.8";
+
+        // 2. Delay for Professional Feel
+        setTimeout(() => {
+            const f = DB.data.users.find(x => x.id === u && x.pass === p);
+            
+            if (f) { 
+                // Success Animation
+                btn.innerHTML = '<i class="fas fa-check"></i> Success!';
+                btn.style.background = "#10b981"; // Green
+                
+                setTimeout(() => {
+                    sessionStorage.setItem('uid', f.id); 
+                    location.reload(); 
+                }, 500);
+            } else { 
+                // Fail Animation
+                btn.innerHTML = '<i class="fas fa-times"></i> Failed';
+                btn.style.background = "#ef4444"; // Red
+                setTimeout(() => {
+                    alert('Invalid Credentials'); 
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    btn.style.background = ""; // Reset color
+                    btn.style.opacity = "1";
+                }, 500);
+            }
+        }, 1200); // 1.2 Second artificial delay for effect
     },
     logout: () => { sessionStorage.clear(); location.reload(); }
 };
 
-/* --- REPORT ENGINE --- */
+/* --- REPORT ENGINE (WITH SINGLE CHECKBOX LOGIC) --- */
 const ReportEngine = {
     calcAvg: (classId, section, field) => { const students = DB.data.students.filter(s => s.classId === classId && s.section === section); if(!students.length) return 0; const total = students.reduce((sum, s) => sum + (parseFloat(s[field]) || 0), 0); return (total / students.length).toFixed(1); },
+    
+    // NEW: Handles mutual exclusivity
+    radioBehavior: (el) => {
+        if (el.checked) {
+            // ID format is r0c1, r0c2. Split at 'c' to get row (r0)
+            const rowId = el.id.split('c')[0]; 
+            // Loop through columns 1 to 4 and uncheck others
+            for(let i=1; i<=4; i++) {
+                const siblingId = rowId + 'c' + i;
+                const sibling = document.getElementById(siblingId);
+                if (sibling && sibling !== el) {
+                    sibling.checked = false;
+                }
+            }
+        }
+    },
+
     generateDetailsPage: (s) => { const cls = DB.data.classes.find(c => c.id === s.classId); const avgAgeY = ReportEngine.calcAvg(s.classId, s.section, 'ageY'); const avgHt = ReportEngine.calcAvg(s.classId, s.section, 'height'); const avgWt = ReportEngine.calcAvg(s.classId, s.section, 'weight'); const totalAtt = (parseInt(s.attendanceP)||0) + (parseInt(s.attendanceA)||0); const check = (val) => val ? `<span class="cb-box" style="background:#002060;color:white;">&#10003;</span>` : `<span class="cb-box"></span>`; return `<div class="details-page"><img src="header footer.png" class="layer-frame"><img src="background.png" class="layer-lion"><div class="details-content"><div style="height: 30px;"></div> <div class="dt-section"><div class="dt-title">Student Details</div><div class="dt-row"><span class="dt-label">Name</span><span class="dt-value">${s.name}</span></div><div class="dt-row"><span class="dt-label">Parent/Guardian's Name (1)</span><span class="dt-value">${s.parent1}</span></div><div class="dt-row"><span class="dt-label">Parent/Guardian's Name (2)</span><span class="dt-value">${s.parent2}</span></div><div class="dt-row"><span class="dt-label">Level</span><span class="dt-value">${cls.name}</span></div><div class="dt-row"><span class="dt-label">Section</span><span class="dt-value">${s.section}</span></div></div><div class="dt-section"><div class="dt-title">Age & Gender</div><div class="dt-row"><span class="dt-label">Age</span><span class="dt-value">Years: ${s.ageY} &nbsp; Months: ${s.ageM}</span></div><div class="dt-row"><span class="dt-label">Class Average Age</span><span class="dt-value">${avgAgeY} Yrs</span></div><div class="dt-row"><span class="dt-label">Gender</span><div class="checkbox-group"><span class="cb-item">${check(s.gender==='M')} Male</span><span class="cb-item">${check(s.gender==='F')} Female</span></div></div></div><div class="dt-section"><div class="dt-title">Attendance</div><div class="dt-row"><span class="dt-label">Present: ${s.attendanceP}</span> <span class="dt-label">Absent: ${s.attendanceA}</span> <span class="dt-value">Total: ${totalAtt}</span></div></div><div class="dt-section"><div class="dt-title">Physical Measurement</div><div class="dt-row"><span class="dt-label">Height (cm): ${s.height}</span> <span class="dt-label">Weight (Kg): ${s.weight}</span></div><div class="dt-row"><span class="dt-label">Class Average</span> <span class="dt-value">Height: ${avgHt} &nbsp; Weight: ${avgWt}</span></div></div><div class="dt-section"><div class="dt-title">Parent Teacher Conference</div><div class="dt-row"><span class="dt-label">Conference 1</span><div class="checkbox-group"><span class="cb-item">Yes ${check(s.pt1)}</span><span class="cb-item">No ${check(!s.pt1)}</span></div></div><div class="dt-row"><span class="dt-label">Conference 2</span><div class="checkbox-group"><span class="cb-item">Yes ${check(s.pt2)}</span><span class="cb-item">No ${check(!s.pt2)}</span></div></div></div></div></div>`; },
     generateRubricPage: () => { return `<div class="details-page"><img src="header footer.png" class="layer-frame"><img src="background.png" class="layer-lion"><div class="content-area"><div style="height: 40px;"></div> <div class="rubric-title">UNDERSTANDING THE REPORT</div><div class="rubric-text"><b>Objectives</b><br>Academus has an academic and co-curricular checkpoints for students...</div><div class="rubric-text"><b>Testing</b><br>Academus has a set standard of assessing its students using formal and informal methods. Our testing is based on year round evaluation and portfolio analysis of students.</div><div class="rubric-text" style="margin-bottom:10px;"><b>Evaluation Rubric</b></div><table class="rubric-table"><thead><tr><th style="width:20%">Key Attributes</th><th style="width:15%">Key Symbol</th><th>Description</th></tr></thead><tbody><tr class="rubric-row-grey"><td class="rubric-col-attr">Exceeds<br>Learning<br>Expectations</td><td class="rubric-col-sym">ELE</td><td class="rubric-col-desc">The child displays impeccable progress towards set objectives and goals. The child achieves all milestones independently.</td></tr><tr class="rubric-row-white"><td class="rubric-col-attr">Meets Learning<br>Expectations</td><td class="rubric-col-sym">MLE</td><td class="rubric-col-desc">The child meets all the learning outcomes with precision and clarity of understanding.</td></tr><tr class="rubric-row-grey"><td class="rubric-col-attr">Progressing</td><td class="rubric-col-sym">P</td><td class="rubric-col-desc">The child is at an intermediate level, and is completing the given tasks in a satisfactory manner.</td></tr><tr class="rubric-row-white"><td class="rubric-col-attr">Needs<br>Improvement</td><td class="rubric-col-sym">NI</td><td class="rubric-col-desc">The child is starting to attempt or is in a phase of development.</td></tr></tbody></table></div></div>`; },
     render: (c, t, m, a) => {
         const container = document.getElementById(c) || document.createElement('div'); container.innerHTML = '';
-        const chk = (id, v) => a ? `<input type="checkbox" id="${id}" class="inp-mark" ${v?'checked':''}>` : (v?'<span style="font-family:sans-serif;font-weight:bold;color:#002060;">&#10003;</span>':'');
+        // UPDATE: Added onclick logic for radio behavior
+        const chk = (id, v) => a ? `<input type="checkbox" id="${id}" class="inp-mark" ${v?'checked':''} onclick="ReportEngine.radioBehavior(this)">` : (v?'<span style="font-family:sans-serif;font-weight:bold;color:#002060;">&#10003;</span>':'');
         const qT = t.qTotals || { t1:25, t2:25, mid:50, tot:100 };
         const qInp = (id, v, max) => a ? `<div style="display:flex;align-items:center;justify-content:center;gap:4px;"><input type="number" id="${id}" class="inp-mark" value="${v||''}" style="width:60px; text-align:center; margin:0; padding:5px; height:35px;" max="${max}" oninput="if(parseInt(this.value)>${max}) this.value=${max}"><span style="font-size:12px; font-weight:bold;">/${max}</span></div>` : `<span style="font-weight:bold;">${v||'-'} / ${max}</span>`;
         const box = (id, v) => a ? `<textarea id="${id}" class="inp-mark" style="width:100%; min-height:40px; border:none; resize:none; background:transparent;" oninput="this.style.height='';this.style.height=this.scrollHeight+'px'">${v||''}</textarea>` : `<div style="padding:5px;white-space:pre-wrap;">${v||''}</div>`;
@@ -180,12 +182,9 @@ const Admin = {
             return;
         }
 
-        // CRASH PROTECTION LOOP
         DB.data.classes.forEach(cls => {
             try {
-                // Ensure ID and Name exist before trying to render
                 if (!cls.id || !cls.name) return; 
-
                 let subH='';
                 if(cls.subjects && Array.isArray(cls.subjects)) {
                     cls.subjects.forEach(sid => {
@@ -194,29 +193,17 @@ const Admin = {
                     });
                 }
                 if(subH === '') subH='<span style="font-size:11px;color:#999;">No Subj</span>';
-                
                 let secH='';
                 if (cls.sections && Array.isArray(cls.sections)) {
                     cls.sections.forEach(sec => {
                         secH+=`<div class="tree-section"><div class="tree-sec-name">SECTION ${sec}</div><button onclick="Admin.deleteSection('${cls.id}','${sec}')" class="btn-xs-danger">X</button></div>`
                     });
                 }
-                
                 c.innerHTML+=`
                 <div class="class-tree-item">
-                    <div class="tree-header">
-                        <span>${cls.name}</span>
-                        <div>
-                            <button onclick="Admin.deleteClass('${cls.id}')" class="btn-xs-danger" style="margin-right:5px;">DEL</button>
-                            <button onclick="Admin.addSectionPrompt('${cls.id}')" class="btn-xs-accent">+SEC</button>
-                        </div>
-                    </div>
-                    <div class="tree-subjects">${subH}</div>
-                    ${secH}
-                </div>`;
-            } catch(e) {
-                console.error("Skipping broken class:", e);
-            }
+                    <div class="tree-header"><span>${cls.name}</span><div><button onclick="Admin.deleteClass('${cls.id}')" class="btn-xs-danger" style="margin-right:5px;">DEL</button><button onclick="Admin.addSectionPrompt('${cls.id}')" class="btn-xs-accent">+SEC</button></div></div>
+                    <div class="tree-subjects">${subH}</div>${secH}</div>`;
+            } catch(e) { console.error("Skipping broken class:", e); }
         }); 
     },
     addClass: () => { 
@@ -236,30 +223,19 @@ const Admin = {
         try {
             const cid=document.getElementById('subject-class-select').value;
             const n=document.getElementById('new-subject-name').value.toUpperCase(); 
-            
             if(!cid) { alert("Please Select a Grade first!"); return; }
             if(!n) { alert("Please enter a subject name!"); return; }
-
             const sid='s_'+Date.now(); 
             if(!DB.data.subjects) DB.data.subjects = {}; 
-            
-            // Create Subject
             DB.data.subjects[sid]={name:n,template:DB.createDefaultTemplate(n)}; 
-            
-            // Find Class
             const c = DB.data.classes.find(x=>x.id===cid);
             if (!c) { alert("Error: Class ID not found in database."); return; }
-
-            // Ensure list exists
             if (!c.subjects || !Array.isArray(c.subjects)) c.subjects = [];
-            
             c.subjects.push(sid); 
             DB.save(); 
             document.getElementById('new-subject-name').value='';
             Admin.loadClassesHierarchy();
-        } catch(e) {
-            alert("System Error Adding Subject: " + e.message);
-        }
+        } catch(e) { alert("System Error Adding Subject: " + e.message); }
     },
     deleteSubject: (cid, sid) => { if(confirm("Del Subject?")){const c=DB.data.classes.find(x=>x.id===cid);c.subjects=c.subjects.filter(s=>s!==sid);delete DB.data.subjects[sid];DB.save();Admin.loadClassesHierarchy();} },
     onAssignClassChange: () => { const cid = document.getElementById('assign-class-select').value; const sec = document.getElementById('assign-section-select'); sec.innerHTML='<option value="">Sec</option>'; const sub = document.getElementById('assign-subject-select'); sub.innerHTML='<option value="">Subj</option>'; if(!cid) return; const cls = DB.data.classes.find(c => c.id === cid); cls.sections.forEach(s => sec.innerHTML += `<option value="${s}">${s}</option>`); cls.subjects.forEach(sid => { if(DB.data.subjects[sid]) sub.innerHTML += `<option value="${sid}">${DB.data.subjects[sid].name}</option>`; }); },
@@ -279,4 +255,5 @@ const Admin = {
 const Template = { initSelect:()=>{Admin.refreshDropdowns()}, onClassChange:()=>{const c=document.getElementById('tpl-class-select').value,s=document.getElementById('tpl-subject-select');s.innerHTML='<option>Subj</option>';const cl=DB.data.classes.find(x=>x.id===c);if(cl)cl.subjects.forEach(sid=>{if(DB.data.subjects[sid])s.innerHTML+=`<option value="${sid}">${DB.data.subjects[sid].name}</option>`})}, load:()=>{const sid=document.getElementById('tpl-subject-select').value;if(!sid)return;Template.currentSubjectId=sid;const t=DB.data.subjects[sid].template;document.getElementById('tpl-title').value=t.title;document.getElementById('tpl-sub').value=t.sub;document.getElementById('tpl-desc').value=t.desc;const qt=t.qTotals||{t1:25,t2:25,mid:50,tot:100};document.getElementById('qt-1').value=qt.t1;document.getElementById('qt-2').value=qt.t2;document.getElementById('qt-3').value=qt.mid;document.getElementById('qt-4').value=qt.tot;Template.renderRows(t.items);ReportEngine.render('editor-preview',t,{},false)}, syncToDB:()=>{if(!Template.currentSubjectId)return;const i=[];document.querySelectorAll('#template-rows .row-item').forEach(r=>i.push({type:r.dataset.type,text:r.querySelector('input').value}));const t=DB.data.subjects[Template.currentSubjectId].template;t.title=document.getElementById('tpl-title').value;t.sub=document.getElementById('tpl-sub').value;t.desc=document.getElementById('tpl-desc').value;t.items=i;t.qTotals={t1:document.getElementById('qt-1').value,t2:document.getElementById('qt-2').value,mid:document.getElementById('qt-3').value,tot:document.getElementById('qt-4').value}}, liveUpdate:()=>{if(!Template.currentSubjectId)return;Template.syncToDB();ReportEngine.render('editor-preview',DB.data.subjects[Template.currentSubjectId].template,{},false)}, renderRows:(i)=>{const c=document.getElementById('template-rows');c.innerHTML='';i.forEach((item,idx)=>{c.innerHTML+=`<div class="row-item" data-type="${item.type}" style="display:flex;gap:5px;margin-bottom:5px;"><span style="font-size:10px;width:15px;font-weight:bold;">${item.type[0].toUpperCase()}</span><input value="${item.text||''}" oninput="Template.liveUpdate()"><button onclick="Template.delItem(${idx})" style="color:red;border:none;">x</button></div>`})}, add:(t)=>{if(Template.currentSubjectId){Template.syncToDB();DB.data.subjects[Template.currentSubjectId].template.items.push({type:t,text:''});Template.load()}}, delItem:(i)=>{Template.syncToDB();DB.data.subjects[Template.currentSubjectId].template.items.splice(i,1);Template.load()}, save:()=>{if(Template.currentSubjectId){Template.syncToDB();DB.save();alert('Saved')}} };
 const Teacher = { init:()=>{const t=Auth.user.id,s=document.getElementById('teacher-subject-select');s.innerHTML='<option>Class</option>';DB.data.assignments.filter(a=>a.teacherId===t).forEach((a,i)=>{const c=DB.data.classes.find(x=>x.id===a.classId),sub=DB.data.subjects[a.subjectId];if(c&&sub)s.innerHTML+=`<option value="${i}">${c.name} (${a.section}) - ${sub.name}</option>`})}, loadStudents:()=>{const i=document.getElementById('teacher-subject-select').value;if(i==="")return;const a=DB.data.assignments.filter(as=>as.teacherId===Auth.user.id)[i];Teacher.currSub=a.subjectId;const l=document.getElementById('teacher-student-list');l.innerHTML='';DB.data.students.filter(s=>s.classId===a.classId&&s.section===a.section).forEach(s=>{const d=DB.data.marks[s.id]?.[a.subjectId]?.completed;l.innerHTML+=`<tr><td>${s.roll}</td><td>${s.name}</td><td>${d?'Done':'Pending'}</td><td><button onclick="Teacher.openReport(${s.id})" class="btn btn-sm btn-accent">Edit</button></td></tr>`})}, openReport:(sid)=>{Teacher.currStudent=sid;const s=DB.data.students.find(x=>x.id===sid),sub=DB.data.subjects[Teacher.currSub];document.getElementById('eval-student-name').innerText=`${s.name} - ${sub.name}`;UI.show('evaluation');const m=DB.data.marks[sid]?.[Teacher.currSub]||{};ReportEngine.render('teacher-workspace',sub.template,m,true)}, saveReport:()=>{const s=Teacher.currStudent,sub=Teacher.currSub;if(!DB.data.marks[s])DB.data.marks[s]={};if(!DB.data.marks[s][sub])DB.data.marks[s][sub]={};const d=DB.data.marks[s][sub];document.querySelectorAll('.inp-mark').forEach(i=>{d[i.id]=i.type==='checkbox'?i.checked:i.value});d.completed=true;DB.save();alert('Saved');UI.show('teacher-dashboard');Teacher.loadStudents()} };
 
-window.onload = () => { DB.init(); Theme.init(); Auth.check(); }; document.getElementById('loginForm').addEventListener('submit', (e)=>{ e.preventDefault(); Auth.login(); });
+window.onload = () => { DB.init(); Theme.init(); Auth.check(); }; 
+document.getElementById('loginForm').addEventListener('submit', (e)=>{ e.preventDefault(); Auth.login(); });
