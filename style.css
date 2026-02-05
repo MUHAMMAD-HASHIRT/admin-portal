@@ -172,7 +172,7 @@ input:focus { outline: none; border-color: var(--accent); }
     left: 50%; 
     transform: translate(-50%, -50%); 
     width: 70%; 
-    opacity: 0.2; /* INCREASED VISIBILITY HERE */
+    opacity: 50; /* INCREASED VISIBILITY HERE */
     pointer-events: none; 
     z-index: 5; 
 }
@@ -224,3 +224,4 @@ input:focus { outline: none; border-color: var(--accent); }
     .report-page, .cover-page, .details-page { margin: 0; box-shadow: none; width: 794px; height: 1122px; break-after: page; page-break-after: always; position: relative; overflow: hidden; transform-origin: top left; }
     * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 }
+
