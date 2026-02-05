@@ -1,5 +1,5 @@
 /* ==========================================================================
-   APP ENGINE (v90.0) - SMART TABLE & PRO UI
+   APP ENGINE (v91.0) - PRINT LAYOUT FIX
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
@@ -54,7 +54,7 @@ const DB = {
     save: () => { dbRef.set(DB.data).then(() => { console.log("Cloud Saved."); }).catch(e => alert("Save Error: " + e.message)); },
     reset: () => { if(confirm("⚠️ DANGER: This will delete ALL data (Classes, Students, etc) and reset to fresh state.\n\nAre you sure?")) { DB.data = DB.defaults; DB.save(); alert("Database has been reset. Loading fresh..."); location.reload(); } },
     backup: () => { const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(DB.data)); const a = document.createElement('a'); a.href = dataStr; a.download = "backup.json"; a.click(); },
-    createDefaultTemplate: (t) => { return { title: t||'REPORT CARD', sub: 'TERM EVALUATION', desc: 'Student performance report.', qTotals: { t1:25, t2:25, mid:50, tot:100 }, items: [] }; } // NOTE: Default items is now EMPTY []
+    createDefaultTemplate: (t) => { return { title: t||'REPORT CARD', sub: 'TERM EVALUATION', desc: 'Student performance report.', qTotals: { t1:25, t2:25, mid:50, tot:100 }, items: [] }; }
 };
 
 /* --- UI ROUTER --- */
@@ -107,27 +107,36 @@ const Auth = {
     logout: () => { sessionStorage.clear(); location.reload(); }
 };
 
-/* --- REPORT ENGINE (SMART TABLE LOGIC) --- */
+/* --- REPORT ENGINE (FIXED LAYOUT & BREAKS) --- */
 const ReportEngine = {
     calcAvg: (classId, section, field) => { const students = DB.data.students.filter(s => s.classId === classId && s.section === section); if(!students.length) return 0; const total = students.reduce((sum, s) => sum + (parseFloat(s[field]) || 0), 0); return (total / students.length).toFixed(1); },
     radioBehavior: (el) => { if (el.checked) { const rowId = el.id.split('c')[0]; for(let i=1; i<=4; i++) { const siblingId = rowId + 'c' + i; const sibling = document.getElementById(siblingId); if (sibling && sibling !== el) { sibling.checked = false; } } } },
     generateDetailsPage: (s) => { const cls = DB.data.classes.find(c => c.id === s.classId); const avgAgeY = ReportEngine.calcAvg(s.classId, s.section, 'ageY'); const avgHt = ReportEngine.calcAvg(s.classId, s.section, 'height'); const avgWt = ReportEngine.calcAvg(s.classId, s.section, 'weight'); const totalAtt = (parseInt(s.attendanceP)||0) + (parseInt(s.attendanceA)||0); const check = (val) => val ? `<span class="cb-box" style="background:#002060;color:white;">&#10003;</span>` : `<span class="cb-box"></span>`; return `<div class="details-page"><img src="header footer.png" class="layer-frame"><img src="background.png" class="layer-lion"><div class="details-content"><div style="height: 30px;"></div> <div class="dt-section"><div class="dt-title">Student Details</div><div class="dt-row"><span class="dt-label">Name</span><span class="dt-value">${s.name}</span></div><div class="dt-row"><span class="dt-label">Parent/Guardian's Name (1)</span><span class="dt-value">${s.parent1}</span></div><div class="dt-row"><span class="dt-label">Parent/Guardian's Name (2)</span><span class="dt-value">${s.parent2}</span></div><div class="dt-row"><span class="dt-label">Level</span><span class="dt-value">${cls.name}</span></div><div class="dt-row"><span class="dt-label">Section</span><span class="dt-value">${s.section}</span></div></div><div class="dt-section"><div class="dt-title">Age & Gender</div><div class="dt-row"><span class="dt-label">Age</span><span class="dt-value">Years: ${s.ageY} &nbsp; Months: ${s.ageM}</span></div><div class="dt-row"><span class="dt-label">Class Average Age</span><span class="dt-value">${avgAgeY} Yrs</span></div><div class="dt-row"><span class="dt-label">Gender</span><div class="checkbox-group"><span class="cb-item">${check(s.gender==='M')} Male</span><span class="cb-item">${check(s.gender==='F')} Female</span></div></div></div><div class="dt-section"><div class="dt-title">Attendance</div><div class="dt-row"><span class="dt-label">Present: ${s.attendanceP}</span> <span class="dt-label">Absent: ${s.attendanceA}</span> <span class="dt-value">Total: ${totalAtt}</span></div></div><div class="dt-section"><div class="dt-title">Physical Measurement</div><div class="dt-row"><span class="dt-label">Height (cm): ${s.height}</span> <span class="dt-label">Weight (Kg): ${s.weight}</span></div><div class="dt-row"><span class="dt-label">Class Average</span> <span class="dt-value">Height: ${avgHt} &nbsp; Weight: ${avgWt}</span></div></div><div class="dt-section"><div class="dt-title">Parent Teacher Conference</div><div class="dt-row"><span class="dt-label">Conference 1</span><div class="checkbox-group"><span class="cb-item">Yes ${check(s.pt1)}</span><span class="cb-item">No ${check(!s.pt1)}</span></div></div><div class="dt-row"><span class="dt-label">Conference 2</span><div class="checkbox-group"><span class="cb-item">Yes ${check(s.pt2)}</span><span class="cb-item">No ${check(!s.pt2)}</span></div></div></div></div></div>`; },
     generateRubricPage: () => { return `<div class="details-page"><img src="header footer.png" class="layer-frame"><img src="background.png" class="layer-lion"><div class="content-area"><div style="height: 40px;"></div> <div class="rubric-title">UNDERSTANDING THE REPORT</div><div class="rubric-text"><b>Objectives</b><br>Academus has an academic and co-curricular checkpoints for students...</div><div class="rubric-text"><b>Testing</b><br>Academus has a set standard of assessing its students using formal and informal methods. Our testing is based on year round evaluation and portfolio analysis of students.</div><div class="rubric-text" style="margin-bottom:10px;"><b>Evaluation Rubric</b></div><table class="rubric-table"><thead><tr><th style="width:20%">Key Attributes</th><th style="width:15%">Key Symbol</th><th>Description</th></tr></thead><tbody><tr class="rubric-row-grey"><td class="rubric-col-attr">Exceeds<br>Learning<br>Expectations</td><td class="rubric-col-sym">ELE</td><td class="rubric-col-desc">The child displays impeccable progress towards set objectives and goals. The child achieves all milestones independently.</td></tr><tr class="rubric-row-white"><td class="rubric-col-attr">Meets Learning<br>Expectations</td><td class="rubric-col-sym">MLE</td><td class="rubric-col-desc">The child meets all the learning outcomes with precision and clarity of understanding.</td></tr><tr class="rubric-row-grey"><td class="rubric-col-attr">Progressing</td><td class="rubric-col-sym">P</td><td class="rubric-col-desc">The child is at an intermediate level, and is completing the given tasks in a satisfactory manner.</td></tr><tr class="rubric-row-white"><td class="rubric-col-attr">Needs<br>Improvement</td><td class="rubric-col-sym">NI</td><td class="rubric-col-desc">The child is starting to attempt or is in a phase of development.</td></tr></tbody></table></div></div>`; },
     
-    // --- UPDATED RENDER FUNCTION ---
+    addHeader: (c, t, s, d) => { 
+        c.innerHTML += `<div class="main-title">${t}</div>`;
+        if (s) c.innerHTML += `<div class="sub-title">${s}</div>`;
+        if (d) c.innerHTML += `<div class="description">${d}</div>`; 
+        return 60 + (d ? (d.length / 90 * 18) + 20 : 0); 
+    },
+    createTable: () => { const t = document.createElement('table'); t.className = 'report-table'; t.innerHTML = `<thead><tr class="main-header"><th>AREAS</th><th style="width:30px">ELE</th><th style="width:30px">MLE</th><th style="width:30px">P</th><th style="width:30px">NI</th></tr></thead><tbody></tbody>`; return t; },
+    
     render: (c, t, m, a) => {
         const container = document.getElementById(c) || document.createElement('div'); container.innerHTML = '';
         const chk = (id, v) => a ? `<input type="checkbox" id="${id}" class="inp-mark" ${v?'checked':''} onclick="ReportEngine.radioBehavior(this)">` : (v?'<span style="font-family:sans-serif;font-weight:bold;color:#002060;">&#10003;</span>':'');
         const qT = t.qTotals || { t1:25, t2:25, mid:50, tot:100 };
         const qInp = (id, v, max) => a ? `<div style="display:flex;align-items:center;justify-content:center;gap:4px;"><input type="number" id="${id}" class="inp-mark" value="${v||''}" style="width:60px; text-align:center; margin:0; padding:5px; height:35px;" max="${max}" oninput="if(parseInt(this.value)>${max}) this.value=${max}"><span style="font-size:12px; font-weight:bold;">/${max}</span></div>` : `<span style="font-weight:bold;">${v||'-'} / ${max}</span>`;
         const box = (id, v) => a ? `<textarea id="${id}" class="inp-mark" style="width:100%; min-height:40px; border:none; resize:none; background:transparent;" oninput="this.style.height='';this.style.height=this.scrollHeight+'px'">${v||''}</textarea>` : `<div style="padding:5px;white-space:pre-wrap;">${v||''}</div>`;
-        const LIMIT = 1080; const FOOTER_H = 150;
+        
+        // --- LAYOUT CONSTANTS ---
+        const LIMIT = 980; // Decreased from 1080 to prevent footer overlap
+        const FOOTER_H = 350; // Increased size to account for Remarks Box
         
         let pg = ReportEngine.pg(), cnt = pg.querySelector('.content-area');
         let y = ReportEngine.addHeader(cnt, t.title, t.sub, t.desc); 
         
-        // --- SMART TABLE LOGIC START ---
-        // Only render the table if there are actually items in the template
+        // Smart Table Logic
         if (t.items && t.items.length > 0) {
             let tbl = ReportEngine.createTable(); 
             cnt.appendChild(tbl); 
@@ -136,17 +145,24 @@ const ReportEngine = {
             
             t.items.forEach((i, idx) => { 
                 const h = i.type === 'header' ? 45 : 35; 
+                
+                // PAGE BREAK CHECK
                 if (i.type === 'break' || y + h > LIMIT) { 
                     container.appendChild(pg); 
                     pg = ReportEngine.pg(); 
                     cnt = pg.querySelector('.content-area'); 
-                    y = 0; 
+                    
+                    // RE-ADD TITLE ON NEW PAGE
+                    y = ReportEngine.addHeader(cnt, t.title + " (Continued)", "", ""); 
+                    
                     tbl = ReportEngine.createTable(); 
                     cnt.appendChild(tbl); 
                     tbody = tbl.querySelector('tbody'); 
                     y += 40; 
-                    if (i.type === 'break') return; 
+                    
+                    if (i.type === 'break') return; // Skip rendering the break item itself
                 } 
+                
                 const tr = document.createElement('tr'); 
                 if (i.type === 'header') { 
                     tr.className = 'section-row'; 
@@ -160,15 +176,20 @@ const ReportEngine = {
                 y += h; 
             });
         }
-        // --- SMART TABLE LOGIC END ---
 
-        if (y + FOOTER_H > LIMIT) { container.appendChild(pg); pg = ReportEngine.pg(); cnt = pg.querySelector('.content-area'); }
+        // FOOTER CHECK
+        if (y + FOOTER_H > LIMIT) { 
+            container.appendChild(pg); 
+            pg = ReportEngine.pg(); 
+            cnt = pg.querySelector('.content-area'); 
+            // Header for footer page
+            ReportEngine.addHeader(cnt, t.title + " (Summary)", "", "");
+        }
+        
         cnt.innerHTML += `<div class="footer-block"><div class="quant-header">Quantitative</div><table class="report-table"><tr><th>1st Term</th><th>2nd Term</th><th>Mid Term</th><th>Total</th><th>%</th></tr><tr><td style="text-align:center;">${qInp('sc1',m.sc1, qT.t1)}</td><td style="text-align:center;">${qInp('sc2',m.sc2, qT.t2)}</td><td style="text-align:center;">${qInp('sc3',m.sc3, qT.mid)}</td><td style="text-align:center;">${qInp('sc4',m.sc4, qT.tot)}</td><td style="text-align:center;">${qInp('sc5',m.sc5, 100)}</td></tr></table><div class="remarks-box"><div class="remarks-label">TEACHER REMARKS</div>${box('rem',m.rem)}</div></div>`;
         container.appendChild(pg); return container.innerHTML;
     },
     pg: () => { const d = document.createElement('div'); d.className = 'report-page'; d.innerHTML = `<img src="header footer.png" class="layer-frame"><img src="background.png" class="layer-lion"><div class="content-area"></div>`; return d; },
-    addHeader: (c, t, s, d) => { c.innerHTML += `<div class="main-title">${t}</div><div class="sub-title">${s}</div><div class="description">${d}</div>`; return 60 + (d.length / 90 * 18) + 20; },
-    createTable: () => { const t = document.createElement('table'); t.className = 'report-table'; t.innerHTML = `<thead><tr class="main-header"><th>AREAS</th><th style="width:30px">ELE</th><th style="width:30px">MLE</th><th style="width:30px">P</th><th style="width:30px">NI</th></tr></thead><tbody></tbody>`; return t; },
     openPrintView: (sid, subIds) => ReportEngine.buildAndOpen(sid, Array.isArray(subIds) ? subIds : [subIds]),
     openFullPrintView: (sid) => { const s = DB.data.students.find(x => x.id === sid); const cls = DB.data.classes.find(c => c.id === s.classId); ReportEngine.buildAndOpen(sid, cls.subjects); },
     buildAndOpen: (sid, subIds) => { const s = DB.data.students.find(x => x.id === sid); const cls = DB.data.classes.find(c => c.id === s.classId); const cover = `<div class="cover-page"><div class="cover-field cover-name">${s.name}</div><div class="cover-field cover-class">${cls.name} - ${s.section}</div></div>`; const details = ReportEngine.generateDetailsPage(s); const rubric = ReportEngine.generateRubricPage(); let reports = ''; subIds.forEach(id => { const sub = DB.data.subjects[id]; if (sub) { const m = (DB.data.marks[sid] && DB.data.marks[sid][id]) ? DB.data.marks[sid][id] : {}; reports += ReportEngine.render(null, sub.template, m, false); } }); const w = window.open('', '_blank'); w.document.write(`<html><head><title>${s.name}</title><link rel="stylesheet" href="style.css"></head><body><div class="no-print-bar" style="background:#333;padding:10px;text-align:center;"><button onclick="window.print()" class="btn btn-success">PRINT PDF</button></div><div class="print-container">${cover}${details}${rubric}${reports}</div></body></html>`); w.document.close(); }
@@ -243,18 +264,7 @@ const Admin = {
     },
     deleteSubject: (cid, sid) => { if(confirm("Del Subject?")){const c=DB.data.classes.find(x=>x.id===cid);c.subjects=c.subjects.filter(s=>s!==sid);delete DB.data.subjects[sid];DB.save();Admin.loadClassesHierarchy();} },
     onAssignClassChange: () => { const cid = document.getElementById('assign-class-select').value; const sec = document.getElementById('assign-section-select'); sec.innerHTML='<option value="">Sec</option>'; const sub = document.getElementById('assign-subject-select'); sub.innerHTML='<option value="">Subj</option>'; if(!cid) return; const cls = DB.data.classes.find(c => c.id === cid); cls.sections.forEach(s => sec.innerHTML += `<option value="${s}">${s}</option>`); cls.subjects.forEach(sid => { if(DB.data.subjects[sid]) sub.innerHTML += `<option value="${sid}">${DB.data.subjects[sid].name}</option>`; }); },
-    
-    // --- TEACHER MANAGEMENT (UPDATED) ---
-    loadTeachers: () => { 
-        const t=document.getElementById('teacher-list-body'); 
-        const s=document.getElementById('assign-teacher-select'); 
-        t.innerHTML=''; s.innerHTML='<option value="">Select</option>'; 
-        DB.data.users.filter(u=>u.role==='teacher').forEach(u => { 
-            t.innerHTML+=`<tr><td>${u.name}</td><td>${u.id}</td><td>${u.email || '-'}</td><td>${u.pass}</td><td><button onclick="Admin.delTeacher('${u.id}')" class="btn btn-sm btn-danger">X</button></td></tr>`; 
-            s.innerHTML+=`<option value="${u.id}">${u.name}</option>`; 
-        }); 
-        Admin.refreshDropdowns(); Admin.loadAssignmentsList(); 
-    },
+    loadTeachers: () => { const t=document.getElementById('teacher-list-body'); const s=document.getElementById('assign-teacher-select'); t.innerHTML=''; s.innerHTML='<option value="">Select</option>'; DB.data.users.filter(u=>u.role==='teacher').forEach(u => { t.innerHTML+=`<tr><td>${u.name}</td><td>${u.id}</td><td>${u.email || '-'}</td><td>${u.pass}</td><td><button onclick="Admin.delTeacher('${u.id}')" class="btn btn-sm btn-danger">X</button></td></tr>`; s.innerHTML+=`<option value="${u.id}">${u.name}</option>`; }); Admin.refreshDropdowns(); Admin.loadAssignmentsList(); },
     generateCreds: () => {
         const randId = 'T-' + Math.floor(1000 + Math.random() * 9000);
         const randPass = Math.random().toString(36).slice(-6);
@@ -266,13 +276,9 @@ const Admin = {
         const u=document.getElementById('new-t-user').value;
         const p=document.getElementById('new-t-pass').value;
         const e=document.getElementById('new-t-email').value; 
-
         if(n && u && p) {
             const exists = DB.data.users.find(x => x.id === u);
-            if (exists) {
-                alert("Error: This Teacher ID already exists! Click 'Auto Generate' again.");
-                return;
-            }
+            if (exists) { alert("Error: This Teacher ID already exists! Click 'Auto Generate' again."); return; }
             DB.data.users.push({id:u, pass:p, role:'teacher', name:n, email:e}); 
             DB.save(); 
             Admin.loadTeachers();
@@ -280,12 +286,9 @@ const Admin = {
             document.getElementById('new-t-user').value = '';
             document.getElementById('new-t-pass').value = '';
             document.getElementById('new-t-email').value = '';
-        } else {
-            alert("Please fill Name, ID and Password.");
-        }
+        } else { alert("Please fill Name, ID and Password."); }
     },
     delTeacher: (id) => { if(confirm("Del?")){DB.data.users=DB.data.users.filter(x=>x.id!==id); DB.save(); Admin.loadTeachers();} },
-    
     assignTeacher: () => { const tid=document.getElementById('assign-teacher-select').value, cid=document.getElementById('assign-class-select').value, s=document.getElementById('assign-section-select').value, sub=document.getElementById('assign-subject-select').value; if(tid&&cid&&s&&sub){ DB.data.assignments.push({teacherId:tid, classId:cid, section:s, subjectId:sub}); DB.save(); Admin.loadAssignmentsList(); alert("Assigned"); } },
     loadAssignmentsList: () => { const l=document.getElementById('assignment-list-table'); if(l){l.innerHTML=''; DB.data.assignments.forEach((a, i) => { const t=DB.data.users.find(u=>u.id===a.teacherId), c=DB.data.classes.find(x=>x.id===a.classId), s=DB.data.subjects[a.subjectId]; if(t&&c&&s) l.innerHTML+=`<tr><td>${c.name}</td><td>${a.section}</td><td>${s.name}</td><td><span style="font-weight:bold; color:var(--text-main);">${t.name}</span></td><td><button onclick="Admin.remAssign(${i})" class="btn-xs-danger">Remove</button></td></tr>`; });} },
     remAssign: (i) => { DB.data.assignments.splice(i,1); DB.save(); Admin.loadAssignmentsList(); },
