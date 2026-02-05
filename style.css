@@ -59,12 +59,12 @@ input:focus { outline: none; border-color: var(--accent); }
 .data-table td { padding: 14px 16px; border-bottom: 1px solid rgba(0,0,0,0.05); color: var(--text-main); }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
 
-/* TEMPLATE PREVIEW STYLES */
+/* TEMPLATE PREVIEW WITH ZOOM */
 .template-container { display: flex; gap: 20px; height: 100%; flex-direction: row; }
 .preview-card { display: flex; flex-direction: column; overflow: hidden; position: relative; }
 .preview-label { text-align: center; font-weight: bold; color: var(--text-secondary); margin-bottom: 10px; }
 
-/* NEW: Zoom Controls */
+/* ZOOM CONTROLS */
 .zoom-controls { position: absolute; top: 20px; right: 20px; display: flex; gap: 5px; z-index: 100; background: var(--glass-card); padding: 5px; border-radius: 8px; border: var(--glass-border); box-shadow: var(--shadow-sm); }
 .zoom-val { font-size: 12px; font-weight: bold; padding: 5px 10px; display: flex; align-items: center; min-width: 40px; justify-content: center; }
 
@@ -76,7 +76,7 @@ input:focus { outline: none; border-color: var(--accent); }
     background: #d1d5db; 
     padding: 40px; 
     border-radius: 8px; 
-    overflow: auto; /* ALLOWS SCROLLING WHEN ZOOMED IN */
+    overflow: auto; 
 }
 
 #editor-preview { 
@@ -88,7 +88,7 @@ input:focus { outline: none; border-color: var(--accent); }
     margin: 0 auto; 
     color: black; 
     box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
-    transition: transform 0.2s ease; /* Smooth zoom */
+    transition: transform 0.2s ease;
 }
 
 /* LOGIN SCREEN */
@@ -114,7 +114,7 @@ input:focus { outline: none; border-color: var(--accent); }
     .login-box { width: 85%; padding: 30px 20px; }
 }
 
-/* --- REPORT PAGE (V94 Logic - Image Based) --- */
+/* --- REPORT PAGE --- */
 .report-page, .details-page { 
     width: 794px; 
     height: 1123px; 
@@ -136,9 +136,10 @@ input:focus { outline: none; border-color: var(--accent); }
 
 .content-area, .details-content { 
     position: relative;
-    z-index: 10; 
+    z-index: 50; 
     width: 100%; height: 100%;
-    padding: 180px 50px 100px 50px; 
+    /* MINIMIZED GAP: Reduced top padding from 180px to 130px */
+    padding: 130px 50px 100px 50px; 
     box-sizing: border-box; 
     background: transparent !important;
 }
