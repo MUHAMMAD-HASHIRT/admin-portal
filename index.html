@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Academus Portal v86.0 (Pro Login)</title>
+    <title>Academus Portal v87.0</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -87,7 +87,27 @@
             </div>
 
             <div id="view-admin-teachers" class="page-section hidden">
-                <div class="card"><h3>Register Teacher</h3><div class="form-grid"><div class="form-group"><label>Name</label><input id="new-t-name"></div><div class="form-group"><label>ID</label><input id="new-t-user"></div><div class="form-group"><label>Pass</label><input id="new-t-pass"></div></div><button onclick="Admin.addTeacher()" class="btn btn-primary btn-block">Register</button><h4 style="margin-top:20px;">Teachers</h4><div style="overflow-x:auto;"><table class="data-table"><tbody id="teacher-list-body"></tbody></table></div></div>
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h3>Register Teacher</h3>
+                        <button onclick="Admin.generateCreds()" class="btn-sm btn-accent"><i class="fas fa-dice"></i> Auto Generate</button>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group"><label>Name</label><input id="new-t-name"></div>
+                        <div class="form-group"><label>ID (Login)</label><input id="new-t-user"></div>
+                        <div class="form-group"><label>Pass</label><input id="new-t-pass"></div>
+                        <div class="form-group"><label>Gmail (Optional)</label><input id="new-t-email" placeholder="teacher@gmail.com"></div>
+                    </div>
+                    <button onclick="Admin.addTeacher()" class="btn btn-primary btn-block">Register</button>
+                    
+                    <h4 style="margin-top:20px;">Teachers</h4>
+                    <div style="overflow-x:auto;">
+                        <table class="data-table">
+                            <thead><tr><th>Name</th><th>ID</th><th>Email</th><th>Pass</th><th>Action</th></tr></thead>
+                            <tbody id="teacher-list-body"></tbody>
+                        </table>
+                    </div>
+                </div>
                 <div class="card"><h3>Assign Class</h3><div class="form-grid"><div class="form-group"><label>Class</label><select id="assign-class-select" onchange="Admin.onAssignClassChange()"></select></div><div class="form-group"><label>Section</label><select id="assign-section-select"></select></div><div class="form-group"><label>Subject</label><select id="assign-subject-select"></select></div><div class="form-group"><label>Teacher</label><select id="assign-teacher-select"></select></div></div><button onclick="Admin.assignTeacher()" class="btn btn-success btn-block" style="margin-top:10px;">Assign</button></div>
                 <div class="card"><h3>Assignments</h3><div style="overflow-x:auto;"><table class="data-table"><tbody id="assignment-list-table"></tbody></table></div></div>
             </div>
