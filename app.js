@@ -1,5 +1,5 @@
 /* ==========================================================================
-   APP ENGINE (v94.0) - NO OVERLAP & PRO SUITE
+   APP ENGINE (v103.0) - RESTORED V94 + FIXES
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
@@ -107,7 +107,7 @@ const Auth = {
     logout: () => { sessionStorage.clear(); location.reload(); }
 };
 
-/* --- REPORT ENGINE (PRECISE LAYOUT MATH) --- */
+/* --- REPORT ENGINE (REVERTED TO IMAGE + SAFE ZONES) --- */
 const ReportEngine = {
     calcAvg: (classId, section, field) => { const students = DB.data.students.filter(s => s.classId === classId && s.section === section); if(!students.length) return 0; const total = students.reduce((sum, s) => sum + (parseFloat(s[field]) || 0), 0); return (total / students.length).toFixed(1); },
     radioBehavior: (el) => { if (el.checked) { const rowId = el.id.split('c')[0]; for(let i=1; i<=4; i++) { const siblingId = rowId + 'c' + i; const sibling = document.getElementById(siblingId); if (sibling && sibling !== el) { sibling.checked = false; } } } },
@@ -129,9 +129,12 @@ const ReportEngine = {
         const qInp = (id, v, max) => a ? `<div style="display:flex;align-items:center;justify-content:center;gap:4px;"><input type="number" id="${id}" class="inp-mark" value="${v||''}" style="width:60px; text-align:center; margin:0; padding:5px; height:35px;" max="${max}" oninput="if(parseInt(this.value)>${max}) this.value=${max}"><span style="font-size:12px; font-weight:bold;">/${max}</span></div>` : `<span style="font-weight:bold;">${v||'-'} / ${max}</span>`;
         const box = (id, v) => a ? `<textarea id="${id}" class="inp-mark" style="width:100%; min-height:40px; border:none; resize:none; background:transparent;" oninput="this.style.height='';this.style.height=this.scrollHeight+'px'">${v||''}</textarea>` : `<div style="padding:5px;white-space:pre-wrap;">${v||''}</div>`;
         
-        // --- PRECISE LIMITS FOR A4 SIZE ---
-        const LIMIT = 950; // Use 950px as safe content area (Total A4 is ~1123px)
-        const FOOTER_REQUIRED_SPACE = 300; // Marks + Remarks need approx 300px
+        // --- SAFE ZONE CALCULATION ---
+        // A4 Height = 1123px.
+        // Top Padding (180) + Bottom Padding (100) = 280px reserved.
+        // Usable = 843px. Limit = 840px.
+        const LIMIT = 840; 
+        const FOOTER_REQUIRED_SPACE = 280; 
         
         let pg = ReportEngine.pg(), cnt = pg.querySelector('.content-area');
         let y = ReportEngine.addHeader(cnt, t.title, t.sub, t.desc); 
@@ -149,7 +152,7 @@ const ReportEngine = {
                     container.appendChild(pg); 
                     pg = ReportEngine.pg(); 
                     cnt = pg.querySelector('.content-area'); 
-                    y = ReportEngine.addHeader(cnt, t.title + " (Continued)", "", ""); 
+                    y = ReportEngine.addHeader(cnt, t.title, "", ""); // Minimal header on new page
                     
                     tbl = ReportEngine.createTable(); 
                     cnt.appendChild(tbl); 
@@ -173,19 +176,24 @@ const ReportEngine = {
             });
         }
 
-        // --- FOOTER OVERLAP PREVENTION ---
-        // If current position + required footer space > LIMIT, force new page
+        // FOOTER CHECK
         if (y + FOOTER_REQUIRED_SPACE > LIMIT) { 
             container.appendChild(pg); 
             pg = ReportEngine.pg(); 
             cnt = pg.querySelector('.content-area'); 
-            // New page for footer starts fresh (No header needed, just the block)
+            ReportEngine.addHeader(cnt, t.title, "", "");
         }
         
         cnt.innerHTML += `<div class="footer-block"><div class="quant-header">Quantitative</div><table class="report-table"><tr><th>1st Term</th><th>2nd Term</th><th>Mid Term</th><th>Total</th><th>%</th></tr><tr><td style="text-align:center;">${qInp('sc1',m.sc1, qT.t1)}</td><td style="text-align:center;">${qInp('sc2',m.sc2, qT.t2)}</td><td style="text-align:center;">${qInp('sc3',m.sc3, qT.mid)}</td><td style="text-align:center;">${qInp('sc4',m.sc4, qT.tot)}</td><td style="text-align:center;">${qInp('sc5',m.sc5, 100)}</td></tr></table><div class="remarks-box"><div class="remarks-label">TEACHER REMARKS</div>${box('rem',m.rem)}</div></div>`;
         container.appendChild(pg); return container.innerHTML;
     },
-    pg: () => { const d = document.createElement('div'); d.className = 'report-page'; d.innerHTML = `<img src="header footer.png" class="layer-frame"><img src="background.png" class="layer-lion"><div class="content-area"></div>`; return d; },
+    // REVERTED TO IMAGE LOADER
+    pg: () => { 
+        const d = document.createElement('div'); 
+        d.className = 'report-page'; 
+        d.innerHTML = `<img src="header footer.png" class="layer-frame"><img src="background.png" class="layer-lion"><div class="content-area"></div>`; 
+        return d; 
+    },
     openPrintView: (sid, subIds) => ReportEngine.buildAndOpen(sid, Array.isArray(subIds) ? subIds : [subIds]),
     openFullPrintView: (sid) => { const s = DB.data.students.find(x => x.id === sid); const cls = DB.data.classes.find(c => c.id === s.classId); ReportEngine.buildAndOpen(sid, cls.subjects); },
     buildAndOpen: (sid, subIds) => { const s = DB.data.students.find(x => x.id === sid); const cls = DB.data.classes.find(c => c.id === s.classId); const cover = `<div class="cover-page"><div class="cover-field cover-name">${s.name}</div><div class="cover-field cover-class">${cls.name} - ${s.section}</div></div>`; const details = ReportEngine.generateDetailsPage(s); const rubric = ReportEngine.generateRubricPage(); let reports = ''; subIds.forEach(id => { const sub = DB.data.subjects[id]; if (sub) { const m = (DB.data.marks[sid] && DB.data.marks[sid][id]) ? DB.data.marks[sid][id] : {}; reports += ReportEngine.render(null, sub.template, m, false); } }); const w = window.open('', '_blank'); w.document.write(`<html><head><title>${s.name}</title><link rel="stylesheet" href="style.css"></head><body><div class="no-print-bar" style="background:#333;padding:10px;text-align:center;"><button onclick="window.print()" class="btn btn-success">PRINT PDF</button></div><div class="print-container">${cover}${details}${rubric}${reports}</div></body></html>`); w.document.close(); }
