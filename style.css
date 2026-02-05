@@ -123,7 +123,7 @@ input:focus { outline: none; border-color: var(--accent); }
     .login-box { width: 85%; padding: 30px 20px; }
 }
 
-/* --- THE REPLICA REPORT PAGE (CSS HEADER & FOOTER) --- */
+/* --- THE EXACT REPLICA PAGE --- */
 .report-page, .details-page { 
     width: 794px; 
     height: 1123px; 
@@ -135,19 +135,19 @@ input:focus { outline: none; border-color: var(--accent); }
     position: relative; 
     overflow: hidden; 
     color: #1d1d1f; 
-    /* Padding to mimic margins */
     padding: 0; 
 }
 
-/* 1. Header Replica */
+/* 1. HEADER (REPLICA) */
 .page-header {
     position: absolute;
-    top: 30px;
-    right: 30px;
-    width: 300px;
-    height: 80px;
+    top: 40px;
+    right: 40px;
+    width: 350px; /* Wider for logo */
+    height: 90px;
     display: flex;
     justify-content: flex-end;
+    z-index: 20;
 }
 .page-header img {
     height: 100%;
@@ -157,43 +157,58 @@ input:focus { outline: none; border-color: var(--accent); }
 .page-header::after {
     content: '';
     position: absolute;
-    bottom: -15px;
-    right: -30px; /* Extend to edge */
+    bottom: 0;
+    right: -40px; /* Extends to right edge */
     width: 794px; /* Full page width */
     height: 2px;
     background: #002060;
 }
 
-/* 2. Footer Replica */
+/* 2. FOOTER (REPLICA) */
 .page-footer {
     position: absolute;
-    bottom: 40px;
-    left: 30px;
-    right: 30px;
+    bottom: 50px;
+    left: 40px;
+    right: 40px;
+    height: 2px;
+    background: #002060;
+    z-index: 20;
 }
-/* The Blue Line for Footer */
+/* Extend footer line to edges visual trick */
 .page-footer::before {
     content: '';
     position: absolute;
     top: 0;
-    left: -30px;
+    left: -40px;
     width: 794px;
     height: 2px;
     background: #002060;
 }
 
-/* 3. Content Area - Safe Zone */
-.content-area { 
-    position: absolute;
-    top: 130px; /* Below Header */
-    left: 40px;
-    right: 40px;
-    bottom: 60px; /* Above Footer */
-    box-sizing: border-box; 
+/* 3. LION WATERMARK (Restored) */
+.layer-lion { 
+    position: absolute; 
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); 
+    width: 70%; 
+    opacity: 0.08; /* Very faint like original */
+    pointer-events: none; 
+    z-index: 1; /* Behind text */
 }
 
-/* Report Styles */
-.layer-lion { position: absolute; top: 54%; left: 50%; transform: translate(-50%, -50%); width: 85%; opacity: 0.05; pointer-events: none; }
+/* 4. CONTENT AREA */
+.content-area { 
+    position: absolute;
+    top: 150px; /* Clear header */
+    left: 50px;
+    right: 50px;
+    bottom: 80px; /* Clear footer */
+    box-sizing: border-box; 
+    z-index: 10;
+}
+
+/* Report Internal Styles */
 .cover-page { background-image: url('cover.jpg'); background-size: cover; }
 .cover-field { position: absolute; left: 200px; font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 700; color: #002060; text-transform: uppercase; }
 .cover-name { bottom: 135px; } .cover-class { bottom: 75px; }
