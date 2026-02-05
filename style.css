@@ -160,8 +160,25 @@ input:focus { outline: none; border-color: var(--accent); }
 .data-row td { font-size: 10pt; color: #002060; padding: 8px; }
 .check-box { text-align: center; color: #002060; font-weight: bold; }
 .quant-header { background: #002060; color: white; font-weight: bold; padding: 5px; font-size: 10pt; }
-.footer-block { margin-top: auto; padding-top: 10px; break-inside: avoid; }
-.remarks-box { margin-top: 10px; border: 2px solid #002060; min-height: 60px; background: rgba(255,255,255,0.5); padding: 35px 10px 10px 10px; font-size: 10pt; position: relative; break-inside: avoid; }
+
+/* FIX: Footer block logic */
+.footer-block { 
+    margin-top: 20px; 
+    padding-top: 10px; 
+    break-inside: avoid; 
+    page-break-inside: avoid; /* Prevents splitting marks/remarks across pages */
+    background: transparent;
+}
+
+.remarks-box { 
+    margin-top: 15px; 
+    border: 2px solid #002060; 
+    min-height: 100px; /* Fixed minimum height */
+    background: rgba(255,255,255,0.5); 
+    padding: 35px 10px 10px 10px; 
+    font-size: 10pt; 
+    position: relative; 
+}
 .remarks-label { position: absolute; top: 0; left: 0; width: 100%; font-size: 10pt; font-weight: bold; color: #002060; padding: 5px; border-bottom: 1px solid #002060; background: rgba(255,255,255,0.8); }
 .rubric-title { font-size: 20px; font-weight: 800; color: #002060; margin-bottom: 25px; }
 .rubric-text { font-size: 13px; text-align: justify; margin-bottom: 25px; color: #333; }
