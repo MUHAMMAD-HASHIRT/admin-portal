@@ -163,7 +163,7 @@ input:focus { outline: none; border-color: var(--accent); }
 
 /* COVER PAGE (FIXED FOR PRINT) */
 .cover-page { 
-    background-image: url('cover.jpg') !important; 
+    background-image: url('cover.png') !important; 
     background-size: cover !important; 
     background-position: center !important;
     background-repeat: no-repeat !important;
@@ -237,3 +237,4 @@ input:focus { outline: none; border-color: var(--accent); }
         background: white !important; 
     }
 }
+
