@@ -13,17 +13,6 @@
     --radius-md: 12px;
 }
 
-[data-theme="dark"] {
-    --bg-color: #0f172a;
-    --primary: #f8fafc;
-    --accent: #60a5fa;
-    --text-main: #f1f5f9;
-    --text-secondary: #94a3b8;
-    --glass-card: #1e293b;
-    --glass-border: 1px solid #334155;
-    --sidebar-bg: #1e293b;
-}
-
 body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-main); height: 100vh; overflow: hidden; }
 
 /* UTILS */
@@ -35,11 +24,8 @@ body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-c
 .btn-success { background: #10b981; color: white; }
 .btn-sm { padding: 5px 10px; font-size: 11px; }
 .btn-block { width: 100%; }
-.btn-xs-danger { background: #ef4444; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 10px; font-weight: 700; cursor: pointer; }
-.btn-xs-accent { background: var(--accent); color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 10px; font-weight: 700; cursor: pointer; }
 
 input, select, textarea { padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 12px; background: var(--glass-card); color: var(--text-main); font-family: inherit; font-size: 14px; }
-[data-theme="dark"] input, [data-theme="dark"] select, [data-theme="dark"] textarea { border-color: #334155; }
 input:focus { outline: none; border-color: var(--accent); }
 
 /* LAYOUT */
@@ -60,13 +46,56 @@ input:focus { outline: none; border-color: var(--accent); }
 .data-table td { padding: 14px 16px; border-bottom: 1px solid rgba(0,0,0,0.05); color: var(--text-main); }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
 
-/* ADMIN CLASSES VIEW */
-.class-tree-item { margin-bottom: 15px; border-radius: 12px; overflow: hidden; background: var(--glass-card); border: 1px solid #e2e8f0; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: block; }
-[data-theme="dark"] .class-tree-item { border-color: #334155; }
-.tree-header { background: rgba(0,0,0,0.05); color: var(--text-main); padding: 12px 20px; font-weight: 700; font-size: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,0,0,0.1); }
-.tree-subjects { padding: 15px 20px; background: transparent; border-bottom: 1px solid rgba(0,0,0,0.05); display: flex; flex-wrap: wrap; gap: 8px; }
-.tree-section { padding: 10px 20px; border-bottom: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--text-secondary); }
-.subj-tag { display: inline-flex; align-items: center; background: rgba(37, 99, 235, 0.1); color: var(--accent); padding: 4px 10px; border-radius: 15px; font-size: 11px; font-weight: 600; border: 1px solid rgba(37, 99, 235, 0.2); }
+/* --- FIXED ADMIN CLASSES VIEW (Cards) --- */
+.class-tree-item { 
+    margin-bottom: 15px; 
+    border-radius: 12px; 
+    overflow: hidden; 
+    background: white; /* Force white background */
+    border: 1px solid #e2e8f0; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
+    display: block; 
+}
+.tree-header { 
+    background: #f8fafc; 
+    color: #1e293b; 
+    padding: 12px 20px; 
+    font-weight: 700; 
+    font-size: 15px;
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    border-bottom: 1px solid #e2e8f0; 
+}
+.tree-subjects { 
+    padding: 15px 20px; 
+    background: white; 
+    border-bottom: 1px solid #e2e8f0; 
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.tree-section { 
+    padding: 10px 20px; 
+    border-bottom: 1px solid #f1f5f9; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    font-size: 13px; 
+    color: #64748b; 
+    background: white;
+}
+.subj-tag { 
+    display: inline-flex; 
+    align-items: center; 
+    background: #eff6ff; 
+    color: #2563eb; 
+    padding: 4px 10px; 
+    border-radius: 15px; 
+    font-size: 11px; 
+    font-weight: 600; 
+    border: 1px solid #dbeafe; 
+}
 
 /* TEMPLATE */
 .template-container { display: flex; gap: 20px; height: 100%; flex-direction: row; }
@@ -79,7 +108,6 @@ input:focus { outline: none; border-color: var(--accent); }
 /* LOGIN */
 #app-login { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at top right, #1e293b, #0f172a); display: flex; align-items: center; justify-content: center; z-index: 10000; }
 .login-box { background: rgba(255, 255, 255, 1); width: 380px; padding: 40px; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); text-align: center; border: 1px solid rgba(255,255,255,0.1); position: relative; overflow: hidden; }
-[data-theme="dark"] .login-box { background: #1e293b; border: 1px solid #334155; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
 .login-icon-wrap { display: inline-block; color: var(--accent); margin-bottom: 15px; animation: float 3s ease-in-out infinite; }
 @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-8px); } 100% { transform: translateY(0px); } }
 .login-header h2 { margin: 10px 0 5px; color: var(--text-main); font-family: 'Poppins', sans-serif; font-weight: 700; } 
@@ -99,7 +127,7 @@ input:focus { outline: none; border-color: var(--accent); }
     .login-box { width: 85%; padding: 30px 20px; }
 }
 
-/* --- REPORT PAGE (VISIBILITY FIX) --- */
+/* --- REPORT PAGE STYLES --- */
 .report-page, .details-page { 
     width: 210mm; 
     height: 297mm; 
@@ -116,47 +144,36 @@ input:focus { outline: none; border-color: var(--accent); }
     break-after: page;
 }
 
-/* 1. FRAME (BOTTOM LAYER) */
-.layer-frame { 
-    position: absolute; 
-    top: 0; left: 0; 
-    width: 100%; height: 100%; 
-    z-index: 1; /* FIX: Put this at the bottom */
-    pointer-events: none; 
-}
+/* LAYERS */
+.layer-frame { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+.layer-lion { position: absolute; top: 54%; left: 50%; transform: translate(-50%, -50%); width: 85%; opacity: 0.15; pointer-events: none; z-index: 5; }
 
-/* 2. LION (MIDDLE LAYER) - ON TOP OF FRAME BUT TRANSPARENT */
-.layer-lion { 
-    position: absolute; 
-    top: 54%; left: 50%; 
-    transform: translate(-50%, -50%); 
-    width: 65%; 
-    opacity: 0.25; /* FIX: Visible now */
-    pointer-events: none; 
-    z-index: 5; /* Sits ON TOP of the frame */
-}
-
-/* 3. TEXT CONTENT (TOP LAYER) */
+/* CONTENT AREA (EXACT PADDING: 130px Top, 50px Side, 70px Bottom) */
 .content-area, .details-content { 
     position: relative;
-    z-index: 50; /* Sits ON TOP of everything */
+    z-index: 50; 
     width: 100%; height: 100%;
-    padding: 130px 50px 70px 50px; 
+    padding: 130px 50px 70px 50px; /* YOUR EXACT REQUEST */
     box-sizing: border-box; 
     background: transparent !important;
 }
 
-/* REPORT ELEMENTS - FORCE BLUE */
+/* COVER PAGE (FIXED FOR PRINT) */
 .cover-page { 
-    background-image: url('cover.jpg') !important; 
-    background-size: cover !important; 
-    z-index: 100; 
-    -webkit-print-color-adjust: exact !important; 
-    print-color-adjust: exact !important;
+    position: relative;
+    width: 100%; height: 100%;
+    z-index: 100;
 }
-.cover-field { position: absolute; left: 200px; font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 700; color: #002060; text-transform: uppercase; }
+.cover-img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    position: absolute; top: 0; left: 0;
+    z-index: 0;
+}
+.cover-field { position: absolute; left: 200px; font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 700; color: #002060; text-transform: uppercase; z-index: 10; }
 .cover-name { bottom: 135px; } .cover-class { bottom: 75px; }
 
+/* BLUE HEADERS (FORCED PRINT COLORS) */
 .dt-title, .main-header th, .quant-header { 
     background-color: #002060 !important; 
     color: white !important; 
@@ -167,11 +184,13 @@ input:focus { outline: none; border-color: var(--accent); }
 .main-header th { font-size: 10pt; text-align: left; }
 .quant-header { font-weight: bold; padding: 5px; font-size: 10pt; }
 
+/* ROW COLORS */
 .section-row td { 
     background: rgba(233, 239, 247, 0.95) !important; 
     color: #002060 !important; 
     font-weight: bold; font-size: 12pt; 
     -webkit-print-color-adjust: exact !important; 
+    print-color-adjust: exact !important;
 }
 
 .dt-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; border-bottom: 1px solid #eee; }
@@ -197,11 +216,27 @@ input:focus { outline: none; border-color: var(--accent); }
 
 .inp-mark { color: black !important; background: transparent !important; border: none !important; outline: 1px solid #ccc; }
 
+/* --- PRINT BUTTON BAR --- */
+.no-print-bar {
+    position: fixed;
+    top: 0; left: 0; width: 100%;
+    background: #333;
+    padding: 15px;
+    text-align: center;
+    z-index: 9999;
+}
+.no-print-bar button {
+    background: #10b981; color: white; border: none; padding: 10px 20px; font-size: 16px; font-weight: bold; border-radius: 5px; cursor: pointer;
+}
+
 @media print {
     .inp-mark { outline: none !important; }
     @page { size: A4 portrait; margin: 0; }
     body { background: white; margin: 0; padding: 0; }
+    
+    /* HIDE UI ELEMENTS */
     .no-print-bar, .navbar, .sidebar, .login-wrapper, #app-login, .mobile-menu-btn, .zoom-controls { display: none !important; }
+    
     .print-container { margin: 0 !important; width: 210mm; }
     
     .report-page, .cover-page, .details-page { 
@@ -212,6 +247,4 @@ input:focus { outline: none; border-color: var(--accent); }
         transform-origin: top left;
         background: white !important; 
     }
-    
-    .layer-lion { opacity: 0.25 !important; }
 }
