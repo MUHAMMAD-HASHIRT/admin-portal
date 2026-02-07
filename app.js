@@ -1,5 +1,5 @@
 /* ==========================================================================
-   APP ENGINE (v109.0) - ADMIN UI & PRINT FIXES
+   APP ENGINE (v110.0) - FINAL POLISH
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
@@ -129,8 +129,8 @@ const ReportEngine = {
         const qInp = (id, v, max) => a ? `<div style="display:flex;align-items:center;justify-content:center;gap:4px;"><input type="number" id="${id}" class="inp-mark" value="${v||''}" style="width:60px; text-align:center; margin:0; padding:5px; height:35px;" max="${max}" oninput="if(parseInt(this.value)>${max}) this.value=${max}"><span style="font-size:12px; font-weight:bold;">/${max}</span></div>` : `<span style="font-weight:bold;">${v||'-'} / ${max}</span>`;
         const box = (id, v) => a ? `<textarea id="${id}" class="inp-mark" style="width:100%; min-height:40px; border:none; resize:none; background:transparent;" oninput="this.style.height='';this.style.height=this.scrollHeight+'px'">${v||''}</textarea>` : `<div style="padding:5px;white-space:pre-wrap;">${v||''}</div>`;
         
-        // --- SAFE ZONE CALCULATION ---
-        const LIMIT = 960; // Maximize usage
+        // --- PAGE CALCULATION ---
+        const LIMIT = 960; 
         const FOOTER_REQUIRED_SPACE = 200; 
         
         let pg = ReportEngine.pg(), cnt = pg.querySelector('.content-area');
@@ -150,7 +150,7 @@ const ReportEngine = {
                     pg = ReportEngine.pg(); 
                     cnt = pg.querySelector('.content-area'); 
                     
-                    // FIXED: NO SUBJECT HEADING ON PAGE 2
+                    // FIXED: NO HEADING ON PAGE 2
                     y = 20; 
                     
                     tbl = ReportEngine.createTable(); 
@@ -175,12 +175,10 @@ const ReportEngine = {
             });
         }
 
-        // FOOTER OVERLAP CHECK
         if (y + FOOTER_REQUIRED_SPACE > LIMIT) { 
             container.appendChild(pg); 
             pg = ReportEngine.pg(); 
             cnt = pg.querySelector('.content-area'); 
-            // CLEAN PAGE 2
         }
         
         cnt.innerHTML += `<div class="footer-block"><div class="quant-header">Quantitative</div><table class="report-table"><tr><th>1st Term</th><th>2nd Term</th><th>Mid Term</th><th>Total</th><th>%</th></tr><tr><td style="text-align:center;">${qInp('sc1',m.sc1, qT.t1)}</td><td style="text-align:center;">${qInp('sc2',m.sc2, qT.t2)}</td><td style="text-align:center;">${qInp('sc3',m.sc3, qT.mid)}</td><td style="text-align:center;">${qInp('sc4',m.sc4, qT.tot)}</td><td style="text-align:center;">${qInp('sc5',m.sc5, 100)}</td></tr></table><div class="remarks-box"><div class="remarks-label">TEACHER REMARKS</div>${box('rem',m.rem)}</div></div>`;
@@ -305,7 +303,7 @@ const Template = {
     initSelect:()=>{Admin.refreshDropdowns()}, 
     onClassChange:()=>{const c=document.getElementById('tpl-class-select').value,s=document.getElementById('tpl-subject-select');s.innerHTML='<option>Subj</option>';const cl=DB.data.classes.find(x=>x.id===c);if(cl)cl.subjects.forEach(sid=>{if(DB.data.subjects[sid])s.innerHTML+=`<option value="${sid}">${DB.data.subjects[sid].name}</option>`})}, 
     
-    // ZOOM FUNCTIONALITY PRESERVED
+    // ZOOM FUNCTIONALITY
     scale: 0.42,
     zoom: (delta) => {
         Template.scale += delta;
