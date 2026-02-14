@@ -1,5 +1,5 @@
 /* ==========================================================================
-   APP ENGINE (v111.0) - FINAL PRODUCTION
+   APP ENGINE (v115.0) - OPTIONAL FOOTER MODULES
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
@@ -54,7 +54,7 @@ const DB = {
     save: () => { dbRef.set(DB.data).then(() => { console.log("Cloud Saved."); }).catch(e => alert("Save Error: " + e.message)); },
     reset: () => { if(confirm("⚠️ DANGER: This will delete ALL data (Classes, Students, etc) and reset to fresh state.\n\nAre you sure?")) { DB.data = DB.defaults; DB.save(); alert("Database has been reset. Loading fresh..."); location.reload(); } },
     backup: () => { const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(DB.data)); const a = document.createElement('a'); a.href = dataStr; a.download = "backup.json"; a.click(); },
-    createDefaultTemplate: (t) => { return { title: t||'REPORT CARD', sub: 'TERM EVALUATION', desc: 'Student performance report.', qTotals: { t1:25, t2:25, mid:50, tot:100 }, items: [] }; }
+    createDefaultTemplate: (t) => { return { title: t||'REPORT CARD', sub: 'TERM EVALUATION', desc: 'Student performance report.', qTotals: { t1:25, t2:25, mid:50, tot:100 }, items: [], showQuant: true, showRemarks: true }; }
 };
 
 /* --- UI ROUTER --- */
@@ -107,7 +107,7 @@ const Auth = {
     logout: () => { sessionStorage.clear(); location.reload(); }
 };
 
-/* --- REPORT ENGINE --- */
+/* --- REPORT ENGINE (OPTIONAL FOOTER MODULES) --- */
 const ReportEngine = {
     calcAvg: (classId, section, field) => { const students = DB.data.students.filter(s => s.classId === classId && s.section === section); if(!students.length) return 0; const total = students.reduce((sum, s) => sum + (parseFloat(s[field]) || 0), 0); return (total / students.length).toFixed(1); },
     radioBehavior: (el) => { if (el.checked) { const rowId = el.id.split('c')[0]; for(let i=1; i<=4; i++) { const siblingId = rowId + 'c' + i; const sibling = document.getElementById(siblingId); if (sibling && sibling !== el) { sibling.checked = false; } } } },
@@ -129,9 +129,15 @@ const ReportEngine = {
         const qInp = (id, v, max) => a ? `<div style="display:flex;align-items:center;justify-content:center;gap:4px;"><input type="number" id="${id}" class="inp-mark" value="${v||''}" style="width:60px; text-align:center; margin:0; padding:5px; height:35px;" max="${max}" oninput="if(parseInt(this.value)>${max}) this.value=${max}"><span style="font-size:12px; font-weight:bold;">/${max}</span></div>` : `<span style="font-weight:bold;">${v||'-'} / ${max}</span>`;
         const box = (id, v) => a ? `<textarea id="${id}" class="inp-mark" style="width:100%; min-height:40px; border:none; resize:none; background:transparent;" oninput="this.style.height='';this.style.height=this.scrollHeight+'px'">${v||''}</textarea>` : `<div style="padding:5px;white-space:pre-wrap;">${v||''}</div>`;
         
-        // --- PAGE CALCULATION ---
+        // --- OPTIONAL MODULES & DYNAMIC SPACING ---
+        const showQuant = t.showQuant !== false; // Default true
+        const showRemarks = t.showRemarks !== false; // Default true
+        
+        let FOOTER_REQUIRED_SPACE = 20; // Base margin
+        if(showQuant) FOOTER_REQUIRED_SPACE += 100; // Est height of quant table
+        if(showRemarks) FOOTER_REQUIRED_SPACE += 120; // Est height of remarks
+
         const LIMIT = 960; 
-        const FOOTER_REQUIRED_SPACE = 200; 
         
         let pg = ReportEngine.pg(), cnt = pg.querySelector('.content-area');
         let y = ReportEngine.addHeader(cnt, t.title, t.sub, t.desc); 
@@ -149,9 +155,7 @@ const ReportEngine = {
                     container.appendChild(pg); 
                     pg = ReportEngine.pg(); 
                     cnt = pg.querySelector('.content-area'); 
-                    
-                    // FIXED: NO HEADING ON PAGE 2
-                    y = 20; 
+                    y = 20; // No header on page 2
                     
                     tbl = ReportEngine.createTable(); 
                     cnt.appendChild(tbl); 
@@ -181,7 +185,20 @@ const ReportEngine = {
             cnt = pg.querySelector('.content-area'); 
         }
         
-        cnt.innerHTML += `<div class="footer-block"><div class="quant-header">Quantitative</div><table class="report-table"><tr><th>1st Term</th><th>2nd Term</th><th>Mid Term</th><th>Total</th><th>%</th></tr><tr><td style="text-align:center;">${qInp('sc1',m.sc1, qT.t1)}</td><td style="text-align:center;">${qInp('sc2',m.sc2, qT.t2)}</td><td style="text-align:center;">${qInp('sc3',m.sc3, qT.mid)}</td><td style="text-align:center;">${qInp('sc4',m.sc4, qT.tot)}</td><td style="text-align:center;">${qInp('sc5',m.sc5, 100)}</td></tr></table><div class="remarks-box"><div class="remarks-label">TEACHER REMARKS</div>${box('rem',m.rem)}</div></div>`;
+        // CONDITIONAL FOOTER RENDERING
+        let footerHTML = `<div class="footer-block">`;
+        
+        if (showQuant) {
+            footerHTML += `<div class="quant-header">Quantitative</div><table class="report-table"><tr><th>1st Term</th><th>2nd Term</th><th>Mid Term</th><th>Total</th><th>%</th></tr><tr><td style="text-align:center;">${qInp('sc1',m.sc1, qT.t1)}</td><td style="text-align:center;">${qInp('sc2',m.sc2, qT.t2)}</td><td style="text-align:center;">${qInp('sc3',m.sc3, qT.mid)}</td><td style="text-align:center;">${qInp('sc4',m.sc4, qT.tot)}</td><td style="text-align:center;">${qInp('sc5',m.sc5, 100)}</td></tr></table>`;
+        }
+        
+        if (showRemarks) {
+            footerHTML += `<div class="remarks-box"><div class="remarks-label">TEACHER REMARKS</div>${box('rem',m.rem)}</div>`;
+        }
+        
+        footerHTML += `</div>`;
+        cnt.innerHTML += footerHTML;
+        
         container.appendChild(pg); return container.innerHTML;
     },
     pg: () => { 
@@ -192,7 +209,6 @@ const ReportEngine = {
     },
     openPrintView: (sid, subIds) => ReportEngine.buildAndOpen(sid, Array.isArray(subIds) ? subIds : [subIds]),
     openFullPrintView: (sid) => { const s = DB.data.students.find(x => x.id === sid); const cls = DB.data.classes.find(c => c.id === s.classId); ReportEngine.buildAndOpen(sid, cls.subjects); },
-    // FIXED: FORCED BUTTON INSERTION + COVER IMAGE
     buildAndOpen: (sid, subIds) => { 
         const s = DB.data.students.find(x => x.id === sid); 
         const cls = DB.data.classes.find(c => c.id === s.classId); 
@@ -317,7 +333,6 @@ const Template = {
     initSelect:()=>{Admin.refreshDropdowns()}, 
     onClassChange:()=>{const c=document.getElementById('tpl-class-select').value,s=document.getElementById('tpl-subject-select');s.innerHTML='<option>Subj</option>';const cl=DB.data.classes.find(x=>x.id===c);if(cl)cl.subjects.forEach(sid=>{if(DB.data.subjects[sid])s.innerHTML+=`<option value="${sid}">${DB.data.subjects[sid].name}</option>`})}, 
     
-    // ZOOM FUNCTIONALITY
     scale: 0.42,
     zoom: (delta) => {
         Template.scale += delta;
@@ -329,8 +344,23 @@ const Template = {
         if(lbl) lbl.innerText = Math.round(Template.scale * 100) + '%';
     },
 
-    load:()=>{const sid=document.getElementById('tpl-subject-select').value;if(!sid)return;Template.currentSubjectId=sid;const t=DB.data.subjects[sid].template;document.getElementById('tpl-title').value=t.title;document.getElementById('tpl-sub').value=t.sub;document.getElementById('tpl-desc').value=t.desc;const qt=t.qTotals||{t1:25,t2:25,mid:50,tot:100};document.getElementById('qt-1').value=qt.t1;document.getElementById('qt-2').value=qt.t2;document.getElementById('qt-3').value=qt.mid;document.getElementById('qt-4').value=qt.tot;Template.renderRows(t.items);ReportEngine.render('editor-preview',t,{},false)}, 
-    syncToDB:()=>{if(!Template.currentSubjectId)return;const i=[];document.querySelectorAll('#template-rows .row-item').forEach(r=>i.push({type:r.dataset.type,text:r.querySelector('input').value}));const t=DB.data.subjects[Template.currentSubjectId].template;t.title=document.getElementById('tpl-title').value;t.sub=document.getElementById('tpl-sub').value;t.desc=document.getElementById('tpl-desc').value;t.items=i;t.qTotals={t1:document.getElementById('qt-1').value,t2:document.getElementById('qt-2').value,mid:document.getElementById('qt-3').value,tot:document.getElementById('qt-4').value}}, 
+    load:()=>{const sid=document.getElementById('tpl-subject-select').value;if(!sid)return;Template.currentSubjectId=sid;const t=DB.data.subjects[sid].template;
+        document.getElementById('tpl-title').value=t.title;document.getElementById('tpl-sub').value=t.sub;document.getElementById('tpl-desc').value=t.desc;
+        const qt=t.qTotals||{t1:25,t2:25,mid:50,tot:100};document.getElementById('qt-1').value=qt.t1;document.getElementById('qt-2').value=qt.t2;document.getElementById('qt-3').value=qt.mid;document.getElementById('qt-4').value=qt.tot;
+        
+        // NEW SETTINGS LOADING
+        document.getElementById('tpl-show-quant').checked = t.showQuant !== false;
+        document.getElementById('tpl-show-remarks').checked = t.showRemarks !== false;
+
+        Template.renderRows(t.items);ReportEngine.render('editor-preview',t,{},false)}, 
+    
+    syncToDB:()=>{if(!Template.currentSubjectId)return;const i=[];document.querySelectorAll('#template-rows .row-item').forEach(r=>i.push({type:r.dataset.type,text:r.querySelector('input').value}));const t=DB.data.subjects[Template.currentSubjectId].template;
+        t.title=document.getElementById('tpl-title').value;t.sub=document.getElementById('tpl-sub').value;t.desc=document.getElementById('tpl-desc').value;t.items=i;
+        t.qTotals={t1:document.getElementById('qt-1').value,t2:document.getElementById('qt-2').value,mid:document.getElementById('qt-3').value,tot:document.getElementById('qt-4').value};
+        // SAVE SETTINGS
+        t.showQuant = document.getElementById('tpl-show-quant').checked;
+        t.showRemarks = document.getElementById('tpl-show-remarks').checked;
+    }, 
     liveUpdate:()=>{if(!Template.currentSubjectId)return;Template.syncToDB();ReportEngine.render('editor-preview',DB.data.subjects[Template.currentSubjectId].template,{},false)}, 
     renderRows:(i)=>{const c=document.getElementById('template-rows');c.innerHTML='';i.forEach((item,idx)=>{c.innerHTML+=`<div class="row-item" data-type="${item.type}" style="display:flex;gap:5px;margin-bottom:5px;"><span style="font-size:10px;width:15px;font-weight:bold;">${item.type[0].toUpperCase()}</span><input value="${item.text||''}" oninput="Template.liveUpdate()"><button onclick="Template.delItem(${idx})" style="color:red;border:none;">x</button></div>`})}, 
     add:(t)=>{if(Template.currentSubjectId){Template.syncToDB();DB.data.subjects[Template.currentSubjectId].template.items.push({type:t,text:''});Template.load()}}, 
