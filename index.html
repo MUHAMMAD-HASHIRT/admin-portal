@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Academus Portal v107.0</title>
+    <title>Academus Portal v115.0</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -130,8 +130,20 @@
                             <select id="tpl-subject-select" onchange="Template.load()"></select>
                             <button onclick="Template.save()" class="btn btn-success">Save</button>
                         </div>
+                        
+                        <div style="background:var(--bg-color); padding:10px; border-radius:8px; margin-bottom:15px; border:1px solid #ccc;">
+                            <div style="font-weight:bold; margin-bottom:5px; font-size:12px;">PAGE SETTINGS</div>
+                            <label style="display:inline-flex; align-items:center; gap:8px; font-size:13px; margin-right:15px; cursor:pointer;">
+                                <input type="checkbox" id="tpl-show-quant" style="width:auto; margin:0;" onclick="Template.liveUpdate()"> Show Marks Table
+                            </label>
+                            <label style="display:inline-flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+                                <input type="checkbox" id="tpl-show-remarks" style="width:auto; margin:0;" onclick="Template.liveUpdate()"> Show Remarks Box
+                            </label>
+                        </div>
+
                         <label>Main Title</label><input id="tpl-title"><label>Sub Title</label><input id="tpl-sub"><label>Description</label><textarea id="tpl-desc"></textarea><hr><label>Totals</label><div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:5px;"><input id="qt-1" placeholder="1st" type="number"><input id="qt-2" placeholder="2nd" type="number"><input id="qt-3" placeholder="Mid" type="number"><input id="qt-4" placeholder="Tot" type="number"></div><hr><div id="template-rows"></div><div style="margin-top:15px; display:flex; gap:5px;"><button onclick="Template.add('header')" class="btn btn-sm btn-accent">H</button><button onclick="Template.add('data')" class="btn btn-sm btn-success">R</button><button onclick="Template.add('break')" class="btn btn-sm btn-danger">B</button></div>
                     </div>
+                    
                     <div class="card scroll-panel preview-card">
                         <div class="preview-label">LIVE PREVIEW</div>
                         <div class="zoom-controls">
