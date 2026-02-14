@@ -1,5 +1,5 @@
 /* ==========================================================================
-   APP ENGINE (v117.0) - REPLICA TABLE & FINAL POLISH
+   APP ENGINE (v118.0) - CENTERED & WIDE COLUMNS
    ========================================================================== */
 
 const firebaseConfig = {
@@ -100,11 +100,11 @@ const Auth = {
     logout: () => { sessionStorage.clear(); location.reload(); }
 };
 
-/* --- REPORT ENGINE (REPLICA TABLE) --- */
+/* --- REPORT ENGINE --- */
 const ReportEngine = {
     calcAvg: (classId, section, field) => { const students = DB.data.students.filter(s => s.classId === classId && s.section === section); if(!students.length) return 0; const total = students.reduce((sum, s) => sum + (parseFloat(s[field]) || 0), 0); return (total / students.length).toFixed(1); },
     
-    // NEW: REPLICA OF THE SCREENSHOT TABLE
+    // UPDATED TABLE WITH WIDER COLUMNS (25%)
     generateDetailsPage: (s) => { 
         const cls = DB.data.classes.find(c => c.id === s.classId); 
         const avgAgeY = ReportEngine.calcAvg(s.classId, s.section, 'ageY'); 
@@ -125,22 +125,22 @@ const ReportEngine = {
                     <tr><th>Parent/Guardian's Name (2)</th><td colspan="3">${s.parent2 || '-'}</td></tr>
                     <tr>
                         <th>Level</th><td>${cls.name}</td>
-                        <td style="width:10%;">Section:</td><td>${s.section}</td>
+                        <td style="width:25%;">Section:</td><td>${s.section}</td>
                     </tr>
                     <tr>
                         <th>Age</th><td>Years: ${s.ageY}</td>
-                        <td>Months: ${s.ageM}</td><td>Class Average: ${avgAgeY} Yrs</td>
+                        <td style="width:25%;">Months: ${s.ageM}</td><td>Class Average: ${avgAgeY} Yrs</td>
                     </tr>
                     <tr>
                         <th>Gender</th><td colspan="3">Male ${check(s.gender==='M')} Female ${check(s.gender==='F')}</td>
                     </tr>
                     <tr>
                         <th>Attendance</th><td>Present: ${s.attendanceP||0}</td>
-                        <td>Absent: ${s.attendanceA||0}</td><td>Total: ${totalAtt}</td>
+                        <td style="width:25%;">Absent: ${s.attendanceA||0}</td><td>Total: ${totalAtt}</td>
                     </tr>
                     <tr>
                         <th>Physical Measurement</th><td>Height (cm): ${s.height}</td>
-                        <td>Weight (Kg): ${s.weight}</td><td>Class Average: <br>H: ${avgHt} | W: ${avgWt}</td>
+                        <td style="width:25%;">Weight (Kg): ${s.weight}</td><td>Class Average: <br>H: ${avgHt} | W: ${avgWt}</td>
                     </tr>
                     <tr><th>Parent Teacher Conference 1</th><td colspan="3">Yes ${check(s.pt1)} No ${check(!s.pt1)}</td></tr>
                     <tr><th>Parent Teacher Conference 2</th><td colspan="3">Yes ${check(s.pt2)} No ${check(!s.pt2)}</td></tr>
@@ -200,7 +200,6 @@ const ReportEngine = {
     pg: () => { const d = document.createElement('div'); d.className = 'report-page'; d.innerHTML = `<img src="header footer.png" class="layer-frame"><img src="background.png" class="layer-lion"><div class="content-area"></div>`; return d; },
     openPrintView: (sid, subIds) => ReportEngine.buildAndOpen(sid, Array.isArray(subIds) ? subIds : [subIds]),
     openFullPrintView: (sid) => { const s = DB.data.students.find(x => x.id === sid); const cls = DB.data.classes.find(c => c.id === s.classId); ReportEngine.buildAndOpen(sid, cls.subjects); },
-    // FIXED: FORCED BUTTON + COVER IMG
     buildAndOpen: (sid, subIds) => { 
         const s = DB.data.students.find(x => x.id === sid); 
         const cls = DB.data.classes.find(c => c.id === s.classId); 
@@ -210,9 +209,7 @@ const ReportEngine = {
         let reports = ''; 
         subIds.forEach(id => { const sub = DB.data.subjects[id]; if (sub) { const m = (DB.data.marks[sid] && DB.data.marks[sid][id]) ? DB.data.marks[sid][id] : {}; reports += ReportEngine.render(null, sub.template, m, false); } }); 
         const w = window.open('', '_blank'); 
-        w.document.write(`<html><head><title>${s.name}</title><link rel="stylesheet" href="style.css">
-        <style>.forced-print-bar { position: fixed; top: 0; left: 0; width: 100%; background: #1e293b; padding: 15px; text-align: center; z-index: 10000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); } .forced-btn { background: #10b981; color: white; border: none; padding: 10px 25px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; } @media print { .forced-print-bar { display: none !important; } }</style>
-        </head><body><div class="forced-print-bar"><button class="forced-btn" onclick="window.print()">🖨️ PRINT PDF</button></div><div class="print-container">${cover}${details}${rubric}${reports}</div></body></html>`); 
+        w.document.write(`<html><head><title>${s.name}</title><link rel="stylesheet" href="style.css"><style>.forced-print-bar { position: fixed; top: 0; left: 0; width: 100%; background: #1e293b; padding: 15px; text-align: center; z-index: 10000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); } .forced-btn { background: #10b981; color: white; border: none; padding: 10px 25px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; } @media print { .forced-print-bar { display: none !important; } }</style></head><body><div class="forced-print-bar"><button class="forced-btn" onclick="window.print()">🖨️ PRINT PDF</button></div><div class="print-container">${cover}${details}${rubric}${reports}</div></body></html>`); 
         w.document.close(); 
     }
 };
