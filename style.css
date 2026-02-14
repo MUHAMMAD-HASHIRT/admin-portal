@@ -46,7 +46,7 @@ input:focus { outline: none; border-color: var(--accent); }
 .data-table td { padding: 14px 16px; border-bottom: 1px solid rgba(0,0,0,0.05); color: var(--text-main); }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
 
-/* CLASSES VIEW (Cards) */
+/* ADMIN CLASSES VIEW */
 .class-tree-item { margin-bottom: 15px; border-radius: 12px; overflow: hidden; background: white; border: 1px solid #e2e8f0; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: block; }
 .tree-header { background: #f8fafc; color: #1e293b; padding: 12px 20px; font-weight: 700; font-size: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; }
 .tree-subjects { padding: 15px 20px; background: white; border-bottom: 1px solid #e2e8f0; display: flex; flex-wrap: wrap; gap: 8px; }
@@ -55,6 +55,7 @@ input:focus { outline: none; border-color: var(--accent); }
 
 /* TEMPLATE */
 .template-container { display: flex; gap: 20px; height: 100%; flex-direction: row; }
+.preview-label { text-align: center; font-weight: bold; color: var(--text-secondary); margin-bottom: 10px; }
 .zoom-controls { position: absolute; top: 15px; right: 15px; display: flex; gap: 5px; z-index: 100; background: var(--glass-card); padding: 5px; border-radius: 8px; border: var(--glass-border); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 .zoom-val { font-size: 12px; font-weight: bold; padding: 5px 8px; min-width: 40px; text-align: center; display: flex; align-items: center; justify-content: center; }
 #preview-wrapper { width: 100%; height: 100%; display: flex; justify-content: center; background: #cbd5e1; padding: 40px; border-radius: 8px; overflow: auto; }
@@ -80,7 +81,7 @@ input:focus { outline: none; border-color: var(--accent); }
     .login-box { width: 85%; padding: 30px 20px; }
 }
 
-/* --- REPLICA REPORT STYLES --- */
+/* --- REPORT PAGE --- */
 .report-page, .details-page { 
     width: 210mm; 
     height: 297mm; 
@@ -91,7 +92,7 @@ input:focus { outline: none; border-color: var(--accent); }
     font-family: "Poppins", sans-serif; 
     position: relative; 
     overflow: hidden; 
-    color: #002060; /* Dark Blue Text */
+    color: #002060; 
     padding: 0; 
     page-break-after: always;
     break-after: page;
@@ -118,7 +119,7 @@ input:focus { outline: none; border-color: var(--accent); }
 .cover-field { position: absolute; left: 200px; font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 700; color: #002060; text-transform: uppercase; z-index: 10; }
 .cover-name { bottom: 135px; } .cover-class { bottom: 75px; }
 
-/* --- FIXED HEADER ALIGNMENT --- */
+/* --- UPDATED STUDENT DETAILS TABLE (Wider & Centered) --- */
 .details-header {
     background-color: #002060 !important;
     color: white !important;
@@ -126,18 +127,23 @@ input:focus { outline: none; border-color: var(--accent); }
     font-weight: 700;
     padding: 8px;
     margin-bottom: 0;
-    text-align: center !important; /* FIXED: CENTER ALIGNED */
+    text-align: center !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
 }
 
-.details-table-new { width: 100%; border-collapse: collapse; font-size: 10pt; margin-bottom: 20px; }
+.details-table-new {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12pt; /* BIGGER FONT */
+    margin: 0 auto 20px auto; /* CENTERED */
+}
 
 .details-table-new th {
     background-color: #002060 !important;
     color: white !important;
     text-align: left;
-    padding: 8px 12px;
+    padding: 14px 15px; /* BIGGER PADDING */
     width: 25%;
     border-bottom: 1px solid white;
     -webkit-print-color-adjust: exact !important;
@@ -145,9 +151,9 @@ input:focus { outline: none; border-color: var(--accent); }
 }
 
 .details-table-new td {
-    background-color: #e2e8f0 !important; /* Light Grey/Blue */
+    background-color: #e2e8f0 !important;
     color: #002060 !important;
-    padding: 8px 12px;
+    padding: 14px 15px; /* WIDER ROW */
     border-bottom: 1px solid white;
     border-left: 1px solid white;
     font-weight: 500;
@@ -158,18 +164,60 @@ input:focus { outline: none; border-color: var(--accent); }
 .dt-check { display: inline-block; width: 14px; height: 14px; border: 1px solid #002060; margin-left: 5px; margin-right: 15px; vertical-align: middle; background: white; }
 .dt-check.checked { background: #002060; }
 
-/* TABLES */
+/* --- RUBRIC & SUBJECT REPORT TABLES (RESTORED COLORS) --- */
 .main-title { font-size: 14pt; font-weight: bold; color: #002060; text-transform: uppercase; margin-bottom: 5px; }
 .sub-title { font-size: 11pt; font-weight: normal; color: #002060; text-transform: uppercase; margin-bottom: 8px; border-bottom: 1px solid #ccc; padding-bottom:5px; }
 .description { font-size: 10pt; line-height: 1.3; color: #002060; margin-bottom: 15px; text-align: justify; white-space: pre-wrap; width: 100%; }
 
 .report-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; background: rgba(255,255,255,0.9); }
 .report-table th, .report-table td { border: 1px solid #8FAADC; padding: 6px; }
-.main-header th { background-color: #002060 !important; color: white !important; font-size: 10pt; text-align: left; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-.section-row td { background: rgba(233, 239, 247, 0.95) !important; color: #002060 !important; font-weight: bold; font-size: 12pt; -webkit-print-color-adjust: exact !important; }
+
+/* Force Blue Headers on Print */
+.main-header th { 
+    background-color: #002060 !important; 
+    color: white !important; 
+    font-size: 10pt; text-align: left; 
+    -webkit-print-color-adjust: exact !important; 
+    print-color-adjust: exact !important;
+}
+
+.section-row td { 
+    background: rgba(233, 239, 247, 0.95) !important; 
+    color: #002060 !important; 
+    font-weight: bold; font-size: 12pt; 
+    -webkit-print-color-adjust: exact !important; 
+    print-color-adjust: exact !important;
+}
+
 .data-row td { font-size: 10pt; color: #002060; padding: 8px; }
 .check-box { text-align: center; color: #002060; font-weight: bold; }
 .quant-header { background-color: #002060 !important; color: white !important; font-weight: bold; padding: 5px; font-size: 10pt; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+/* RUBRIC COLORS RESTORED */
+.rubric-title { font-size: 20px; font-weight: 800; color: #002060; margin-bottom: 25px; }
+.rubric-text { font-size: 13px; text-align: justify; margin-bottom: 25px; color: #002060; }
+
+.rubric-table th { 
+    background-color: #a0a0a0 !important; /* GREY RESTORED */
+    color: #002060 !important; 
+    padding: 12px; font-weight: 800; 
+    -webkit-print-color-adjust: exact !important; 
+    print-color-adjust: exact !important;
+}
+.rubric-row-grey td { 
+    background-color: #e5e7eb !important; /* LIGHT GREY RESTORED */
+    padding: 12px; 
+    -webkit-print-color-adjust: exact !important; 
+    print-color-adjust: exact !important;
+    color: #002060; 
+}
+.rubric-row-white td { 
+    background-color: #ffffff !important; 
+    padding: 12px; 
+    -webkit-print-color-adjust: exact !important; 
+    print-color-adjust: exact !important;
+    color: #002060; 
+}
 
 /* FOOTER */
 .footer-block { margin-top: 20px; width: 100%; }
