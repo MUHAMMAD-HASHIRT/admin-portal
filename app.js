@@ -1,5 +1,5 @@
 /* ==========================================================================
-   APP ENGINE (v115.0) - OPTIONAL FOOTER MODULES
+   APP ENGINE (v116.0) - REMARKS BOX & PRINT BUTTON FIX
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
@@ -209,6 +209,7 @@ const ReportEngine = {
     },
     openPrintView: (sid, subIds) => ReportEngine.buildAndOpen(sid, Array.isArray(subIds) ? subIds : [subIds]),
     openFullPrintView: (sid) => { const s = DB.data.students.find(x => x.id === sid); const cls = DB.data.classes.find(c => c.id === s.classId); ReportEngine.buildAndOpen(sid, cls.subjects); },
+    // FIXED: FORCED BUTTON INSERTION + COVER IMAGE
     buildAndOpen: (sid, subIds) => { 
         const s = DB.data.students.find(x => x.id === sid); 
         const cls = DB.data.classes.find(c => c.id === s.classId); 
@@ -218,9 +219,34 @@ const ReportEngine = {
         let reports = ''; 
         subIds.forEach(id => { const sub = DB.data.subjects[id]; if (sub) { const m = (DB.data.marks[sid] && DB.data.marks[sid][id]) ? DB.data.marks[sid][id] : {}; reports += ReportEngine.render(null, sub.template, m, false); } }); 
         const w = window.open('', '_blank'); 
-        w.document.write(`<html><head><title>${s.name}</title><link rel="stylesheet" href="style.css"></head><body>
-        <div class="no-print-bar"><button onclick="window.print()">PRINT PDF</button></div>
-        <div class="print-container">${cover}${details}${rubric}${reports}</div></body></html>`); 
+        
+        // --- HARD CODED PRINT BUTTON STYLES INJECTED HERE ---
+        w.document.write(`
+            <html>
+                <head>
+                    <title>${s.name}</title>
+                    <link rel="stylesheet" href="style.css">
+                    <style>
+                        .forced-print-bar {
+                            position: fixed; top: 0; left: 0; width: 100%;
+                            background: #1e293b; padding: 15px; text-align: center; z-index: 10000;
+                            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+                        }
+                        .forced-btn {
+                            background: #10b981; color: white; border: none; padding: 10px 25px; 
+                            font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer;
+                            font-family: sans-serif;
+                        }
+                        .forced-btn:hover { background: #059669; }
+                        @media print { .forced-print-bar { display: none !important; } }
+                    </style>
+                </head>
+                <body>
+                    <div class="forced-print-bar"><button class="forced-btn" onclick="window.print()">🖨️ PRINT PDF</button></div>
+                    <div class="print-container">${cover}${details}${rubric}${reports}</div>
+                </body>
+            </html>
+        `); 
         w.document.close(); 
     }
 };
