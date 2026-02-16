@@ -1,5 +1,5 @@
 /* ==========================================================================
-   APP ENGINE (v122.0) - CLASS TEACHER FIX
+   APP ENGINE (v123.0) - DATA & BLEED FIX
    ========================================================================== */
 
 const firebaseConfig = {
@@ -43,7 +43,15 @@ const DB = {
         });
         dbRef.on('value', (snapshot) => {
             const val = snapshot.val();
-            if (val) { DB.data = DB.sanitize(val); if (!document.getElementById('view-admin-classes').classList.contains('hidden')) Admin.loadClassesHierarchy(); if (!document.getElementById('view-admin-teachers').classList.contains('hidden')) Admin.loadTeachers(); }
+            if (val) { 
+                DB.data = DB.sanitize(val); 
+                if (!document.getElementById('view-admin-classes').classList.contains('hidden')) Admin.loadClassesHierarchy(); 
+                if (!document.getElementById('view-admin-teachers').classList.contains('hidden')) {
+                    Admin.loadTeachers(); 
+                    Admin.loadAssignmentsList(); // FORCE RELOAD
+                    Admin.loadClassTeachers(); // FORCE RELOAD
+                }
+            }
         });
     },
     save: () => { dbRef.set(DB.data).then(() => { console.log("Cloud Saved."); }).catch(e => alert("Save Error: " + e.message)); },
@@ -51,7 +59,18 @@ const DB = {
     createDefaultTemplate: (t) => { return { title: t||'REPORT CARD', sub: 'TERM EVALUATION', desc: 'Student performance report.', qTotals: { t1:25, t2:25, mid:50, tot:100 }, items: [], showQuant: true, showRemarks: true }; }
 };
 
-const UI = { show: (id) => { document.querySelectorAll('.page-section').forEach(e => e.classList.add('hidden')); document.getElementById('view-' + id)?.classList.remove('hidden'); if(id === 'admin-dashboard') Admin.loadDashboard(); if(id === 'admin-classes') Admin.loadClassesHierarchy(); if(id === 'admin-teachers') Admin.loadTeachers(); if(id === 'admin-students') Admin.loadStudents(); if(id === 'admin-template') Template.initSelect(); if(id === 'teacher-dashboard') Teacher.init(); } };
+const UI = { 
+    show: (id) => { 
+        document.querySelectorAll('.page-section').forEach(e => e.classList.add('hidden')); 
+        document.getElementById('view-' + id)?.classList.remove('hidden'); 
+        if(id === 'admin-dashboard') Admin.loadDashboard(); 
+        if(id === 'admin-classes') Admin.loadClassesHierarchy(); 
+        if(id === 'admin-teachers') { Admin.loadTeachers(); Admin.loadAssignmentsList(); Admin.loadClassTeachers(); } 
+        if(id === 'admin-students') Admin.loadStudents(); 
+        if(id === 'admin-template') Template.initSelect(); 
+        if(id === 'teacher-dashboard') Teacher.init(); 
+    } 
+};
 
 const Auth = {
     user: null,
@@ -187,6 +206,7 @@ const Admin = {
         const l = document.getElementById('class-teacher-list');
         if(!l) return;
         l.innerHTML = '';
+        if(!DB.data.classTeachers) return;
         for(let key in DB.data.classTeachers) {
             const teacherId = DB.data.classTeachers[key];
             const [cid, sec] = key.split('_');
