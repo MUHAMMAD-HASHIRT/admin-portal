@@ -41,6 +41,7 @@ input:focus { outline: none; border-color: var(--accent); }
 
 /* COMPONENTS */
 .card { background: var(--glass-card); border-radius: 16px; padding: 25px; box-shadow: var(--shadow-sm); border: var(--glass-border); margin-bottom: 20px; }
+.card h3 { margin-top: 0; color: var(--text-main); border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 15px; margin-bottom: 20px; font-size: 18px; font-weight: 600; }
 .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .data-table th { text-align: left; padding: 12px 16px; background: rgba(0,0,0,0.02); color: var(--text-secondary); font-weight: 600; font-size: 12px; text-transform: uppercase; border-bottom: 1px solid rgba(0,0,0,0.05); }
 .data-table td { padding: 14px 16px; border-bottom: 1px solid rgba(0,0,0,0.05); color: var(--text-main); }
@@ -97,7 +98,6 @@ input:focus { outline: none; border-color: var(--accent); }
     page-break-after: always;
     break-after: page;
 }
-
 .report-page *, .details-page *, .last-page * { box-sizing: border-box !important; }
 
 /* LAYERS */
@@ -113,25 +113,20 @@ input:focus { outline: none; border-color: var(--accent); }
     background: transparent !important;
 }
 
-/* COVER PAGE */
+/* COVER */
 .cover-page { position: relative; width: 100%; height: 100%; z-index: 100; }
 .cover-img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 0; }
 .cover-field { position: absolute; left: 200px; font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 700; color: #002060; text-transform: uppercase; z-index: 10; }
 .cover-name { bottom: 135px; } .cover-class { bottom: 75px; }
 
 /* HEADERS */
-.details-header, .dt-title, .main-header th, .quant-header { 
-    background-color: #002060 !important; 
-    color: white !important; 
-    -webkit-print-color-adjust: exact !important; 
-    print-color-adjust: exact !important;
-}
+.details-header, .dt-title, .main-header th, .quant-header { background-color: #002060 !important; color: white !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 .details-header { font-size: 14pt; font-weight: 700; padding: 8px; margin-bottom: 0; text-align: center !important; }
 .dt-title { padding: 5px 10px; font-weight: bold; font-size: 14px; margin-bottom: 10px; display: inline-block; width: 100%; }
 .main-header th { font-size: 10pt; text-align: left; }
 .quant-header { font-weight: bold; padding: 5px; font-size: 10pt; }
 
-/* TABLES */
+/* DETAILS TABLE */
 .details-table-new { width: 100%; border-collapse: collapse; font-size: 12pt; margin: 0 auto 20px auto; }
 .details-table-new th { background-color: #002060 !important; color: white !important; text-align: left; padding: 14px 15px; width: 25%; border-bottom: 1px solid white; -webkit-print-color-adjust: exact !important; }
 .details-table-new td { background-color: #e2e8f0 !important; color: #002060 !important; padding: 14px 15px; border-bottom: 1px solid white; border-left: 1px solid white; font-weight: 500; -webkit-print-color-adjust: exact !important; }
@@ -146,7 +141,6 @@ input:focus { outline: none; border-color: var(--accent); }
 
 .report-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; background: rgba(255,255,255,0.9); }
 .report-table th, .report-table td { border: 1px solid #8FAADC; padding: 6px; }
-
 .data-row td { font-size: 10pt; color: #002060; padding: 8px; }
 .check-box { text-align: center; color: #002060; font-weight: bold; }
 
@@ -163,13 +157,16 @@ input:focus { outline: none; border-color: var(--accent); }
 .inp-mark { color: #002060 !important; background: transparent !important; border: none !important; outline: 1px solid #ccc; width: 100%; }
 
 /* --- LAST PAGE FIX --- */
+/* Strictly sized content area to prevent bleed */
 .last-page-content {
     position: relative;
     z-index: 50; 
     width: 100%; height: 100%;
-    /* ADJUSTED PADDING FOR LAST PAGE TO FIT EVERYTHING */
-    padding: 120px 50px 70px 50px; 
+    /* Tight padding for last page */
+    padding: 115px 50px 40px 50px; 
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
 }
 
 .general-remarks-box {
@@ -189,15 +186,14 @@ input:focus { outline: none; border-color: var(--accent); }
     font-weight: 400;
     padding: 8px 20px;
     border-radius: 4px;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     text-transform: uppercase;
     -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
 }
 
 .photo-frame {
     width: 100%;
-    height: 380px; /* Fits well on A4 */
+    height: 380px;
     border: 2px solid #002060;
     padding: 5px;
     background: white;
@@ -205,7 +201,7 @@ input:focus { outline: none; border-color: var(--accent); }
     justify-content: center;
     align-items: center;
     overflow: hidden;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
 }
 .photo-frame img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
@@ -216,15 +212,13 @@ input:focus { outline: none; border-color: var(--accent); }
 .sig-title { font-size: 9pt; color: #002060; font-weight: 500; }
 
 .disclaimer-footer {
-    position: absolute;
-    bottom: 30px;
-    left: 50px; right: 50px;
     font-size: 8pt;
     color: #333;
     text-align: justify;
     line-height: 1.2;
     border-top: 2px solid #002060;
     padding-top: 5px;
+    margin-top: auto; /* Pushes to bottom of container */
 }
 
 @media print {
