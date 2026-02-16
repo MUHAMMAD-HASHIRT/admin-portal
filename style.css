@@ -24,6 +24,7 @@ body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-c
 .btn-success { background: #10b981; color: white; }
 .btn-sm { padding: 5px 10px; font-size: 11px; }
 .btn-block { width: 100%; }
+.btn-xs-danger { background: #ef4444; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 10px; font-weight: 700; cursor: pointer; }
 
 input, select, textarea { padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 12px; background: var(--glass-card); color: var(--text-main); font-family: inherit; font-size: 14px; }
 input:focus { outline: none; border-color: var(--accent); }
@@ -40,13 +41,12 @@ input:focus { outline: none; border-color: var(--accent); }
 
 /* COMPONENTS */
 .card { background: var(--glass-card); border-radius: 16px; padding: 25px; box-shadow: var(--shadow-sm); border: var(--glass-border); margin-bottom: 20px; }
-.card h3 { margin-top: 0; color: var(--text-main); border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 15px; margin-bottom: 20px; font-size: 18px; font-weight: 600; }
 .data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .data-table th { text-align: left; padding: 12px 16px; background: rgba(0,0,0,0.02); color: var(--text-secondary); font-weight: 600; font-size: 12px; text-transform: uppercase; border-bottom: 1px solid rgba(0,0,0,0.05); }
 .data-table td { padding: 14px 16px; border-bottom: 1px solid rgba(0,0,0,0.05); color: var(--text-main); }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
 
-/* ADMIN CLASSES VIEW */
+/* CLASSES VIEW */
 .class-tree-item { margin-bottom: 15px; border-radius: 12px; overflow: hidden; background: white; border: 1px solid #e2e8f0; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: block; }
 .tree-header { background: #f8fafc; color: #1e293b; padding: 12px 20px; font-weight: 700; font-size: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; }
 .tree-subjects { padding: 15px 20px; background: white; border-bottom: 1px solid #e2e8f0; display: flex; flex-wrap: wrap; gap: 8px; }
@@ -55,6 +55,7 @@ input:focus { outline: none; border-color: var(--accent); }
 
 /* TEMPLATE */
 .template-container { display: flex; gap: 20px; height: 100%; flex-direction: row; }
+.preview-label { text-align: center; font-weight: bold; color: var(--text-secondary); margin-bottom: 10px; }
 .zoom-controls { position: absolute; top: 15px; right: 15px; display: flex; gap: 5px; z-index: 100; background: var(--glass-card); padding: 5px; border-radius: 8px; border: var(--glass-border); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 .zoom-val { font-size: 12px; font-weight: bold; padding: 5px 8px; min-width: 40px; text-align: center; display: flex; align-items: center; justify-content: center; }
 #preview-wrapper { width: 100%; height: 100%; display: flex; justify-content: center; background: #cbd5e1; padding: 40px; border-radius: 8px; overflow: auto; }
@@ -80,7 +81,7 @@ input:focus { outline: none; border-color: var(--accent); }
     .login-box { width: 85%; padding: 30px 20px; }
 }
 
-/* --- REPORT PAGE (BASE) --- */
+/* --- REPORT PAGE --- */
 .report-page, .details-page, .last-page { 
     width: 210mm; 
     height: 297mm; 
@@ -96,6 +97,7 @@ input:focus { outline: none; border-color: var(--accent); }
     page-break-after: always;
     break-after: page;
 }
+
 .report-page *, .details-page *, .last-page * { box-sizing: border-box !important; }
 
 /* LAYERS */
@@ -117,71 +119,77 @@ input:focus { outline: none; border-color: var(--accent); }
 .cover-field { position: absolute; left: 200px; font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 700; color: #002060; text-transform: uppercase; z-index: 10; }
 .cover-name { bottom: 135px; } .cover-class { bottom: 75px; }
 
-/* STUDENT DETAILS TABLE */
-.details-header { background-color: #002060 !important; color: white !important; font-size: 14pt; font-weight: 700; padding: 8px; margin-bottom: 0; text-align: center !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+/* HEADERS */
+.details-header, .dt-title, .main-header th, .quant-header { 
+    background-color: #002060 !important; 
+    color: white !important; 
+    -webkit-print-color-adjust: exact !important; 
+    print-color-adjust: exact !important;
+}
+.details-header { font-size: 14pt; font-weight: 700; padding: 8px; margin-bottom: 0; text-align: center !important; }
+.dt-title { padding: 5px 10px; font-weight: bold; font-size: 14px; margin-bottom: 10px; display: inline-block; width: 100%; }
+.main-header th { font-size: 10pt; text-align: left; }
+.quant-header { font-weight: bold; padding: 5px; font-size: 10pt; }
+
+/* TABLES */
 .details-table-new { width: 100%; border-collapse: collapse; font-size: 12pt; margin: 0 auto 20px auto; }
-.details-table-new th { background-color: #002060 !important; color: white !important; text-align: left; padding: 14px 15px; width: 25%; border-bottom: 1px solid white; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-.details-table-new td { background-color: #e2e8f0 !important; color: #002060 !important; padding: 14px 15px; border-bottom: 1px solid white; border-left: 1px solid white; font-weight: 500; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+.details-table-new th { background-color: #002060 !important; color: white !important; text-align: left; padding: 14px 15px; width: 25%; border-bottom: 1px solid white; -webkit-print-color-adjust: exact !important; }
+.details-table-new td { background-color: #e2e8f0 !important; color: #002060 !important; padding: 14px 15px; border-bottom: 1px solid white; border-left: 1px solid white; font-weight: 500; -webkit-print-color-adjust: exact !important; }
 .dt-check { display: inline-block; width: 14px; height: 14px; border: 1px solid #002060; margin-left: 5px; margin-right: 15px; vertical-align: middle; background: white; }
 .dt-check.checked { background: #002060; }
 
-/* REPORT ELEMENTS */
+.section-row td { background: rgba(233, 239, 247, 0.95) !important; color: #002060 !important; font-weight: bold; font-size: 12pt; -webkit-print-color-adjust: exact !important; }
+.dt-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; border-bottom: 1px solid #eee; }
 .main-title { font-size: 14pt; font-weight: bold; color: #002060; text-transform: uppercase; margin-bottom: 5px; }
 .sub-title { font-size: 11pt; font-weight: normal; color: #002060; text-transform: uppercase; margin-bottom: 8px; border-bottom: 1px solid #ccc; padding-bottom:5px; }
 .description { font-size: 10pt; line-height: 1.3; color: #002060; margin-bottom: 15px; text-align: justify; white-space: pre-wrap; width: 100%; }
+
 .report-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; background: rgba(255,255,255,0.9); }
 .report-table th, .report-table td { border: 1px solid #8FAADC; padding: 6px; }
-.main-header th { background-color: #002060 !important; color: white !important; font-size: 10pt; text-align: left; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-.section-row td { background: rgba(233, 239, 247, 0.95) !important; color: #002060 !important; font-weight: bold; font-size: 12pt; -webkit-print-color-adjust: exact !important; }
+
 .data-row td { font-size: 10pt; color: #002060; padding: 8px; }
 .check-box { text-align: center; color: #002060; font-weight: bold; }
-.quant-header { background-color: #002060 !important; color: white !important; font-weight: bold; padding: 5px; font-size: 10pt; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
 .footer-block { margin-top: 20px; width: 100%; }
 .remarks-box { margin-top: 15px; border: 2px solid #002060; min-height: 100px; background: rgba(255,255,255,0.7); padding: 35px 10px 10px 10px; font-size: 10pt; position: relative; width: 100%; box-sizing: border-box; }
 .remarks-label { position: absolute; top: 0; left: 0; width: 100%; font-size: 10pt; font-weight: bold; color: #002060; padding: 5px; border-bottom: 1px solid #002060; background: rgba(255,255,255,0.9); box-sizing: border-box; }
+
 .rubric-title { font-size: 20px; font-weight: 800; color: #002060; margin-bottom: 25px; }
 .rubric-text { font-size: 13px; text-align: justify; margin-bottom: 25px; color: #002060; }
 .rubric-table th { background: #a0a0a0 !important; color: #002060 !important; padding: 12px; font-weight: 800; -webkit-print-color-adjust: exact !important; }
 .rubric-row-grey td { background: #e5e7eb !important; padding: 12px; -webkit-print-color-adjust: exact !important; color: #002060; }
 .rubric-row-white td { background: #ffffff !important; padding: 12px; -webkit-print-color-adjust: exact !important; color: #002060; }
+
 .inp-mark { color: #002060 !important; background: transparent !important; border: none !important; outline: 1px solid #ccc; width: 100%; }
 
-/* --- NEW LAST PAGE STYLES --- */
+/* --- LAST PAGE FIX --- */
 .last-page-content {
     position: relative;
     z-index: 50; 
     width: 100%; height: 100%;
-    padding: 130px 50px 70px 50px; 
+    /* ADJUSTED PADDING FOR LAST PAGE TO FIT EVERYTHING */
+    padding: 120px 50px 70px 50px; 
     box-sizing: border-box;
 }
 
-/* GENERAL REMARKS SECTION */
 .general-remarks-box {
     border: 2px solid #002060;
-    min-height: 200px; /* Bigger than subject remarks */
+    min-height: 180px; 
     padding: 30px 20px;
     position: relative;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
     background: rgba(255,255,255,0.8);
 }
-.general-remarks-header {
-    position: absolute;
-    top: 10px; left: 20px;
-    font-size: 12pt;
-    font-weight: 700;
-    color: #002060;
-    text-transform: uppercase;
-}
+.general-remarks-header { position: absolute; top: 10px; left: 20px; font-size: 12pt; font-weight: 700; color: #002060; text-transform: uppercase; }
 
-/* PHOTO SECTION */
 .photo-section-header {
-    background-color: #1e293b; /* Dark Navy/Blackish */
-    color: white;
+    background-color: #1e293b !important;
+    color: white !important;
     font-size: 12pt;
     font-weight: 400;
-    padding: 10px 20px;
-    border-radius: 6px;
-    margin-bottom: 20px;
+    padding: 8px 20px;
+    border-radius: 4px;
+    margin-bottom: 15px;
     text-transform: uppercase;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
@@ -189,7 +197,7 @@ input:focus { outline: none; border-color: var(--accent); }
 
 .photo-frame {
     width: 100%;
-    height: 400px; /* Fixed height for photo */
+    height: 380px; /* Fits well on A4 */
     border: 2px solid #002060;
     padding: 5px;
     background: white;
@@ -197,50 +205,16 @@ input:focus { outline: none; border-color: var(--accent); }
     justify-content: center;
     align-items: center;
     overflow: hidden;
-    margin-bottom: 40px;
+    margin-bottom: 30px;
 }
-.photo-frame img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-}
+.photo-frame img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-/* SIGNATURES */
-.signatures-row {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
-    padding: 0 20px;
-}
-.sig-block {
-    text-align: center;
-    width: 30%;
-}
-.sig-line {
-    border-bottom: 1px solid #002060;
-    margin-bottom: 5px;
-    height: 40px; /* Space for sign */
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-}
-.sig-img {
-    height: 40px;
-    object-fit: contain;
-}
-.sig-title {
-    font-size: 10pt;
-    color: #002060;
-    font-weight: 500;
-}
-/* Fake Signature Font */
-.fake-sig {
-    font-family: 'Great Vibes', cursive;
-    font-size: 24px;
-    color: #002060;
-}
+.signatures-row { display: flex; justify-content: space-between; margin-top: 10px; padding: 0 20px; }
+.sig-block { text-align: center; width: 30%; }
+.sig-line { border-bottom: 1px solid #002060; margin-bottom: 5px; height: 35px; display: flex; align-items: flex-end; justify-content: center; }
+.fake-sig { font-family: 'Great Vibes', cursive; font-size: 20px; color: #002060; }
+.sig-title { font-size: 9pt; color: #002060; font-weight: 500; }
 
-/* DISCLAIMER FOOTER */
 .disclaimer-footer {
     position: absolute;
     bottom: 30px;
@@ -250,7 +224,7 @@ input:focus { outline: none; border-color: var(--accent); }
     text-align: justify;
     line-height: 1.2;
     border-top: 2px solid #002060;
-    padding-top: 10px;
+    padding-top: 5px;
 }
 
 @media print {
