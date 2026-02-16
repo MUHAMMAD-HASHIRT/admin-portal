@@ -1,5 +1,5 @@
 /* ==========================================================================
-   APP ENGINE (v120.0) - CLASS TEACHER & LAST PAGE
+   APP ENGINE (v121.0) - COMPLETE FIX
    ========================================================================== */
 
 const firebaseConfig = {
@@ -99,39 +99,12 @@ const ReportEngine = {
     },
     generateRubricPage: () => { return `<div class="details-page"><img src="header footer.png" class="layer-frame"><img src="background.png" class="layer-lion"><div class="content-area"><div style="height: 40px;"></div> <div class="rubric-title">UNDERSTANDING THE REPORT</div><div class="rubric-text"><b>Objectives</b><br>Academus has an academic and co-curricular checkpoints for students...</div><div class="rubric-text"><b>Testing</b><br>Academus has a set standard of assessing its students using formal and informal methods. Our testing is based on year round evaluation and portfolio analysis of students.</div><div class="rubric-text" style="margin-bottom:10px;"><b>Evaluation Rubric</b></div><table class="rubric-table"><thead><tr><th style="width:20%">Key Attributes</th><th style="width:15%">Key Symbol</th><th>Description</th></tr></thead><tbody><tr class="rubric-row-grey"><td class="rubric-col-attr">Exceeds<br>Learning<br>Expectations</td><td class="rubric-col-sym">ELE</td><td class="rubric-col-desc">The child displays impeccable progress towards set objectives and goals. The child achieves all milestones independently.</td></tr><tr class="rubric-row-white"><td class="rubric-col-attr">Meets Learning<br>Expectations</td><td class="rubric-col-sym">MLE</td><td class="rubric-col-desc">The child meets all the learning outcomes with precision and clarity of understanding.</td></tr><tr class="rubric-row-grey"><td class="rubric-col-attr">Progressing</td><td class="rubric-col-sym">P</td><td class="rubric-col-desc">The child is at an intermediate level, and is completing the given tasks in a satisfactory manner.</td></tr><tr class="rubric-row-white"><td class="rubric-col-attr">Needs<br>Improvement</td><td class="rubric-col-sym">NI</td><td class="rubric-col-desc">The child is starting to attempt or is in a phase of development.</td></tr></tbody></table></div></div>`; },
     
-    // NEW: GENERATE LAST PAGE WITH PHOTO & REMARKS
+    // LAST PAGE
     generateLastPage: (s) => {
         const key = `${s.classId}_${s.section}`;
-        const photo = DB.data.classPhotos[key] || ''; // Base64 or empty
+        const photo = DB.data.classPhotos[key] || ''; 
         const remark = DB.data.generalRemarks[s.id] || '';
-        
-        return `
-        <div class="last-page">
-            <img src="header footer.png" class="layer-frame">
-            <img src="background.png" class="layer-lion">
-            <div class="last-page-content">
-                <div class="general-remarks-box">
-                    <div class="general-remarks-header">TEACHER REMARKS & NOTES</div>
-                    <div style="margin-top:20px; font-family:'Courier New', cursive; font-size:14pt; line-height:1.5;">${remark}</div>
-                </div>
-                
-                <div class="photo-section-header">CLASS PHOTOGRAPH</div>
-                <div class="photo-frame">
-                    ${photo ? `<img src="${photo}">` : '<span style="color:#ccc;">No Class Photo Uploaded</span>'}
-                </div>
-                
-                <div class="signatures-row">
-                    <div class="sig-block"><div class="sig-line"><span class="fake-sig">Teacher</span></div><div class="sig-title">Class Teacher</div></div>
-                    <div class="sig-block"><div class="sig-line"><span class="fake-sig">Manager</span></div><div class="sig-title">Academic Manager</div></div>
-                    <div class="sig-block"><div class="sig-line"><span class="fake-sig">Directress</span></div><div class="sig-title">School Directress</div></div>
-                </div>
-                
-                <div class="disclaimer-footer">
-                    Disclaimer: This report card is copyright property of Academus International School, and privy to all intellectual property rights. This report card is a highly confidential, and pertains to only intended individuals. If lost, please return to Academus International School: ST 4/1-3, Block I, Gulistan e Jauhar, Karachi, Pakistan.
-                    <div style="text-align:right; margin-top:5px;">Term-I/2025-26</div>
-                </div>
-            </div>
-        </div>`;
+        return `<div class="last-page"><img src="header footer.png" class="layer-frame"><img src="background.png" class="layer-lion"><div class="last-page-content"><div class="general-remarks-box"><div class="general-remarks-header">TEACHER REMARKS & NOTES</div><div style="margin-top:20px; font-family:'Courier New', cursive; font-size:14pt; line-height:1.5;">${remark}</div></div><div class="photo-section-header">CLASS PHOTOGRAPH</div><div class="photo-frame">${photo ? `<img src="${photo}">` : '<span style="color:#ccc;">No Class Photo Uploaded</span>'}</div><div class="signatures-row"><div class="sig-block"><div class="sig-line"><span class="fake-sig">Teacher</span></div><div class="sig-title">Class Teacher</div></div><div class="sig-block"><div class="sig-line"><span class="fake-sig">Manager</span></div><div class="sig-title">Academic Manager</div></div><div class="sig-block"><div class="sig-line"><span class="fake-sig">Directress</span></div><div class="sig-title">School Directress</div></div></div><div class="disclaimer-footer">Disclaimer: This report card is copyright property of Academus International School, and privy to all intellectual property rights. This report card is a highly confidential, and pertains to only intended individuals. If lost, please return to Academus International School: ST 4/1-3, Block I, Gulistan e Jauhar, Karachi, Pakistan.<div style="text-align:right; margin-top:5px;">Term-I/2025-26</div></div></div></div>`;
     },
 
     addHeader: (c, t, s, d) => { c.innerHTML += `<div class="main-title">${t}</div>`; if (s) c.innerHTML += `<div class="sub-title">${s}</div>`; if (d) c.innerHTML += `<div class="description">${d}</div>`; return 60 + (d ? (d.length / 90 * 18) + 20 : 0); },
@@ -175,21 +148,16 @@ const ReportEngine = {
         const rubric = ReportEngine.generateRubricPage(); 
         let reports = ''; 
         subIds.forEach(id => { const sub = DB.data.subjects[id]; if (sub) { const m = (DB.data.marks[sid] && DB.data.marks[sid][id]) ? DB.data.marks[sid][id] : {}; reports += ReportEngine.render(null, sub.template, m, false); } }); 
-        
-        // APPEND THE NEW LAST PAGE
         const lastPage = ReportEngine.generateLastPage(s);
-
         const w = window.open('', '_blank'); 
         w.document.write(`<html><head><title>${s.name}</title><link rel="stylesheet" href="style.css"><style>.forced-print-bar { position: fixed; top: 0; left: 0; width: 100%; background: #1e293b; padding: 15px; text-align: center; z-index: 10000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); } .forced-btn { background: #10b981; color: white; border: none; padding: 10px 25px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; } @media print { .forced-print-bar { display: none !important; } }</style></head><body><div class="forced-print-bar"><button class="forced-btn" onclick="window.print()">🖨️ PRINT PDF</button></div><div class="print-container">${cover}${details}${rubric}${reports}${lastPage}</div></body></html>`); 
         w.document.close(); 
     }
 };
 
-/* --- ADMIN --- */
 const Admin = {
-    refreshDropdowns: () => { const ids = ['subject-class-select', 'stu-class-select', 'assign-class-select', 'tpl-class-select', 'ct-class-select']; ids.forEach(id => { const el = document.getElementById(id); if(!el) return; const cv = el.value; el.innerHTML = '<option value="">SELECT GRADE</option>'; DB.data.classes.forEach(c => el.innerHTML += `<option value="${c.id}">${c.name}</option>`); if(cv) el.value = cv; }); },
+    refreshDropdowns: () => { const ids = ['subject-class-select', 'stu-class-select', 'assign-class-select', 'tpl-class-select']; ids.forEach(id => { const el = document.getElementById(id); if(!el) return; const cv = el.value; el.innerHTML = '<option value="">SELECT GRADE</option>'; DB.data.classes.forEach(c => el.innerHTML += `<option value="${c.id}">${c.name}</option>`); if(cv) el.value = cv; }); },
     loadDashboard: () => { const t = document.getElementById('admin-status-table'); if(!t) return; t.innerHTML = ''; let hasStudents = false; DB.data.classes.forEach(cls => { const classStudents = DB.data.students.filter(s => s.classId === cls.id); if (classStudents.length > 0) hasStudents = true; classStudents.forEach(s => { let btns = '', cCount = 0; if(cls.subjects) { cls.subjects.forEach(sid => { const m = (DB.data.marks[s.id] && DB.data.marks[s.id][sid]); if(m && m.completed) cCount++; const sub = DB.data.subjects[sid]; if(sub) { const btnColor = (m && m.completed) ? '#10b981' : '#cbd5e1'; const txtColor = (m && m.completed) ? 'white' : '#333'; btns += `<button onclick="ReportEngine.openPrintView(${s.id}, '${sid}')" class="btn btn-sm" style="background:${btnColor}; color:${txtColor}; margin-right:4px;">${sub.name.substring(0,3)}</button>`; } }); } const st = (cls.subjects && cls.subjects.length > 0 && cCount === cls.subjects.length) ? '<span style="color:#10b981;font-weight:bold">COMPLETED</span>' : '<span style="color:#f59e0b">PENDING</span>'; t.innerHTML += `<tr><td>${s.roll}</td><td>${s.name}</td><td>${cls.name} (${s.section || 'A'})</td><td>${st}</td><td><button onclick="ReportEngine.openFullPrintView(${s.id})" class="btn btn-sm btn-primary">FULL REPORT</button> ${btns}</td></tr>`; }); }); if (!hasStudents) { t.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:30px; color:#64748b;">No students found. <br><button onclick="UI.show('admin-students')" class="btn btn-sm btn-accent" style="margin-top:10px;">+ Register Student</button></td></tr>`; } },
-    // ... (Other Admin methods same as before) ...
     loadClassesHierarchy: () => { 
         const c=document.getElementById('class-hierarchy-view');if(!c)return;c.innerHTML='';Admin.refreshDropdowns();
         if (!DB.data.classes || DB.data.classes.length === 0) { c.innerHTML = '<div style="padding:20px; text-align:center; color:#888;">No classes created yet. Use "Create Grade" on the right.</div>'; return; }
@@ -202,28 +170,36 @@ const Admin = {
     addSubject: () => { try { const cid=document.getElementById('subject-class-select').value; const n=document.getElementById('new-subject-name').value.toUpperCase(); if(!cid) { alert("Select Grade"); return; } if(!n) { alert("Enter Name"); return; } const sid='s_'+Date.now(); if(!DB.data.subjects) DB.data.subjects = {}; DB.data.subjects[sid]={name:n,template:DB.createDefaultTemplate(n)}; const c = DB.data.classes.find(x=>x.id===cid); if (!c.subjects) c.subjects = []; c.subjects.push(sid); DB.save(); document.getElementById('new-subject-name').value=''; Admin.loadClassesHierarchy(); } catch(e) { alert("Error"); } },
     deleteSubject: (cid, sid) => { if(confirm("Del Subject?")){const c=DB.data.classes.find(x=>x.id===cid);c.subjects=c.subjects.filter(s=>s!==sid);delete DB.data.subjects[sid];DB.save();Admin.loadClassesHierarchy();} },
     onAssignClassChange: () => { const cid = document.getElementById('assign-class-select').value; const sec = document.getElementById('assign-section-select'); sec.innerHTML='<option value="">Sec</option>'; const sub = document.getElementById('assign-subject-select'); sub.innerHTML='<option value="">Subj</option>'; if(!cid) return; const cls = DB.data.classes.find(c => c.id === cid); cls.sections.forEach(s => sec.innerHTML += `<option value="${s}">${s}</option>`); cls.subjects.forEach(sid => { if(DB.data.subjects[sid]) sub.innerHTML += `<option value="${sid}">${DB.data.subjects[sid].name}</option>`; }); },
-    loadTeachers: () => { const t=document.getElementById('teacher-list-body'); const s=document.getElementById('assign-teacher-select'); t.innerHTML=''; s.innerHTML='<option value="">Select</option>'; DB.data.users.filter(u=>u.role==='teacher').forEach(u => { t.innerHTML+=`<tr><td>${u.name}</td><td>${u.id}</td><td>${u.pass}</td><td><button onclick="Admin.delTeacher('${u.id}')" class="btn-xs-danger">X</button></td></tr>`; s.innerHTML+=`<option value="${u.id}">${u.name}</option>`; }); Admin.refreshDropdowns(); Admin.loadAssignmentsList(); },
+    loadTeachers: () => { const t=document.getElementById('teacher-list-body'); const s=document.getElementById('assign-teacher-select'); t.innerHTML=''; s.innerHTML='<option value="">Select</option>'; DB.data.users.filter(u=>u.role==='teacher').forEach(u => { t.innerHTML+=`<tr><td>${u.name}</td><td>${u.id}</td><td>${u.pass}</td><td><button onclick="Admin.delTeacher('${u.id}')" class="btn-xs-danger">X</button></td></tr>`; s.innerHTML+=`<option value="${u.id}">${u.name}</option>`; }); Admin.refreshDropdowns(); Admin.loadAssignmentsList(); Admin.loadClassTeachers(); },
     generateCreds: () => { document.getElementById('new-t-user').value = 'T-' + Math.floor(1000 + Math.random() * 9000); document.getElementById('new-t-pass').value = Math.random().toString(36).slice(-6); },
     addTeacher: () => { const n=document.getElementById('new-t-name').value.toUpperCase(); const u=document.getElementById('new-t-user').value; const p=document.getElementById('new-t-pass').value; if(n && u && p) { const exists = DB.data.users.find(x => x.id === u); if (exists) { alert("Exists!"); return; } DB.data.users.push({id:u, pass:p, role:'teacher', name:n}); DB.save(); Admin.loadTeachers(); } },
     delTeacher: (id) => { if(confirm("Del?")){DB.data.users=DB.data.users.filter(x=>x.id!==id); DB.save(); Admin.loadTeachers();} },
-    // ASSIGN TEACHER UPDATE: CHECK CLASS TEACHER
     assignTeacher: () => { 
         const tid=document.getElementById('assign-teacher-select').value, cid=document.getElementById('assign-class-select').value, s=document.getElementById('assign-section-select').value, sub=document.getElementById('assign-subject-select').value; 
         const isClassTeacher = document.getElementById('assign-is-ct').checked;
-
-        if(isClassTeacher) {
-            const key = `${cid}_${s}`;
-            if(DB.data.classTeachers[key]) { alert(`Error: ${DB.data.classTeachers[key]} is already Class Teacher for this section.`); return; }
-            DB.data.classTeachers[key] = tid;
-            DB.save();
-            alert("Class Teacher Assigned!");
-            return;
-        }
-
+        if(isClassTeacher) { const key = `${cid}_${s}`; if(DB.data.classTeachers[key]) { alert(`Error: ${DB.data.classTeachers[key]} is already Class Teacher.`); return; } DB.data.classTeachers[key] = tid; DB.save(); alert("Class Teacher Assigned!"); Admin.loadClassTeachers(); return; }
         if(tid&&cid&&s&&sub){ DB.data.assignments.push({teacherId:tid, classId:cid, section:s, subjectId:sub}); DB.save(); Admin.loadAssignmentsList(); alert("Assigned"); } 
     },
     loadAssignmentsList: () => { const l=document.getElementById('assignment-list-table'); if(l){l.innerHTML=''; DB.data.assignments.forEach((a, i) => { const t=DB.data.users.find(u=>u.id===a.teacherId), c=DB.data.classes.find(x=>x.id===a.classId), s=DB.data.subjects[a.subjectId]; if(t&&c&&s) l.innerHTML+=`<tr><td>${c.name}</td><td>${a.section}</td><td>${s.name}</td><td>${t.name}</td><td><button onclick="Admin.remAssign(${i})" class="btn-xs-danger">X</button></td></tr>`; });} },
     remAssign: (i) => { DB.data.assignments.splice(i,1); DB.save(); Admin.loadAssignmentsList(); },
+    
+    // NEW: LOAD CLASS TEACHERS
+    loadClassTeachers: () => {
+        const l = document.getElementById('class-teacher-list');
+        if(!l) return;
+        l.innerHTML = '';
+        for(let key in DB.data.classTeachers) {
+            const teacherId = DB.data.classTeachers[key];
+            const [cid, sec] = key.split('_');
+            const cls = DB.data.classes.find(c => c.id === cid);
+            const t = DB.data.users.find(u => u.id === teacherId);
+            if(cls && t) {
+                l.innerHTML += `<tr><td>${cls.name}</td><td>${sec}</td><td>${t.name}</td><td><button onclick="Admin.remClassTeacher('${key}')" class="btn-xs-danger">X</button></td></tr>`;
+            }
+        }
+    },
+    remClassTeacher: (key) => { if(confirm("Remove Class Teacher?")) { delete DB.data.classTeachers[key]; DB.save(); Admin.loadClassTeachers(); } },
+
     importCSV: () => { const i = document.getElementById('csv-upload'); const f = i.files[0]; if (!f) { alert("Select file"); return; } const r = new FileReader(); r.onload = function(e) { const t = e.target.result; const rows = t.split('\n'); if (rows.length < 2) return; for (let i = 1; i < rows.length; i++) { const row = rows[i].trim(); if (!row) continue; const c = row.split(','); if (c.length < 13) continue; const gName = c[2].toUpperCase().trim(); const sName = c[3].toUpperCase().trim(); let cid = null; let cls = DB.data.classes.find(c => c.name === gName); if (!cls) { cid = 'c_' + Date.now() + Math.random().toString(36).substr(2, 5); cls = { id: cid, name: gName, sections: [sName], subjects: [] }; DB.data.classes.push(cls); } else { cid = cls.id; if (!cls.sections.includes(sName)) { cls.sections.push(sName); } } DB.data.students.push({ id: Date.now() + i, roll: c[0].trim(), name: c[1].trim().toUpperCase(), classId: cid, section: sName, parent1: c[4].trim(), parent2: c[5].trim(), gender: c[6].trim(), ageY: c[7].trim(), ageM: c[8].trim(), height: c[9].trim(), weight: c[10].trim(), attendanceP: c[11].trim(), attendanceA: c[12].trim(), pt1: false, pt2: false }); } DB.save(); alert("Imported!"); Admin.loadStudents(); Admin.loadClassesHierarchy(); }; r.readAsText(f); },
     onStudentClassChange: () => { const cid = document.getElementById('stu-class-select').value; const sec = document.getElementById('stu-section-select'); sec.innerHTML = '<option value="">Sec</option>'; const cls = DB.data.classes.find(c => c.id === cid); if(cls) cls.sections.forEach(s => sec.innerHTML += `<option value="${s}">${s}</option>`); },
     loadStudents: () => { const t = document.getElementById('admin-student-list'); if(!t) return; t.innerHTML = ''; Admin.refreshDropdowns(); DB.data.students.forEach((s, idx) => { const cls = DB.data.classes.find(c => c.id === s.classId)?.name || '-'; t.innerHTML += `<tr><td>${s.roll}</td><td>${s.name}</td><td>${cls} [${s.section}]</td><td>${s.parent1 || '-'}</td><td><button onclick="Admin.delStudent(${idx})" class="btn btn-sm btn-danger">X</button></td></tr>`; }); },
@@ -312,6 +288,7 @@ const Teacher = {
         }
     },
     saveRemark: (sid, val) => {
+        if(!DB.data.generalRemarks) DB.data.generalRemarks = {};
         DB.data.generalRemarks[sid] = val;
         DB.save();
     }
