@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;600;700&family=Great+Vibes&display=swap');
 
 :root {
     --bg-color: #f1f5f9;
@@ -55,7 +55,6 @@ input:focus { outline: none; border-color: var(--accent); }
 
 /* TEMPLATE */
 .template-container { display: flex; gap: 20px; height: 100%; flex-direction: row; }
-.preview-label { text-align: center; font-weight: bold; color: var(--text-secondary); margin-bottom: 10px; }
 .zoom-controls { position: absolute; top: 15px; right: 15px; display: flex; gap: 5px; z-index: 100; background: var(--glass-card); padding: 5px; border-radius: 8px; border: var(--glass-border); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 .zoom-val { font-size: 12px; font-weight: bold; padding: 5px 8px; min-width: 40px; text-align: center; display: flex; align-items: center; justify-content: center; }
 #preview-wrapper { width: 100%; height: 100%; display: flex; justify-content: center; background: #cbd5e1; padding: 40px; border-radius: 8px; overflow: auto; }
@@ -81,8 +80,8 @@ input:focus { outline: none; border-color: var(--accent); }
     .login-box { width: 85%; padding: 30px 20px; }
 }
 
-/* --- REPORT PAGE --- */
-.report-page, .details-page { 
+/* --- REPORT PAGE (BASE) --- */
+.report-page, .details-page, .last-page { 
     width: 210mm; 
     height: 297mm; 
     background: white !important; 
@@ -97,8 +96,7 @@ input:focus { outline: none; border-color: var(--accent); }
     page-break-after: always;
     break-after: page;
 }
-
-.report-page *, .details-page * { box-sizing: border-box !important; }
+.report-page *, .details-page *, .last-page * { box-sizing: border-box !important; }
 
 /* LAYERS */
 .layer-frame { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
@@ -119,119 +117,145 @@ input:focus { outline: none; border-color: var(--accent); }
 .cover-field { position: absolute; left: 200px; font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 700; color: #002060; text-transform: uppercase; z-index: 10; }
 .cover-name { bottom: 135px; } .cover-class { bottom: 75px; }
 
-/* --- UPDATED STUDENT DETAILS TABLE (Wider & Centered) --- */
-.details-header {
-    background-color: #002060 !important;
-    color: white !important;
-    font-size: 14pt;
-    font-weight: 700;
-    padding: 8px;
-    margin-bottom: 0;
-    text-align: center !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-}
-
-.details-table-new {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 12pt; /* BIGGER FONT */
-    margin: 0 auto 20px auto; /* CENTERED */
-}
-
-.details-table-new th {
-    background-color: #002060 !important;
-    color: white !important;
-    text-align: left;
-    padding: 14px 15px; /* BIGGER PADDING */
-    width: 25%;
-    border-bottom: 1px solid white;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-}
-
-.details-table-new td {
-    background-color: #e2e8f0 !important;
-    color: #002060 !important;
-    padding: 14px 15px; /* WIDER ROW */
-    border-bottom: 1px solid white;
-    border-left: 1px solid white;
-    font-weight: 500;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-}
-
+/* STUDENT DETAILS TABLE */
+.details-header { background-color: #002060 !important; color: white !important; font-size: 14pt; font-weight: 700; padding: 8px; margin-bottom: 0; text-align: center !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+.details-table-new { width: 100%; border-collapse: collapse; font-size: 12pt; margin: 0 auto 20px auto; }
+.details-table-new th { background-color: #002060 !important; color: white !important; text-align: left; padding: 14px 15px; width: 25%; border-bottom: 1px solid white; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+.details-table-new td { background-color: #e2e8f0 !important; color: #002060 !important; padding: 14px 15px; border-bottom: 1px solid white; border-left: 1px solid white; font-weight: 500; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 .dt-check { display: inline-block; width: 14px; height: 14px; border: 1px solid #002060; margin-left: 5px; margin-right: 15px; vertical-align: middle; background: white; }
 .dt-check.checked { background: #002060; }
 
-/* --- RUBRIC & SUBJECT REPORT TABLES (RESTORED COLORS) --- */
+/* REPORT ELEMENTS */
 .main-title { font-size: 14pt; font-weight: bold; color: #002060; text-transform: uppercase; margin-bottom: 5px; }
 .sub-title { font-size: 11pt; font-weight: normal; color: #002060; text-transform: uppercase; margin-bottom: 8px; border-bottom: 1px solid #ccc; padding-bottom:5px; }
 .description { font-size: 10pt; line-height: 1.3; color: #002060; margin-bottom: 15px; text-align: justify; white-space: pre-wrap; width: 100%; }
-
 .report-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; background: rgba(255,255,255,0.9); }
 .report-table th, .report-table td { border: 1px solid #8FAADC; padding: 6px; }
-
-/* Force Blue Headers on Print */
-.main-header th { 
-    background-color: #002060 !important; 
-    color: white !important; 
-    font-size: 10pt; text-align: left; 
-    -webkit-print-color-adjust: exact !important; 
-    print-color-adjust: exact !important;
-}
-
-.section-row td { 
-    background: rgba(233, 239, 247, 0.95) !important; 
-    color: #002060 !important; 
-    font-weight: bold; font-size: 12pt; 
-    -webkit-print-color-adjust: exact !important; 
-    print-color-adjust: exact !important;
-}
-
+.main-header th { background-color: #002060 !important; color: white !important; font-size: 10pt; text-align: left; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+.section-row td { background: rgba(233, 239, 247, 0.95) !important; color: #002060 !important; font-weight: bold; font-size: 12pt; -webkit-print-color-adjust: exact !important; }
 .data-row td { font-size: 10pt; color: #002060; padding: 8px; }
 .check-box { text-align: center; color: #002060; font-weight: bold; }
 .quant-header { background-color: #002060 !important; color: white !important; font-weight: bold; padding: 5px; font-size: 10pt; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-
-/* RUBRIC COLORS RESTORED */
-.rubric-title { font-size: 20px; font-weight: 800; color: #002060; margin-bottom: 25px; }
-.rubric-text { font-size: 13px; text-align: justify; margin-bottom: 25px; color: #002060; }
-
-.rubric-table th { 
-    background-color: #a0a0a0 !important; /* GREY RESTORED */
-    color: #002060 !important; 
-    padding: 12px; font-weight: 800; 
-    -webkit-print-color-adjust: exact !important; 
-    print-color-adjust: exact !important;
-}
-.rubric-row-grey td { 
-    background-color: #e5e7eb !important; /* LIGHT GREY RESTORED */
-    padding: 12px; 
-    -webkit-print-color-adjust: exact !important; 
-    print-color-adjust: exact !important;
-    color: #002060; 
-}
-.rubric-row-white td { 
-    background-color: #ffffff !important; 
-    padding: 12px; 
-    -webkit-print-color-adjust: exact !important; 
-    print-color-adjust: exact !important;
-    color: #002060; 
-}
-
-/* FOOTER */
 .footer-block { margin-top: 20px; width: 100%; }
 .remarks-box { margin-top: 15px; border: 2px solid #002060; min-height: 100px; background: rgba(255,255,255,0.7); padding: 35px 10px 10px 10px; font-size: 10pt; position: relative; width: 100%; box-sizing: border-box; }
 .remarks-label { position: absolute; top: 0; left: 0; width: 100%; font-size: 10pt; font-weight: bold; color: #002060; padding: 5px; border-bottom: 1px solid #002060; background: rgba(255,255,255,0.9); box-sizing: border-box; }
-
+.rubric-title { font-size: 20px; font-weight: 800; color: #002060; margin-bottom: 25px; }
+.rubric-text { font-size: 13px; text-align: justify; margin-bottom: 25px; color: #002060; }
+.rubric-table th { background: #a0a0a0 !important; color: #002060 !important; padding: 12px; font-weight: 800; -webkit-print-color-adjust: exact !important; }
+.rubric-row-grey td { background: #e5e7eb !important; padding: 12px; -webkit-print-color-adjust: exact !important; color: #002060; }
+.rubric-row-white td { background: #ffffff !important; padding: 12px; -webkit-print-color-adjust: exact !important; color: #002060; }
 .inp-mark { color: #002060 !important; background: transparent !important; border: none !important; outline: 1px solid #ccc; width: 100%; }
 
+/* --- NEW LAST PAGE STYLES --- */
+.last-page-content {
+    position: relative;
+    z-index: 50; 
+    width: 100%; height: 100%;
+    padding: 130px 50px 70px 50px; 
+    box-sizing: border-box;
+}
+
+/* GENERAL REMARKS SECTION */
+.general-remarks-box {
+    border: 2px solid #002060;
+    min-height: 200px; /* Bigger than subject remarks */
+    padding: 30px 20px;
+    position: relative;
+    margin-bottom: 30px;
+    background: rgba(255,255,255,0.8);
+}
+.general-remarks-header {
+    position: absolute;
+    top: 10px; left: 20px;
+    font-size: 12pt;
+    font-weight: 700;
+    color: #002060;
+    text-transform: uppercase;
+}
+
+/* PHOTO SECTION */
+.photo-section-header {
+    background-color: #1e293b; /* Dark Navy/Blackish */
+    color: white;
+    font-size: 12pt;
+    font-weight: 400;
+    padding: 10px 20px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+}
+
+.photo-frame {
+    width: 100%;
+    height: 400px; /* Fixed height for photo */
+    border: 2px solid #002060;
+    padding: 5px;
+    background: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    margin-bottom: 40px;
+}
+.photo-frame img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* SIGNATURES */
+.signatures-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    padding: 0 20px;
+}
+.sig-block {
+    text-align: center;
+    width: 30%;
+}
+.sig-line {
+    border-bottom: 1px solid #002060;
+    margin-bottom: 5px;
+    height: 40px; /* Space for sign */
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+.sig-img {
+    height: 40px;
+    object-fit: contain;
+}
+.sig-title {
+    font-size: 10pt;
+    color: #002060;
+    font-weight: 500;
+}
+/* Fake Signature Font */
+.fake-sig {
+    font-family: 'Great Vibes', cursive;
+    font-size: 24px;
+    color: #002060;
+}
+
+/* DISCLAIMER FOOTER */
+.disclaimer-footer {
+    position: absolute;
+    bottom: 30px;
+    left: 50px; right: 50px;
+    font-size: 8pt;
+    color: #333;
+    text-align: justify;
+    line-height: 1.2;
+    border-top: 2px solid #002060;
+    padding-top: 10px;
+}
+
 @media print {
-    .inp-mark { outline: none !important; }
-    @page { size: A4 portrait; margin: 0; }
-    body { background: white; margin: 0; padding: 0; }
     .no-print-bar, .navbar, .sidebar, .login-wrapper, #app-login, .mobile-menu-btn, .zoom-controls { display: none !important; }
     .print-container { margin: 0 !important; width: 210mm; }
-    .report-page, .cover-page, .details-page { margin: 0; box-shadow: none; width: 210mm; height: 297mm; page-break-after: always; break-after: page; position: relative; overflow: hidden; transform-origin: top left; background: white !important; }
+    .report-page, .cover-page, .details-page, .last-page { margin: 0; box-shadow: none; width: 210mm; height: 297mm; page-break-after: always; break-after: page; position: relative; overflow: hidden; transform-origin: top left; background: white !important; }
     .layer-lion { opacity: 0.75 !important; }
 }
