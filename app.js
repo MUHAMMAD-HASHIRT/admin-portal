@@ -1,5 +1,5 @@
 /* ==========================================================================
-   APP ENGINE (v128.0) - TABBED LIVE PREVIEWS & SIGNATURES
+   APP ENGINE (v129.0) - GLOBAL SIGNATURES & PREVIEW SEPARATION
    ========================================================================== */
 
 const firebaseConfig = {
@@ -20,7 +20,19 @@ const Mobile = { toggleMenu: () => { document.getElementById('app-sidebar').clas
 const Theme = { init: () => { const t = localStorage.getItem('academus_theme'); if (t === 'dark') { document.body.setAttribute('data-theme', 'dark'); const i = document.getElementById('theme-icon'); if(i) i.className = 'fas fa-sun'; } else { document.body.removeAttribute('data-theme'); const i = document.getElementById('theme-icon'); if(i) i.className = 'fas fa-moon'; } }, toggle: () => { const d = document.body.hasAttribute('data-theme'); if (d) { document.body.removeAttribute('data-theme'); localStorage.setItem('academus_theme', 'light'); document.getElementById('theme-icon').className = 'fas fa-moon'; } else { document.body.setAttribute('data-theme', 'dark'); localStorage.setItem('academus_theme', 'dark'); document.getElementById('theme-icon').className = 'fas fa-sun'; } } };
 
 const DB = {
-    defaults: { users: [{ id: 'admin', pass: 'admin', role: 'admin', name: 'Administrator' }], classes: [], subjects: {}, assignments: [], students: [], marks: {}, classTeachers: {}, classPhotos: {}, generalRemarks: {}, globalSignatures: {}, classTeacherSignatures: {} },
+    defaults: { 
+        users: [{ id: 'admin', pass: 'admin', role: 'admin', name: 'Administrator' }], 
+        classes: [], subjects: {}, assignments: [], students: [], marks: {}, classTeachers: {}, classPhotos: {}, generalRemarks: {}, 
+        globalSignatures: {}, classTeacherSignatures: {},
+        // NEW: Dedicated global configuration for the Last Page
+        globalConfig: {
+            signatures: [
+                { title: "Class Teacher", role: "ct", imgKey: null },
+                { title: "Academic Manager", role: "static", imgKey: null },
+                { title: "Directress", role: "static", imgKey: null }
+            ]
+        }
+    },
     data: {}, 
     sanitize: (val) => {
         if (!val) return DB.defaults;
@@ -35,6 +47,9 @@ const DB = {
         if (!val.generalRemarks) val.generalRemarks = {};
         if (!val.globalSignatures) val.globalSignatures = {};
         if (!val.classTeacherSignatures) val.classTeacherSignatures = {};
+        // Ensure globalConfig exists
+        if (!val.globalConfig) val.globalConfig = { signatures: DB.defaults.globalConfig.signatures };
+        if (!val.globalConfig.signatures) val.globalConfig.signatures = DB.defaults.globalConfig.signatures;
         return val;
     },
     init: (callback) => {
@@ -48,24 +63,17 @@ const DB = {
             if (val) { 
                 DB.data = DB.sanitize(val); 
                 if (!document.getElementById('view-admin-classes').classList.contains('hidden')) Admin.loadClassesHierarchy(); 
-                if (!document.getElementById('view-admin-teachers').classList.contains('hidden')) { Admin.loadTeachers(); Admin.loadAssignmentsList(); Admin.loadClassTeachers(); }
+                if (!document.getElementById('view-admin-teachers').classList.contains('hidden')) {
+                    Admin.loadTeachers(); 
+                    Admin.loadAssignmentsList(); 
+                    Admin.loadClassTeachers(); 
+                }
             }
         });
     },
     save: () => { dbRef.set(DB.data).then(() => { console.log("Cloud Saved."); }).catch(e => alert("Save Error: " + e.message)); },
     reset: () => { if(confirm("⚠️ DANGER: RESET ALL DATA?")) { DB.data = DB.defaults; DB.save(); alert("Reset."); location.reload(); } },
-    createDefaultTemplate: (t) => { 
-        return { 
-            title: t||'REPORT CARD', sub: 'TERM EVALUATION', desc: 'Student performance report.', 
-            qTotals: { t1:25, t2:25, mid:50, tot:100 }, 
-            items: [], showQuant: true, showRemarks: true,
-            signatures: [
-                { title: "Class Teacher", role: "ct", imgKey: null },
-                { title: "Academic Manager", role: "static", imgKey: "manager_default" },
-                { title: "Directress", role: "static", imgKey: "directress_default" }
-            ]
-        }; 
-    }
+    createDefaultTemplate: (t) => { return { title: t||'REPORT CARD', sub: 'TERM EVALUATION', desc: 'Student performance report.', qTotals: { t1:25, t2:25, mid:50, tot:100 }, items: [], showQuant: true, showRemarks: true }; }
 };
 
 const UI = { 
@@ -127,27 +135,28 @@ const ReportEngine = {
     },
     generateRubricPage: () => { return `<div class="details-page"><img src="header footer.png" class="layer-frame"><img src="background.png" class="layer-lion"><div class="content-area"><div style="height: 40px;"></div> <div class="rubric-title">UNDERSTANDING THE REPORT</div><div class="rubric-text"><b>Objectives</b><br>Academus has an academic and co-curricular checkpoints for students...</div><div class="rubric-text"><b>Testing</b><br>Academus has a set standard of assessing its students using formal and informal methods. Our testing is based on year round evaluation and portfolio analysis of students.</div><div class="rubric-text" style="margin-bottom:10px;"><b>Evaluation Rubric</b></div><table class="rubric-table"><thead><tr><th style="width:20%">Key Attributes</th><th style="width:15%">Key Symbol</th><th>Description</th></tr></thead><tbody><tr class="rubric-row-grey"><td class="rubric-col-attr">Exceeds<br>Learning<br>Expectations</td><td class="rubric-col-sym">ELE</td><td class="rubric-col-desc">The child displays impeccable progress towards set objectives and goals. The child achieves all milestones independently.</td></tr><tr class="rubric-row-white"><td class="rubric-col-attr">Meets Learning<br>Expectations</td><td class="rubric-col-sym">MLE</td><td class="rubric-col-desc">The child meets all the learning outcomes with precision and clarity of understanding.</td></tr><tr class="rubric-row-grey"><td class="rubric-col-attr">Progressing</td><td class="rubric-col-sym">P</td><td class="rubric-col-desc">The child is at an intermediate level, and is completing the given tasks in a satisfactory manner.</td></tr><tr class="rubric-row-white"><td class="rubric-col-attr">Needs<br>Improvement</td><td class="rubric-col-sym">NI</td><td class="rubric-col-desc">The child is starting to attempt or is in a phase of development.</td></tr></tbody></table></div></div>`; },
     
-    generateLastPage: (s, templateConfig) => {
+    // FETCHES FROM GLOBAL CONFIG INSTEAD OF SUBJECT TEMPLATE
+    generateLastPage: (s) => {
         const classKey = s.classId && s.section ? `${s.classId}_${s.section}` : null;
         const photo = classKey ? (DB.data.classPhotos[classKey] || '') : ''; 
         const remark = s.id ? (DB.data.generalRemarks[s.id] || '') : 'Remarks will appear here...';
         
-        // Find CT signature if applicable
         const teacherId = classKey ? DB.data.classTeachers[classKey] : null;
         const ctSigImage = (teacherId && DB.data.classTeacherSignatures[teacherId]) ? DB.data.classTeacherSignatures[teacherId] : null;
 
         let signaturesHTML = '';
         
-        if (templateConfig && templateConfig.signatures && Array.isArray(templateConfig.signatures)) {
-            const count = templateConfig.signatures.length;
+        const sigConfig = DB.data.globalConfig.signatures;
+        if (sigConfig && Array.isArray(sigConfig)) {
+            const count = sigConfig.length;
             const width = count > 0 ? (100 / count) : 100;
 
-            templateConfig.signatures.forEach(sig => {
+            sigConfig.forEach(sig => {
                 let imgSrc = '';
                 if (sig.role === 'ct') {
-                    imgSrc = ctSigImage; // Use CT signature
+                    imgSrc = ctSigImage; 
                 } else if (sig.role === 'static' && sig.imgKey && DB.data.globalSignatures[sig.imgKey]) {
-                    imgSrc = DB.data.globalSignatures[sig.imgKey]; // Use Static Admin signature
+                    imgSrc = DB.data.globalSignatures[sig.imgKey]; 
                 }
                 
                 const imgTag = imgSrc ? `<img src="${imgSrc}" class="sig-image">` : `<span class="fake-sig">Signature</span>`;
@@ -160,7 +169,7 @@ const ReportEngine = {
             });
         }
 
-        return `<div class="last-page"><img src="header footer.png" class="layer-frame"><img src="background.png" class="layer-lion"><div class="last-page-content"><div class="general-remarks-box"><div class="general-remarks-header">TEACHER REMARKS & NOTES</div><div style="margin-top:20px; font-family:'Courier New', cursive; font-size:14pt; line-height:1.5;">${remark}</div></div><div class="photo-section-header">CLASS PHOTOGRAPH</div><div class="photo-frame">${photo ? `<img src="${photo}">` : '<span style="color:#ccc;">Class Photo Placeholder</span>'}</div><div class="signatures-row">${signaturesHTML}</div><div class="disclaimer-footer">Disclaimer: This report card is copyright property of Academus International School, and privy to all intellectual property rights. This report card is a highly confidential, and pertains to only intended individuals. If lost, please return to Academus International School: ST 4/1-3, Block I, Gulistan e Jauhar, Karachi, Pakistan.<div style="text-align:right; margin-top:5px;">Term-I/2025-26</div></div></div></div>`;
+        return `<div class="last-page"><img src="header footer.png" class="layer-frame"><img src="background.png" class="layer-lion"><div class="last-page-content"><div class="general-remarks-box"><div class="general-remarks-header">TEACHER REMARKS & NOTES</div><div style="margin-top:20px; font-family:'Courier New', cursive; font-size:14pt; line-height:1.5;">${remark || 'Remarks will appear here...'}</div></div><div class="photo-section-header">CLASS PHOTOGRAPH</div><div class="photo-frame">${photo ? `<img src="${photo}">` : '<span style="color:#ccc;">Class Photo Placeholder</span>'}</div><div class="signatures-row">${signaturesHTML}</div><div class="disclaimer-footer">Disclaimer: This report card is copyright property of Academus International School, and privy to all intellectual property rights. This report card is a highly confidential, and pertains to only intended individuals. If lost, please return to Academus International School: ST 4/1-3, Block I, Gulistan e Jauhar, Karachi, Pakistan.<div style="text-align:right; margin-top:5px;">Term-I/2025-26</div></div></div></div>`;
     },
 
     addHeader: (c, t, s, d) => { c.innerHTML += `<div class="main-title">${t}</div>`; if (s) c.innerHTML += `<div class="sub-title">${s}</div>`; if (d) c.innerHTML += `<div class="description">${d}</div>`; return 60 + (d ? (d.length / 90 * 18) + 20 : 0); },
@@ -211,14 +220,10 @@ const ReportEngine = {
         const details = ReportEngine.generateDetailsPage(s); 
         const rubric = ReportEngine.generateRubricPage(); 
         let reports = ''; 
-        let templateConfig = null;
-        if(subIds.length > 0 && DB.data.subjects[subIds[0]]) {
-             templateConfig = DB.data.subjects[subIds[0]].template;
-        }
-
+        
         subIds.forEach(id => { const sub = DB.data.subjects[id]; if (sub) { const m = (DB.data.marks[sid] && DB.data.marks[sid][id]) ? DB.data.marks[sid][id] : {}; reports += ReportEngine.render(null, sub.template, m, false); } }); 
         
-        const lastPage = ReportEngine.generateLastPage(s, templateConfig);
+        const lastPage = ReportEngine.generateLastPage(s); // Uses global config inside
         
         const w = window.open('', '_blank'); 
         w.document.write(`<html><head><title>${s.name}</title><link rel="stylesheet" href="style.css"><style>.forced-print-bar { position: fixed; top: 0; left: 0; width: 100%; background: #1e293b; padding: 15px; text-align: center; z-index: 10000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); } .forced-btn { background: #10b981; color: white; border: none; padding: 10px 25px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; } @media print { .forced-print-bar { display: none !important; } }</style></head><body><div class="forced-print-bar"><button class="forced-btn" onclick="window.print()">🖨️ PRINT PDF</button></div><div class="print-container">${cover}${details}${rubric}${reports}${lastPage}</div></body></html>`); 
@@ -246,36 +251,25 @@ const Admin = {
     generateCreds: () => { document.getElementById('new-t-user').value = 'T-' + Math.floor(1000 + Math.random() * 9000); document.getElementById('new-t-pass').value = Math.random().toString(36).slice(-6); },
     addTeacher: () => { const n=document.getElementById('new-t-name').value.toUpperCase(); const u=document.getElementById('new-t-user').value; const p=document.getElementById('new-t-pass').value; if(n && u && p) { const exists = DB.data.users.find(x => x.id === u); if (exists) { alert("Exists!"); return; } DB.data.users.push({id:u, pass:p, role:'teacher', name:n}); DB.save(); Admin.loadTeachers(); } },
     delTeacher: (id) => { if(confirm("Del?")){DB.data.users=DB.data.users.filter(x=>x.id!==id); DB.save(); Admin.loadTeachers();} },
-    
     assignTeacher: () => { 
         const tid=document.getElementById('assign-teacher-select').value;
         const cid=document.getElementById('assign-class-select').value;
         const s=document.getElementById('assign-section-select').value;
         const sub=document.getElementById('assign-subject-select').value; 
         const isClassTeacher = document.getElementById('assign-is-ct').checked;
-        
         if(!tid || !cid || !s) { alert("ERROR: You must select a Grade, Section, and Teacher."); return; }
-
         if(isClassTeacher) { 
             const key = `${cid}_${s}`; 
             if(!DB.data.classTeachers) DB.data.classTeachers = {};
             if(DB.data.classTeachers[key]) { alert(`Error: This section already has a Class Teacher.`); return; } 
             DB.data.classTeachers[key] = tid; 
-            DB.save(); 
-            alert("Class Teacher Assigned Successfully!"); 
-            Admin.loadClassTeachers(); 
-            return; 
+            DB.save(); alert("Class Teacher Assigned Successfully!"); Admin.loadClassTeachers(); return; 
         }
-        
         if(!sub) { alert("ERROR: Please select a Subject to assign."); return; }
-        
         if(!DB.data.assignments) DB.data.assignments = [];
         DB.data.assignments.push({teacherId:tid, classId:cid, section:s, subjectId:sub}); 
-        DB.save(); 
-        Admin.loadAssignmentsList(); 
-        alert("Subject Teacher Assigned Successfully!"); 
+        DB.save(); Admin.loadAssignmentsList(); alert("Subject Teacher Assigned Successfully!"); 
     },
-    
     loadAssignmentsList: () => { 
         const l=document.getElementById('assignment-list-table'); 
         if(!l) return;
@@ -292,7 +286,6 @@ const Admin = {
         });
     },
     remAssign: (i) => { DB.data.assignments.splice(i,1); DB.save(); Admin.loadAssignmentsList(); },
-    
     loadClassTeachers: () => {
         const l = document.getElementById('class-teacher-list');
         if(!l) return;
@@ -311,7 +304,6 @@ const Admin = {
         }
     },
     remClassTeacher: (key) => { if(confirm("Remove Class Teacher?")) { delete DB.data.classTeachers[key]; DB.save(); Admin.loadClassTeachers(); } },
-
     importCSV: () => { const i = document.getElementById('csv-upload'); const f = i.files[0]; if (!f) { alert("Select file"); return; } const r = new FileReader(); r.onload = function(e) { const t = e.target.result; const rows = t.split('\n'); if (rows.length < 2) return; for (let i = 1; i < rows.length; i++) { const row = rows[i].trim(); if (!row) continue; const c = row.split(','); if (c.length < 13) continue; const gName = c[2].toUpperCase().trim(); const sName = c[3].toUpperCase().trim(); let cid = null; let cls = DB.data.classes.find(c => c.name === gName); if (!cls) { cid = 'c_' + Date.now() + Math.random().toString(36).substr(2, 5); cls = { id: cid, name: gName, sections: [sName], subjects: [] }; DB.data.classes.push(cls); } else { cid = cls.id; if (!cls.sections.includes(sName)) { cls.sections.push(sName); } } DB.data.students.push({ id: Date.now() + i, roll: c[0].trim(), name: c[1].trim().toUpperCase(), classId: cid, section: sName, parent1: c[4].trim(), parent2: c[5].trim(), gender: c[6].trim(), ageY: c[7].trim(), ageM: c[8].trim(), height: c[9].trim(), weight: c[10].trim(), attendanceP: c[11].trim(), attendanceA: c[12].trim(), pt1: false, pt2: false }); } DB.save(); alert("Imported!"); Admin.loadStudents(); Admin.loadClassesHierarchy(); }; r.readAsText(f); },
     onStudentClassChange: () => { const cid = document.getElementById('stu-class-select').value; const sec = document.getElementById('stu-section-select'); sec.innerHTML = '<option value="">Sec</option>'; const cls = DB.data.classes.find(c => c.id === cid); if(cls) cls.sections.forEach(s => sec.innerHTML += `<option value="${s}">${s}</option>`); },
     loadStudents: () => { const t = document.getElementById('admin-student-list'); if(!t) return; t.innerHTML = ''; Admin.refreshDropdowns(); DB.data.students.forEach((s, idx) => { const cls = DB.data.classes.find(c => c.id === s.classId)?.name || '-'; t.innerHTML += `<tr><td>${s.roll}</td><td>${s.name}</td><td>${cls} [${s.section}]</td><td>${s.parent1 || '-'}</td><td><button onclick="Admin.delStudent(${idx})" class="btn btn-sm btn-danger">X</button></td></tr>`; }); },
@@ -319,31 +311,34 @@ const Admin = {
     delStudent: (i) => { if(confirm("Delete?")) { DB.data.students.splice(i, 1); DB.save(); Admin.loadStudents(); } }
 };
 
-/* --- NEW: TEMPLATE WITH TABS --- */
+/* --- TABBED TEMPLATE EDITOR --- */
 const Template = { 
-    currentView: 'subject', // Track active tab
+    currentView: 'subject',
     
     initSelect:()=>{Admin.refreshDropdowns()}, 
     onClassChange:()=>{const c=document.getElementById('tpl-class-select').value,s=document.getElementById('tpl-subject-select');s.innerHTML='<option>Subj</option>';const cl=DB.data.classes.find(x=>x.id===c);if(cl)cl.subjects.forEach(sid=>{if(DB.data.subjects[sid])s.innerHTML+=`<option value="${sid}">${DB.data.subjects[sid].name}</option>`})}, 
     scale: 0.42, zoom: (delta) => { Template.scale += delta; if(Template.scale < 0.1) Template.scale = 0.1; if(Template.scale > 2) Template.scale = 2; const el = document.getElementById('editor-preview'); if(el) el.style.transform = `scale(${Template.scale})`; const lbl = document.getElementById('zoom-label'); if(lbl) lbl.innerText = Math.round(Template.scale * 100) + '%'; },
     
-    // TAB SWITCHER
     switchView: (view) => {
         Template.currentView = view;
         if(view === 'subject') {
+            document.getElementById('tpl-subject-selector-card').classList.remove('hidden');
             document.getElementById('tpl-subject-editor').classList.remove('hidden');
             document.getElementById('tpl-lastpage-editor').classList.add('hidden');
             document.getElementById('tab-btn-subject').className = 'btn btn-primary';
             document.getElementById('tab-btn-lastpage').className = 'btn btn-accent';
             document.getElementById('preview-title-label').innerText = 'LIVE PREVIEW (SUBJECT TEMPLATE)';
+            Template.liveUpdate();
         } else {
+            document.getElementById('tpl-subject-selector-card').classList.add('hidden');
             document.getElementById('tpl-subject-editor').classList.add('hidden');
             document.getElementById('tpl-lastpage-editor').classList.remove('hidden');
             document.getElementById('tab-btn-subject').className = 'btn btn-accent';
             document.getElementById('tab-btn-lastpage').className = 'btn btn-primary';
             document.getElementById('preview-title-label').innerText = 'LIVE PREVIEW (LAST PAGE)';
+            Template.loadSignatures();
+            Template.renderLastPagePreview();
         }
-        Template.liveUpdate();
     },
 
     load:()=>{
@@ -352,12 +347,53 @@ const Template = {
         const qt=t.qTotals||{t1:25,t2:25,mid:50,tot:100};document.getElementById('qt-1').value=qt.t1;document.getElementById('qt-2').value=qt.t2;document.getElementById('qt-3').value=qt.mid;document.getElementById('qt-4').value=qt.tot; 
         document.getElementById('tpl-show-quant').checked = t.showQuant !== false; document.getElementById('tpl-show-remarks').checked = t.showRemarks !== false; 
         Template.renderRows(t.items);
-        Template.renderSignatures(t.signatures); 
-        Template.liveUpdate(); // Renders correct preview based on tab
+        Template.liveUpdate();
     }, 
+    
     syncToDB:()=>{
         if(!Template.currentSubjectId)return;
         const i=[];document.querySelectorAll('#template-rows .row-item').forEach(r=>i.push({type:r.dataset.type,text:r.querySelector('input').value}));
+        const t=DB.data.subjects[Template.currentSubjectId].template; 
+        t.title=document.getElementById('tpl-title').value;t.sub=document.getElementById('tpl-sub').value;t.desc=document.getElementById('tpl-desc').value;
+        t.items=i; 
+        t.qTotals={t1:document.getElementById('qt-1').value,t2:document.getElementById('qt-2').value,mid:document.getElementById('qt-3').value,tot:document.getElementById('qt-4').value}; 
+        t.showQuant = document.getElementById('tpl-show-quant').checked; t.showRemarks = document.getElementById('tpl-show-remarks').checked; 
+    }, 
+    
+    liveUpdate:()=>{
+        if(Template.currentView === 'subject') {
+            if(!Template.currentSubjectId)return;
+            Template.syncToDB();
+            ReportEngine.render('editor-preview', DB.data.subjects[Template.currentSubjectId].template, {}, false);
+            document.getElementById('editor-preview').className = 'report-page';
+        }
+    }, 
+    
+    renderLastPagePreview: () => {
+        const dummyStudent = { id: null, classId: null, section: null, name: "Student Name Preview" };
+        const previewContainer = document.getElementById('editor-preview');
+        previewContainer.innerHTML = ReportEngine.generateLastPage(dummyStudent);
+        previewContainer.className = 'report-page';
+    },
+
+    renderRows:(i)=>{const c=document.getElementById('template-rows');c.innerHTML='';i.forEach((item,idx)=>{c.innerHTML+=`<div class="row-item" data-type="${item.type}" style="display:flex;gap:5px;margin-bottom:5px;"><span style="font-size:10px;width:15px;font-weight:bold;">${item.type[0].toUpperCase()}</span><input value="${item.text||''}" oninput="Template.liveUpdate()"><button onclick="Template.delItem(${idx})" style="color:red;border:none;">x</button></div>`})}, 
+    add:(t)=>{if(Template.currentSubjectId){Template.syncToDB();DB.data.subjects[Template.currentSubjectId].template.items.push({type:t,text:''});Template.load()}}, 
+    delItem:(i)=>{Template.syncToDB();DB.data.subjects[Template.currentSubjectId].template.items.splice(i,1);Template.load()}, 
+    
+    save:()=>{
+        if(Template.currentView === 'subject') {
+            if(!Template.currentSubjectId) return;
+            Template.syncToDB(); DB.save(); alert('Subject Template Saved');
+        } else {
+            Template.syncSignaturesToDB(); alert('Global Signatures Saved');
+        }
+    },
+
+    // --- GLOBAL SIGNATURE LOGIC ---
+    loadSignatures: () => {
+        Template.renderSignatures(DB.data.globalConfig.signatures);
+    },
+    syncSignaturesToDB: () => {
         const sigs = [];
         document.querySelectorAll('.signature-config-item').forEach(row => {
             sigs.push({
@@ -366,36 +402,9 @@ const Template = {
                 imgKey: row.dataset.imgKey || null 
             });
         });
-        const t=DB.data.subjects[Template.currentSubjectId].template; 
-        t.title=document.getElementById('tpl-title').value;t.sub=document.getElementById('tpl-sub').value;t.desc=document.getElementById('tpl-desc').value;
-        t.items=i; t.signatures = sigs; 
-        t.qTotals={t1:document.getElementById('qt-1').value,t2:document.getElementById('qt-2').value,mid:document.getElementById('qt-3').value,tot:document.getElementById('qt-4').value}; 
-        t.showQuant = document.getElementById('tpl-show-quant').checked; t.showRemarks = document.getElementById('tpl-show-remarks').checked; 
-    }, 
-    liveUpdate:()=>{
-        if(!Template.currentSubjectId)return;
-        Template.syncToDB();
-        
-        // DYNAMIC PREVIEW RENDERING
-        const t = DB.data.subjects[Template.currentSubjectId].template;
-        const previewContainer = document.getElementById('editor-preview');
-        
-        if(Template.currentView === 'subject') {
-            ReportEngine.render('editor-preview', t, {}, false);
-            previewContainer.className = 'report-page'; // Ensure base class
-        } else {
-            // Render Last Page Preview
-            const dummyStudent = { id: null, classId: null, section: null, name: "Student Name Preview" };
-            previewContainer.innerHTML = ReportEngine.generateLastPage(dummyStudent, t);
-            previewContainer.className = 'report-page';
-        }
-    }, 
-    
-    renderRows:(i)=>{const c=document.getElementById('template-rows');c.innerHTML='';i.forEach((item,idx)=>{c.innerHTML+=`<div class="row-item" data-type="${item.type}" style="display:flex;gap:5px;margin-bottom:5px;"><span style="font-size:10px;width:15px;font-weight:bold;">${item.type[0].toUpperCase()}</span><input value="${item.text||''}" oninput="Template.liveUpdate()"><button onclick="Template.delItem(${idx})" style="color:red;border:none;">x</button></div>`})}, 
-    add:(t)=>{if(Template.currentSubjectId){Template.syncToDB();DB.data.subjects[Template.currentSubjectId].template.items.push({type:t,text:''});Template.load()}}, 
-    delItem:(i)=>{Template.syncToDB();DB.data.subjects[Template.currentSubjectId].template.items.splice(i,1);Template.load()}, 
-    save:()=>{if(Template.currentSubjectId){Template.syncToDB();DB.save();alert('Saved')}},
-
+        DB.data.globalConfig.signatures = sigs;
+        DB.save();
+    },
     renderSignatures: (sigs) => {
         const c = document.getElementById('signature-config-list');
         c.innerHTML = '';
@@ -406,7 +415,7 @@ const Template = {
             c.innerHTML += `
             <div class="signature-config-item" data-img-key="${sig.imgKey || ''}" style="background:#f8fafc; padding:10px; border:1px solid #e2e8f0; margin-bottom:10px; border-radius:8px;">
                 <div style="display:flex; gap:10px; margin-bottom:10px;">
-                    <input type="text" class="sig-title-inp" value="${sig.title}" placeholder="Title (e.g., Principal)" style="flex:1; margin:0;" oninput="Template.liveUpdate()">
+                    <input type="text" class="sig-title-inp" value="${sig.title}" placeholder="Title (e.g., Principal)" style="flex:1; margin:0;" oninput="Template.liveUpdateSignatures()">
                     <select class="sig-role-select" onchange="Template.onSigRoleChange(this)" style="flex:1; margin:0;">
                         <option value="ct" ${sig.role === 'ct' ? 'selected' : ''}>Class Teacher (Automatic)</option>
                         <option value="static" ${sig.role === 'static' ? 'selected' : ''}>Static Image (Fixed)</option>
@@ -421,9 +430,29 @@ const Template = {
             </div>`;
         });
     },
-    addSignatureSlot: () => { if(Template.currentSubjectId){ Template.syncToDB(); DB.data.subjects[Template.currentSubjectId].template.signatures.push({ title: "New Signature", role: "static", imgKey: null }); Template.load(); } },
-    delSignature: (i) => { Template.syncToDB(); DB.data.subjects[Template.currentSubjectId].template.signatures.splice(i,1); Template.load(); },
-    onSigRoleChange: (selectEl) => { const container = selectEl.closest('.signature-config-item').querySelector('.sig-upload-container'); container.style.display = selectEl.value === 'static' ? 'block' : 'none'; Template.liveUpdate(); },
+    liveUpdateSignatures: () => {
+        Template.syncSignaturesToDB();
+        Template.renderLastPagePreview();
+    },
+    addSignatureSlot: () => { 
+        Template.syncSignaturesToDB(); 
+        DB.data.globalConfig.signatures.push({ title: "New Signature", role: "static", imgKey: null }); 
+        DB.save(); 
+        Template.loadSignatures();
+        Template.renderLastPagePreview();
+    },
+    delSignature: (i) => { 
+        Template.syncSignaturesToDB(); 
+        DB.data.globalConfig.signatures.splice(i,1); 
+        DB.save(); 
+        Template.loadSignatures();
+        Template.renderLastPagePreview();
+    },
+    onSigRoleChange: (selectEl) => { 
+        const container = selectEl.closest('.signature-config-item').querySelector('.sig-upload-container'); 
+        container.style.display = selectEl.value === 'static' ? 'block' : 'none'; 
+        Template.liveUpdateSignatures(); 
+    },
     uploadStaticSignature: (btn, idx) => {
         const fileInp = btn.previousElementSibling; const f = fileInp.files[0];
         if(!f) { alert("Select an image."); return; }
@@ -437,7 +466,7 @@ const Template = {
             row.dataset.imgKey = imgKey;
             row.querySelector('span').innerText = "Image saved.";
             btn.innerText = "Upload Image"; btn.disabled = false;
-            Template.liveUpdate(); DB.save(); 
+            Template.liveUpdateSignatures(); // Syncs to DB and Refreshes Preview
         };
         r.readAsDataURL(f);
     }
