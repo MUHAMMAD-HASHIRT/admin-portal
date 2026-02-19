@@ -60,7 +60,7 @@ input:focus { outline: none; border-color: var(--accent); }
 .zoom-controls { position: absolute; top: 15px; right: 15px; display: flex; gap: 5px; z-index: 100; background: var(--glass-card); padding: 5px; border-radius: 8px; border: var(--glass-border); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 .zoom-val { font-size: 12px; font-weight: bold; padding: 5px 8px; min-width: 40px; text-align: center; display: flex; align-items: center; justify-content: center; }
 #preview-wrapper { width: 100%; height: 100%; display: flex; justify-content: center; background: #cbd5e1; padding: 40px; border-radius: 8px; overflow: auto; }
-#editor-preview { transform: scale(0.42); transform-origin: top center; width: 210mm; min-height: 297mm; background: white; margin: 0 auto; color: black; box-shadow: 0 10px 25px rgba(0,0,0,0.2); transition: transform 0.2s ease; }
+#editor-preview { transform: scale(0.42); transform-origin: top center; width: 794px; min-height: 1123px; background: white; margin: 0 auto; color: black; box-shadow: 0 10px 25px rgba(0,0,0,0.2); transition: transform 0.2s ease; }
 
 /* LOGIN */
 #app-login { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at top right, #1e293b, #0f172a); display: flex; align-items: center; justify-content: center; z-index: 10000; }
@@ -82,18 +82,17 @@ input:focus { outline: none; border-color: var(--accent); }
     .login-box { width: 85%; padding: 30px 20px; }
 }
 
-/* --- REPORT PAGE (STRICT SIZING) --- */
+/* --- REPORT PAGE (STRICT PIXEL SIZING PREVENTS BLEED) --- */
 .report-page, .details-page, .last-page, .cover-page { 
-    width: 210mm !important; 
-    height: 297mm !important; 
-    max-height: 297mm !important; 
+    width: 794px !important; 
+    height: 1123px !important; 
     background: white !important; 
     box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
     margin: 0 auto 40px auto; 
     flex-shrink: 0; 
     font-family: "Poppins", sans-serif; 
     position: relative; 
-    overflow: hidden !important; 
+    overflow: hidden; 
     color: #002060; 
     padding: 0; 
     page-break-after: always;
@@ -116,6 +115,11 @@ input:focus { outline: none; border-color: var(--accent); }
     padding: 130px 50px 70px 50px; 
     background: transparent !important;
 }
+
+/* COVER */
+.cover-img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 0; }
+.cover-field { position: absolute; left: 200px; font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 700; color: #002060; text-transform: uppercase; z-index: 10; }
+.cover-name { bottom: 135px; } .cover-class { bottom: 75px; }
 
 /* HEADERS */
 .details-header, .dt-title, .main-header th, .quant-header { background-color: #002060 !important; color: white !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
@@ -180,18 +184,28 @@ input:focus { outline: none; border-color: var(--accent); }
 @media print {
     .inp-mark { outline: none !important; }
     @page { size: A4 portrait; margin: 0 !important; padding: 0 !important; }
-    body { background: white; margin: 0 !important; padding: 0 !important; }
+    
+    /* ADDED THIS FOR PRINT STABILITY */
+    body, html { 
+        background: white; margin: 0 !important; padding: 0 !important; 
+        position: relative;
+    }
     
     .no-print-bar, .navbar, .sidebar, .login-wrapper, #app-login, .mobile-menu-btn, .zoom-controls { display: none !important; }
-    .print-container { margin: 0 !important; padding: 0 !important; width: 210mm !important; }
+    
+    .print-container { 
+        margin: 0 !important; 
+        padding: 0 !important; 
+        width: 794px !important; 
+    }
     
     .report-page, .cover-page, .details-page, .last-page { 
         margin: 0 !important; 
         padding: 0 !important;
         box-shadow: none !important; 
-        width: 210mm !important; 
-        height: 296mm !important; /* 1mm safety gap */
-        max-height: 296mm !important;
+        width: 794px !important; 
+        height: 1123px !important; /* STRICT A4 DIMENSIONS IN PIXELS */
+        max-height: 1123px !important;
         page-break-after: always !important; 
         break-after: page !important; 
         position: relative !important; 
