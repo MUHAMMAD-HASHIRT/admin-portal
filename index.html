@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Academus Portal v126.0</title>
+    <title>Academus Portal v127.0</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -249,9 +249,13 @@
                         </div>
                         
                         <div class="card" style="border: 2px solid var(--accent);">
-                            <h3>Last Page Signatures</h3>
-                            <div style="font-size:11px; color:var(--text-secondary); margin-bottom:15px;">
-                                Define who signs the last page. Use "Static Image" for fixed roles (upload image) or "Class Teacher" to automatically use the assigned teacher's signature.
+                            <h3>Last Page Signatures Configuration</h3>
+                            <div style="font-size:11px; color:var(--text-secondary); margin-bottom:15px; background:#eef2ff; padding:10px; border-radius:6px;">
+                                <strong>How it works:</strong>
+                                <ul>
+                                    <li>**Static Image:** Admin uploads the image here. It appears the same for everyone (e.g., Principal).</li>
+                                    <li>**Class Teacher (Auto):** No upload needed here. The system automatically uses the signature uploaded by the assigned Class Teacher in their portal.</li>
+                                </ul>
                             </div>
                             <div id="signature-config-list">
                                 </div>
@@ -262,7 +266,7 @@
                     </div>
 
                     <div style="flex: 1.2; position: relative; border-left: var(--glass-border);">
-                        <div class="preview-label">LIVE PREVIEW (A4)</div>
+                        <div class="preview-label">LIVE PREVIEW (LAST PAGE LAYOUT)</div>
                         <div class="zoom-controls">
                             <button onclick="Template.zoom(-0.1)" class="btn btn-sm">-</button>
                             <div class="zoom-val" id="zoom-label">42%</div>
@@ -292,8 +296,10 @@
                                     <div id="ct-photo-preview" style="border:1px solid #ccc; padding:5px; text-align:center; min-height:100px; display:flex; align-items:center; justify-content:center; background:#f9f9f9;">Select Section</div>
                                 </div>
                                 <div style="flex:1; border-left:1px solid #eee; padding-left:20px;">
-                                     <h4 style="margin-bottom:5px;">My Signature</h4>
-                                    <div style="font-size:11px; color:#666; margin-bottom:5px;">Upload a clear image of your signature. This will appear on reports for classes you manage.</div>
+                                     <h4 style="margin-bottom:5px;">My Personal Signature</h4>
+                                    <div style="font-size:11px; color:#666; margin-bottom:5px; background:#eef2ff; padding:8px; border-radius:4px;">
+                                        Upload a clear image of <strong>your</strong> signature. This will automatically appear on the final reports for any class where you are assigned as the Class Teacher.
+                                    </div>
                                     <div style="display:flex; gap:5px; align-items:center; margin-bottom:10px;">
                                         <input type="file" id="ct-sig-upload" accept="image/*" style="width:auto;">
                                         <button onclick="Teacher.uploadSignature()" class="btn btn-sm btn-accent">Save Signature</button>
