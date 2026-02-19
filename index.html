@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Academus Portal v129.0</title>
+    <title>Academus Portal v130.0</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -209,9 +209,10 @@
                 <div class="template-container">
                     <div style="flex: 1; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; padding-right:10px;">
                         
-                        <div style="display:flex; gap:10px; margin-top:5px;">
-                            <button id="tab-btn-subject" class="btn btn-primary" style="flex:1;" onclick="Template.switchView('subject')"><i class="fas fa-table"></i> Subject Template</button>
-                            <button id="tab-btn-lastpage" class="btn btn-accent" style="flex:1;" onclick="Template.switchView('lastpage')"><i class="fas fa-signature"></i> Last Page (Global)</button>
+                        <div style="display:flex; gap:5px; margin-top:5px;">
+                            <button id="tab-btn-subject" class="btn btn-primary" style="flex:1; font-size:11px;" onclick="Template.switchView('subject')"><i class="fas fa-table"></i> Subjects</button>
+                            <button id="tab-btn-reflection" class="btn btn-accent" style="flex:1; font-size:11px;" onclick="Template.switchView('reflection')"><i class="fas fa-brain"></i> Reflection</button>
+                            <button id="tab-btn-lastpage" class="btn btn-accent" style="flex:1; font-size:11px;" onclick="Template.switchView('lastpage')"><i class="fas fa-signature"></i> Signatures</button>
                         </div>
 
                         <div id="tpl-subject-editor">
@@ -257,21 +258,37 @@
                             <button onclick="Template.save()" class="btn btn-success btn-block" style="height:50px; font-size:16px;">SAVE SUBJECT TEMPLATE</button>
                         </div>
 
+                        <div id="tpl-reflection-editor" class="hidden">
+                            <div class="card" style="border: 2px solid var(--accent);">
+                                <h3>Self Reflection Page (Global)</h3>
+                                <div style="font-size:12px; color:var(--text-secondary); margin-bottom:15px; background:#eef2ff; padding:12px; border-radius:6px;">
+                                    This page prints as the second-to-last page on EVERY report card. It prints blank boxes for students to fill out later.
+                                </div>
+                                
+                                <h4>Table 1: My Learning Evaluation</h4>
+                                <div id="ref-eval-list"></div>
+                                <button onclick="Template.addRefRow('eval')" class="btn btn-sm btn-accent" style="margin-bottom:20px;">+ Add Question</button>
+
+                                <h4>Table 2: My Voice</h4>
+                                <div id="ref-voice-list"></div>
+                                <button onclick="Template.addRefRow('voice')" class="btn btn-sm btn-accent">+ Add Question</button>
+                            </div>
+                            <button onclick="Template.syncGlobalsToDB()" class="btn btn-success btn-block" style="height:50px; font-size:16px;">SAVE GLOBAL REFLECTION</button>
+                        </div>
+
                         <div id="tpl-lastpage-editor" class="hidden">
                             <div class="card" style="border: 2px solid var(--accent);">
-                                <h3>Global Signatures Configuration</h3>
-                                <div style="font-size:12px; color:var(--text-secondary); margin-bottom:15px; background:#eef2ff; padding:12px; border-radius:6px; line-height: 1.4;">
-                                    <strong>This applies to ALL report cards universally.</strong><br>
+                                <h3>Last Page Signatures (Global)</h3>
+                                <div style="font-size:12px; color:var(--text-secondary); margin-bottom:15px; background:#eef2ff; padding:12px; border-radius:6px;">
                                     <ul>
-                                        <li style="margin-top:5px;"><strong>Static Image:</strong> Upload a fixed signature here (e.g., School Principal).</li>
-                                        <li style="margin-top:5px;"><strong>Class Teacher (Auto):</strong> The system automatically extracts the personal signature uploaded by the Section's Class Teacher in their own portal.</li>
+                                        <li>**Static Image:** Admin uploads the image here. It appears the same for everyone (e.g., Principal).</li>
+                                        <li>**Class Teacher (Auto):** Uses the signature uploaded by the assigned Class Teacher in their portal.</li>
                                     </ul>
                                 </div>
-                                <div id="signature-config-list">
-                                    </div>
+                                <div id="signature-config-list"></div>
                                  <button onclick="Template.addSignatureSlot()" class="btn btn-sm btn-accent" style="margin-top:10px;">+ Add Signature Slot</button>
                             </div>
-                            <button onclick="Template.saveSignatures()" class="btn btn-success btn-block" style="height:50px; font-size:16px;">SAVE GLOBAL SIGNATURES</button>
+                            <button onclick="Template.syncGlobalsToDB()" class="btn btn-success btn-block" style="height:50px; font-size:16px;">SAVE GLOBAL SIGNATURES</button>
                         </div>
                     </div>
 
@@ -306,7 +323,7 @@
                                     <div id="ct-photo-preview" style="border:1px solid #ccc; padding:5px; text-align:center; min-height:100px; display:flex; align-items:center; justify-content:center; background:#f9f9f9;">Select Section</div>
                                 </div>
                                 <div style="flex:1; border-left:1px solid #eee; padding-left:20px;">
-                                     <h4 style="margin-bottom:5px;">My Personal Signature</h4>
+                                    <h4 style="margin-bottom:5px;">My Personal Signature</h4>
                                     <div style="font-size:11px; color:#666; margin-bottom:5px; background:#eef2ff; padding:8px; border-radius:4px;">
                                         Upload a clear image of <strong>your</strong> signature. This will automatically appear on the final reports for any class where you are assigned as the Class Teacher.
                                     </div>
