@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Academus Portal v127.0</title>
+    <title>Academus Portal v128.0</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -207,66 +207,76 @@
 
             <div id="view-admin-template" class="page-section hidden" style="height: calc(100vh - 150px);">
                 <div class="template-container">
-                    <div style="flex: 1; display: flex; flex-direction: column; gap: 15px; overflow-y: auto;">
-                         <div class="card">
-                            <h3>Select Subject Template</h3>
-                            <select id="tpl-class-select" onchange="Template.onClassChange()"></select>
+                    <div style="flex: 1; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; padding-right:10px;">
+                        
+                        <div class="card" style="margin-bottom:0; padding-bottom:15px;">
+                            <h3 style="margin-bottom:10px;">Select Subject Configuration</h3>
                             <div style="display:flex; gap:10px;">
-                                <select id="tpl-subject-select"></select>
-                                <button onclick="Template.load()" class="btn btn-accent">Load</button>
+                                <select id="tpl-class-select" onchange="Template.onClassChange()" style="margin:0;"></select>
+                                <select id="tpl-subject-select" style="margin:0;"></select>
+                                <button onclick="Template.load()" class="btn btn-accent">Load Details</button>
                             </div>
                         </div>
 
-                        <div class="card">
-                            <h3>Report Headers & Settings</h3>
-                            <input type="text" id="tpl-title" placeholder="Main Title" oninput="Template.liveUpdate()">
-                            <input type="text" id="tpl-sub" placeholder="Sub Title" oninput="Template.liveUpdate()">
-                            <textarea id="tpl-desc" placeholder="Description / Letter to parents..." style="height:80px;" oninput="Template.liveUpdate()"></textarea>
-                            <div style="display:flex; gap:20px; margin-top:10px;">
-                                <label style="display:flex;align-items:center;gap:5px;font-size:13px;font-weight:600;"><input type="checkbox" id="tpl-show-quant" onchange="Template.liveUpdate()" style="width:auto;margin:0;"> Show Quantitative Table</label>
-                                <label style="display:flex;align-items:center;gap:5px;font-size:13px;font-weight:600;"><input type="checkbox" id="tpl-show-remarks" onchange="Template.liveUpdate()" style="width:auto;margin:0;"> Show Remarks Box</label>
-                            </div>
-                        </div>
-                        
-                        <div class="card">
-                            <h3>Evaluation Criteria</h3>
-                            <div id="template-rows"></div>
-                            <div style="display:flex; gap:5px; margin-top:15px;">
-                                <button onclick="Template.add('header')" class="btn btn-sm btn-accent">+ Header</button>
-                                <button onclick="Template.add('item')" class="btn btn-sm btn-primary">+ Criteria Item</button>
-                                <button onclick="Template.add('break')" class="btn btn-sm" style="background:#64748b; color:white;">+ Page Break</button>
-                            </div>
+                        <div style="display:flex; gap:10px; margin-top:5px;">
+                            <button id="tab-btn-subject" class="btn btn-primary" style="flex:1;" onclick="Template.switchView('subject')"><i class="fas fa-table"></i> Subject Template</button>
+                            <button id="tab-btn-lastpage" class="btn btn-accent" style="flex:1;" onclick="Template.switchView('lastpage')"><i class="fas fa-signature"></i> Last Page & Signatures</button>
                         </div>
 
-                        <div class="card">
-                            <h3>Quantitative Totals</h3>
-                            <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr 1fr;">
-                                <input type="number" id="qt-1" placeholder="T1 Max">
-                                <input type="number" id="qt-2" placeholder="T2 Max">
-                                <input type="number" id="qt-3" placeholder="Mid Max">
-                                <input type="number" id="qt-4" placeholder="Final Max">
-                            </div>
-                        </div>
-                        
-                        <div class="card" style="border: 2px solid var(--accent);">
-                            <h3>Last Page Signatures Configuration</h3>
-                            <div style="font-size:11px; color:var(--text-secondary); margin-bottom:15px; background:#eef2ff; padding:10px; border-radius:6px;">
-                                <strong>How it works:</strong>
-                                <ul>
-                                    <li>**Static Image:** Admin uploads the image here. It appears the same for everyone (e.g., Principal).</li>
-                                    <li>**Class Teacher (Auto):** No upload needed here. The system automatically uses the signature uploaded by the assigned Class Teacher in their portal.</li>
-                                </ul>
-                            </div>
-                            <div id="signature-config-list">
+                        <div id="tpl-subject-editor">
+                            <div class="card">
+                                <h3>Report Headers & Settings</h3>
+                                <input type="text" id="tpl-title" placeholder="Main Title" oninput="Template.liveUpdate()">
+                                <input type="text" id="tpl-sub" placeholder="Sub Title" oninput="Template.liveUpdate()">
+                                <textarea id="tpl-desc" placeholder="Description / Letter to parents..." style="height:80px;" oninput="Template.liveUpdate()"></textarea>
+                                <div style="display:flex; gap:20px; margin-top:10px;">
+                                    <label style="display:flex;align-items:center;gap:5px;font-size:13px;font-weight:600;"><input type="checkbox" id="tpl-show-quant" onchange="Template.liveUpdate()" style="width:auto;margin:0;"> Show Quantitative Table</label>
+                                    <label style="display:flex;align-items:center;gap:5px;font-size:13px;font-weight:600;"><input type="checkbox" id="tpl-show-remarks" onchange="Template.liveUpdate()" style="width:auto;margin:0;"> Show Remarks Box</label>
                                 </div>
-                             <button onclick="Template.addSignatureSlot()" class="btn btn-sm btn-accent" style="margin-top:10px;">+ Add Signature Slot</button>
+                            </div>
+                            
+                            <div class="card">
+                                <h3>Evaluation Criteria</h3>
+                                <div id="template-rows"></div>
+                                <div style="display:flex; gap:5px; margin-top:15px;">
+                                    <button onclick="Template.add('header')" class="btn btn-sm btn-accent">+ Header</button>
+                                    <button onclick="Template.add('item')" class="btn btn-sm btn-primary">+ Criteria Item</button>
+                                    <button onclick="Template.add('break')" class="btn btn-sm" style="background:#64748b; color:white;">+ Page Break</button>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <h3>Quantitative Totals</h3>
+                                <div class="form-grid" style="grid-template-columns: 1fr 1fr 1fr 1fr;">
+                                    <input type="number" id="qt-1" placeholder="T1 Max">
+                                    <input type="number" id="qt-2" placeholder="T2 Max">
+                                    <input type="number" id="qt-3" placeholder="Mid Max">
+                                    <input type="number" id="qt-4" placeholder="Final Max">
+                                </div>
+                            </div>
                         </div>
 
-                        <button onclick="Template.save()" class="btn btn-success btn-block" style="height:50px; font-size:16px;">SAVE TEMPLATE CHANGES</button>
+                        <div id="tpl-lastpage-editor" class="hidden">
+                            <div class="card" style="border: 2px solid var(--accent);">
+                                <h3>Last Page Signatures Configuration</h3>
+                                <div style="font-size:11px; color:var(--text-secondary); margin-bottom:15px; background:#eef2ff; padding:10px; border-radius:6px;">
+                                    <strong>How it works:</strong>
+                                    <ul>
+                                        <li>**Static Image:** Admin uploads the image here. It appears the same for everyone (e.g., Principal).</li>
+                                        <li>**Class Teacher (Auto):** No upload needed here. The system automatically uses the signature uploaded by the assigned Class Teacher in their portal.</li>
+                                    </ul>
+                                </div>
+                                <div id="signature-config-list">
+                                    </div>
+                                 <button onclick="Template.addSignatureSlot()" class="btn btn-sm btn-accent" style="margin-top:10px;">+ Add Signature Slot</button>
+                            </div>
+                        </div>
+
+                        <button onclick="Template.save()" class="btn btn-success btn-block" style="height:50px; font-size:16px;">SAVE CONFIGURATION</button>
                     </div>
 
-                    <div style="flex: 1.2; position: relative; border-left: var(--glass-border);">
-                        <div class="preview-label">LIVE PREVIEW (LAST PAGE LAYOUT)</div>
+                    <div style="flex: 1.2; position: relative; border-left: var(--glass-border); padding-left:15px;">
+                        <div class="preview-label" id="preview-title-label">LIVE PREVIEW (SUBJECT TEMPLATE)</div>
                         <div class="zoom-controls">
                             <button onclick="Template.zoom(-0.1)" class="btn btn-sm">-</button>
                             <div class="zoom-val" id="zoom-label">42%</div>
