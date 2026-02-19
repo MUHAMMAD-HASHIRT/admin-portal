@@ -116,7 +116,7 @@ input:focus { outline: none; border-color: var(--accent); }
     background: transparent !important;
 }
 
-/* COVER */
+/* COVER PAGE */
 .cover-img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 0; }
 .cover-field { position: absolute; left: 200px; font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 700; color: #002060; text-transform: uppercase; z-index: 10; }
 .cover-name { bottom: 135px; } .cover-class { bottom: 75px; }
@@ -158,37 +158,52 @@ input:focus { outline: none; border-color: var(--accent); }
 
 .inp-mark { color: #002060 !important; background: transparent !important; border: none !important; outline: 1px solid #ccc; width: 100%; }
 
-/* --- LAST PAGE FIX --- */
+/* --- LAST PAGE FIX (DISCLAIMER OVERLAP FIX) --- */
 .last-page-content {
     position: relative;
     z-index: 50; 
     width: 100%; height: 100%;
+    /* Tight padding for last page */
     padding: 120px 50px 40px 50px; 
     box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
 }
+
 .general-remarks-box { border: 2px solid #002060; min-height: 180px; padding: 30px 20px; position: relative; margin-bottom: 20px; background: rgba(255,255,255,0.8); }
 .general-remarks-header { position: absolute; top: 10px; left: 20px; font-size: 12pt; font-weight: 700; color: #002060; text-transform: uppercase; }
+
 .photo-section-header { background-color: #1e293b !important; color: white !important; font-size: 12pt; font-weight: 400; padding: 8px 20px; border-radius: 4px; margin-bottom: 10px; text-transform: uppercase; -webkit-print-color-adjust: exact !important; }
 .photo-frame { width: 100%; height: 380px; border: 2px solid #002060; padding: 5px; background: white; display: flex; justify-content: center; align-items: center; overflow: hidden; margin-bottom: 20px; }
 .photo-frame img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
 .signatures-row { display: flex; justify-content: space-between; margin-top: 10px; padding: 0 20px; }
 .sig-block { text-align: center; width: 30%; }
 .sig-line { border-bottom: 1px solid #002060; margin-bottom: 5px; height: 35px; display: flex; align-items: flex-end; justify-content: center; }
 .fake-sig { font-family: 'Great Vibes', cursive; font-size: 20px; color: #002060; }
 .sig-title { font-size: 9pt; color: #002060; font-weight: 500; }
-.disclaimer-footer { font-size: 8pt; color: #333; text-align: justify; line-height: 1.2; border-top: 2px solid #002060; padding-top: 5px; margin-top: auto; }
 
-/* PRINT SETTINGS (FOOLPROOF) */
+/* FIX: Absolute positioning forces it above the background image footer line safely */
+.disclaimer-footer { 
+    position: absolute;
+    bottom: 90px; 
+    left: 50px; 
+    right: 50px;
+    font-size: 8pt; 
+    color: #333; 
+    text-align: justify; 
+    line-height: 1.2; 
+    border-top: 2px solid #002060; 
+    padding-top: 5px; 
+}
+
+/* PRINT SETTINGS (FOOLPROOF PIXELS) */
 @media print {
     .inp-mark { outline: none !important; }
     @page { size: A4 portrait; margin: 0 !important; padding: 0 !important; }
     
-    /* ADDED THIS FOR PRINT STABILITY */
     body, html { 
-        background: white; margin: 0 !important; padding: 0 !important; 
-        position: relative;
+        background: white !important; 
+        margin: 0 !important; 
+        padding: 0 !important; 
     }
     
     .no-print-bar, .navbar, .sidebar, .login-wrapper, #app-login, .mobile-menu-btn, .zoom-controls { display: none !important; }
@@ -199,12 +214,13 @@ input:focus { outline: none; border-color: var(--accent); }
         width: 794px !important; 
     }
     
+    /* ABSOLUTE FORCE ON PAGE DIMENSIONS */
     .report-page, .cover-page, .details-page, .last-page { 
         margin: 0 !important; 
         padding: 0 !important;
         box-shadow: none !important; 
         width: 794px !important; 
-        height: 1123px !important; /* STRICT A4 DIMENSIONS IN PIXELS */
+        height: 1123px !important; 
         max-height: 1123px !important;
         page-break-after: always !important; 
         break-after: page !important; 
@@ -215,6 +231,7 @@ input:focus { outline: none; border-color: var(--accent); }
         box-sizing: border-box !important;
     }
     
+    /* Don't break after the very last page */
     .print-container > div:last-child {
         page-break-after: auto !important;
         break-after: auto !important;
