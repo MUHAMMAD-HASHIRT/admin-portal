@@ -82,13 +82,14 @@ input:focus { outline: none; border-color: var(--accent); }
     .login-box { width: 85%; padding: 30px 20px; }
 }
 
-/* --- REPORT PAGE (A4 SAFETY FIX) --- */
-.report-page, .details-page, .last-page { 
+/* --- REPORT PAGES (A4 STRICT SIZING FIX) --- */
+/* ALL pages including the cover page must strictly be A4 size to prevent bleed */
+.report-page, .details-page, .last-page, .cover-page { 
     width: 210mm; 
-    height: 296mm; /* SAFETY: 1mm smaller than 297mm to prevent bleed */
+    height: 297mm; 
     background: white !important; 
     box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
-    margin-bottom: 40px; 
+    margin: 0 auto 40px auto; 
     flex-shrink: 0; 
     font-family: "Poppins", sans-serif; 
     position: relative; 
@@ -97,8 +98,9 @@ input:focus { outline: none; border-color: var(--accent); }
     padding: 0; 
     page-break-after: always;
     break-after: page;
+    display: block; /* CRITICAL: Forces it to act like a real page block */
+    box-sizing: border-box !important;
 }
-.report-page *, .details-page *, .last-page * { box-sizing: border-box !important; }
 
 /* LAYERS */
 .layer-frame { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
@@ -111,10 +113,10 @@ input:focus { outline: none; border-color: var(--accent); }
     width: 100%; height: 100%;
     padding: 130px 50px 70px 50px; 
     background: transparent !important;
+    box-sizing: border-box;
 }
 
 /* COVER */
-.cover-page { position: relative; width: 100%; height: 100%; z-index: 100; }
 .cover-img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 0; }
 .cover-field { position: absolute; left: 200px; font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 700; color: #002060; text-transform: uppercase; z-index: 10; }
 .cover-name { bottom: 135px; } .cover-class { bottom: 75px; }
@@ -147,75 +149,65 @@ input:focus { outline: none; border-color: var(--accent); }
 .footer-block { margin-top: 20px; width: 100%; }
 .remarks-box { margin-top: 15px; border: 2px solid #002060; min-height: 100px; background: rgba(255,255,255,0.7); padding: 35px 10px 10px 10px; font-size: 10pt; position: relative; width: 100%; box-sizing: border-box; }
 .remarks-label { position: absolute; top: 0; left: 0; width: 100%; font-size: 10pt; font-weight: bold; color: #002060; padding: 5px; border-bottom: 1px solid #002060; background: rgba(255,255,255,0.9); box-sizing: border-box; }
+
 .rubric-title { font-size: 20px; font-weight: 800; color: #002060; margin-bottom: 25px; }
 .rubric-text { font-size: 13px; text-align: justify; margin-bottom: 25px; color: #002060; }
 .rubric-table th { background: #a0a0a0 !important; color: #002060 !important; padding: 12px; font-weight: 800; -webkit-print-color-adjust: exact !important; }
 .rubric-row-grey td { background: #e5e7eb !important; padding: 12px; -webkit-print-color-adjust: exact !important; color: #002060; }
 .rubric-row-white td { background: #ffffff !important; padding: 12px; -webkit-print-color-adjust: exact !important; color: #002060; }
+
 .inp-mark { color: #002060 !important; background: transparent !important; border: none !important; outline: 1px solid #ccc; width: 100%; }
 
-/* --- LAST PAGE FIX (Tighter Constraints) --- */
+/* --- LAST PAGE --- */
 .last-page-content {
     position: relative;
     z-index: 50; 
     width: 100%; height: 100%;
-    /* Tight padding to fit everything */
     padding: 120px 50px 40px 50px; 
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
 }
-.general-remarks-box {
-    border: 2px solid #002060;
-    min-height: 180px; 
-    padding: 30px 20px;
-    position: relative;
-    margin-bottom: 20px;
-    background: rgba(255,255,255,0.8);
-}
+.general-remarks-box { border: 2px solid #002060; min-height: 180px; padding: 30px 20px; position: relative; margin-bottom: 20px; background: rgba(255,255,255,0.8); }
 .general-remarks-header { position: absolute; top: 10px; left: 20px; font-size: 12pt; font-weight: 700; color: #002060; text-transform: uppercase; }
-.photo-section-header {
-    background-color: #1e293b !important;
-    color: white !important;
-    font-size: 12pt;
-    font-weight: 400;
-    padding: 8px 20px;
-    border-radius: 4px;
-    margin-bottom: 10px;
-    text-transform: uppercase;
-    -webkit-print-color-adjust: exact !important;
-}
-.photo-frame {
-    width: 100%;
-    height: 380px;
-    border: 2px solid #002060;
-    padding: 5px;
-    background: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
-    margin-bottom: 20px;
-}
+.photo-section-header { background-color: #1e293b !important; color: white !important; font-size: 12pt; font-weight: 400; padding: 8px 20px; border-radius: 4px; margin-bottom: 10px; text-transform: uppercase; -webkit-print-color-adjust: exact !important; }
+.photo-frame { width: 100%; height: 380px; border: 2px solid #002060; padding: 5px; background: white; display: flex; justify-content: center; align-items: center; overflow: hidden; margin-bottom: 20px; }
 .photo-frame img { max-width: 100%; max-height: 100%; object-fit: contain; }
 .signatures-row { display: flex; justify-content: space-between; margin-top: 10px; padding: 0 20px; }
 .sig-block { text-align: center; width: 30%; }
 .sig-line { border-bottom: 1px solid #002060; margin-bottom: 5px; height: 35px; display: flex; align-items: flex-end; justify-content: center; }
 .fake-sig { font-family: 'Great Vibes', cursive; font-size: 20px; color: #002060; }
 .sig-title { font-size: 9pt; color: #002060; font-weight: 500; }
-.disclaimer-footer {
-    font-size: 8pt;
-    color: #333;
-    text-align: justify;
-    line-height: 1.2;
-    border-top: 2px solid #002060;
-    padding-top: 5px;
-    margin-top: auto; 
-}
+.disclaimer-footer { font-size: 8pt; color: #333; text-align: justify; line-height: 1.2; border-top: 2px solid #002060; padding-top: 5px; margin-top: auto; }
 
+/* PRINT SETTINGS */
 @media print {
+    .inp-mark { outline: none !important; }
+    @page { size: A4 portrait; margin: 0; padding: 0; }
+    body { background: white; margin: 0; padding: 0; }
+    
     .no-print-bar, .navbar, .sidebar, .login-wrapper, #app-login, .mobile-menu-btn, .zoom-controls { display: none !important; }
     .print-container { margin: 0 !important; width: 210mm; }
-    .report-page, .cover-page, .details-page, .last-page { margin: 0; box-shadow: none; width: 210mm; height: 296mm; page-break-after: always; break-after: page; position: relative; overflow: hidden; transform-origin: top left; background: white !important; }
+    
+    .report-page, .cover-page, .details-page, .last-page { 
+        margin: 0 !important; 
+        box-shadow: none !important; 
+        width: 210mm !important; 
+        height: 297mm !important; 
+        max-height: 297mm !important;
+        page-break-after: always; 
+        break-after: page; 
+        position: relative; 
+        overflow: hidden !important; 
+        transform-origin: top left; 
+        background: white !important; 
+    }
+    
+    /* Remove break on the absolute last item so it doesn't cause a blank sheet */
+    .print-container > div:last-child {
+        page-break-after: auto !important;
+        break-after: auto !important;
+    }
+    
     .layer-lion { opacity: 0.75 !important; }
 }
