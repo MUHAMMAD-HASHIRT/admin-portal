@@ -100,7 +100,6 @@ input:focus { outline: none; border-color: var(--accent); }
     box-sizing: border-box !important;
     display: block;
 }
-
 .report-page *, .details-page *, .last-page * { box-sizing: border-box !important; }
 
 /* LAYERS */
@@ -109,11 +108,7 @@ input:focus { outline: none; border-color: var(--accent); }
 
 /* CONTENT */
 .content-area, .details-content { 
-    position: relative;
-    z-index: 50; 
-    width: 100%; height: 100%;
-    padding: 130px 50px 70px 50px; 
-    background: transparent !important;
+    position: relative; z-index: 50; width: 100%; height: 100%; padding: 130px 50px 70px 50px; background: transparent !important;
 }
 
 /* COVER PAGE */
@@ -128,28 +123,30 @@ input:focus { outline: none; border-color: var(--accent); }
 .main-header th { font-size: 10pt; text-align: left; }
 .quant-header { font-weight: bold; padding: 5px; font-size: 10pt; }
 
-/* TABLES */
+/* DETAILS TABLES */
 .details-table-new { width: 100%; border-collapse: collapse; font-size: 12pt; margin: 0 auto 20px auto; }
 .details-table-new th { background-color: #002060 !important; color: white !important; text-align: left; padding: 14px 15px; width: 25%; border-bottom: 1px solid white; -webkit-print-color-adjust: exact !important; }
 .details-table-new td { background-color: #e2e8f0 !important; color: #002060 !important; padding: 14px 15px; border-bottom: 1px solid white; border-left: 1px solid white; font-weight: 500; -webkit-print-color-adjust: exact !important; }
 .dt-check { display: inline-block; width: 14px; height: 14px; border: 1px solid #002060; margin-left: 5px; margin-right: 15px; vertical-align: middle; background: white; }
 .dt-check.checked { background: #002060; }
 
+/* SUBJECT TABLES */
 .section-row td { background: rgba(233, 239, 247, 0.95) !important; color: #002060 !important; font-weight: bold; font-size: 12pt; -webkit-print-color-adjust: exact !important; }
 .dt-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; border-bottom: 1px solid #eee; }
 .main-title { font-size: 14pt; font-weight: bold; color: #002060; text-transform: uppercase; margin-bottom: 5px; }
 .sub-title { font-size: 11pt; font-weight: normal; color: #002060; text-transform: uppercase; margin-bottom: 8px; border-bottom: 1px solid #ccc; padding-bottom:5px; }
 .description { font-size: 10pt; line-height: 1.3; color: #002060; margin-bottom: 15px; text-align: justify; white-space: pre-wrap; width: 100%; }
-
 .report-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; background: rgba(255,255,255,0.9); }
 .report-table th, .report-table td { border: 1px solid #8FAADC; padding: 6px; }
 .data-row td { font-size: 10pt; color: #002060; padding: 8px; }
 .check-box { text-align: center; color: #002060; font-weight: bold; }
 
+/* FOOTERS */
 .footer-block { margin-top: 20px; width: 100%; }
 .remarks-box { margin-top: 15px; border: 2px solid #002060; min-height: 100px; background: rgba(255,255,255,0.7); padding: 35px 10px 10px 10px; font-size: 10pt; position: relative; width: 100%; box-sizing: border-box; }
 .remarks-label { position: absolute; top: 0; left: 0; width: 100%; font-size: 10pt; font-weight: bold; color: #002060; padding: 5px; border-bottom: 1px solid #002060; background: rgba(255,255,255,0.9); box-sizing: border-box; }
 
+/* RUBRIC */
 .rubric-title { font-size: 20px; font-weight: 800; color: #002060; margin-bottom: 25px; }
 .rubric-text { font-size: 13px; text-align: justify; margin-bottom: 25px; color: #002060; }
 .rubric-table th { background: #a0a0a0 !important; color: #002060 !important; padding: 12px; font-weight: 800; -webkit-print-color-adjust: exact !important; }
@@ -158,16 +155,20 @@ input:focus { outline: none; border-color: var(--accent); }
 
 .inp-mark { color: #002060 !important; background: transparent !important; border: none !important; outline: 1px solid #ccc; width: 100%; }
 
-/* --- LAST PAGE FIX (DISCLAIMER OVERLAP FIX) --- */
-.last-page-content {
-    position: relative;
-    z-index: 50; 
-    width: 100%; height: 100%;
-    /* Tight padding for last page */
-    padding: 120px 50px 40px 50px; 
-    box-sizing: border-box;
-}
+/* --- NEW: SELF REFLECTION PAGE STYLES --- */
+.reflection-title { font-size: 22pt; font-family: 'Times New Roman', serif; color: #002060; margin-bottom: 20px; text-transform: uppercase; }
+.ref-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 10.5pt; border: 1px solid #8FAADC; background: rgba(255,255,255,0.9); }
+.ref-table th { background-color: #002060 !important; color: white !important; padding: 12px 10px; text-align: center; border: 1px solid white; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; font-weight: 500; text-transform: uppercase; }
+.ref-table th:nth-child(2) { text-align: left; }
+.ref-table td { padding: 12px 10px; border: 1px solid #8FAADC; color: #002060; vertical-align: middle; }
+.ref-table tr:nth-child(even) td { background-color: #eef4f9 !important; -webkit-print-color-adjust: exact !important; }
+.ref-table tr:nth-child(odd) td { background-color: #ffffff !important; -webkit-print-color-adjust: exact !important; }
+.ref-col-num { width: 40px; text-align: center; font-weight: bold; }
+.ref-col-q { width: 50%; }
+.ref-box { width: 22px; height: 22px; background-color: #e2e8f0 !important; margin: 0 auto; -webkit-print-color-adjust: exact !important; }
 
+/* --- LAST PAGE --- */
+.last-page-content { position: relative; z-index: 50; width: 100%; height: 100%; padding: 120px 50px 40px 50px; box-sizing: border-box; }
 .general-remarks-box { border: 2px solid #002060; min-height: 180px; padding: 30px 20px; position: relative; margin-bottom: 20px; background: rgba(255,255,255,0.8); }
 .general-remarks-header { position: absolute; top: 10px; left: 20px; font-size: 12pt; font-weight: 700; color: #002060; text-transform: uppercase; }
 
@@ -182,61 +183,24 @@ input:focus { outline: none; border-color: var(--accent); }
 .fake-sig { font-family: 'Great Vibes', cursive; font-size: 20px; color: #002060; opacity: 0.3; }
 .sig-title { font-size: 9pt; color: #002060; font-weight: 500; }
 
-/* FIX: Absolute positioning forces it above the background image footer line safely */
-.disclaimer-footer { 
-    position: absolute;
-    bottom: 90px; 
-    left: 50px; 
-    right: 50px;
-    font-size: 8pt; 
-    color: #333; 
-    text-align: justify; 
-    line-height: 1.2; 
-    border-top: 2px solid #002060; 
-    padding-top: 5px; 
-}
+.disclaimer-footer { position: absolute; bottom: 90px; left: 50px; right: 50px; font-size: 8pt; color: #333; text-align: justify; line-height: 1.2; border-top: 2px solid #002060; padding-top: 5px; }
 
-/* PRINT SETTINGS (FOOLPROOF PIXELS) */
+/* PRINT SETTINGS */
 @media print {
     .inp-mark { outline: none !important; }
     @page { size: A4 portrait; margin: 0 !important; padding: 0 !important; }
-    
-    body, html { 
-        background: white !important; 
-        margin: 0 !important; 
-        padding: 0 !important; 
-    }
-    
+    body, html { background: white !important; margin: 0 !important; padding: 0 !important; }
     .no-print-bar, .navbar, .sidebar, .login-wrapper, #app-login, .mobile-menu-btn, .zoom-controls { display: none !important; }
+    .print-container { margin: 0 !important; padding: 0 !important; width: 794px !important; }
     
-    .print-container { 
-        margin: 0 !important; 
-        padding: 0 !important; 
-        width: 794px !important; 
-    }
-    
-    /* ABSOLUTE FORCE ON PAGE DIMENSIONS */
     .report-page, .cover-page, .details-page, .last-page { 
-        margin: 0 !important; 
-        padding: 0 !important;
-        box-shadow: none !important; 
-        width: 794px !important; 
-        height: 1123px !important; 
-        max-height: 1123px !important;
-        page-break-after: always !important; 
-        break-after: page !important; 
-        position: relative !important; 
-        overflow: hidden !important; 
-        background: white !important; 
-        display: block !important;
-        box-sizing: border-box !important;
+        margin: 0 !important; padding: 0 !important; box-shadow: none !important; 
+        width: 794px !important; height: 1123px !important; max-height: 1123px !important;
+        page-break-after: always !important; break-after: page !important; 
+        position: relative !important; overflow: hidden !important; 
+        background: white !important; display: block !important; box-sizing: border-box !important;
     }
     
-    /* Don't break after the very last page */
-    .print-container > div:last-child {
-        page-break-after: auto !important;
-        break-after: auto !important;
-    }
-    
+    .print-container > div:last-child { page-break-after: auto !important; break-after: auto !important; }
     .layer-lion { opacity: 0.75 !important; }
 }
