@@ -1,5 +1,5 @@
 /* ==========================================================================
-   APP ENGINE (v123.0) - DATA & BLEED FIX
+   APP ENGINE (v123.0) - ERROR ALERTS & DATA FIX
    ========================================================================== */
 
 const firebaseConfig = {
@@ -48,8 +48,8 @@ const DB = {
                 if (!document.getElementById('view-admin-classes').classList.contains('hidden')) Admin.loadClassesHierarchy(); 
                 if (!document.getElementById('view-admin-teachers').classList.contains('hidden')) {
                     Admin.loadTeachers(); 
-                    Admin.loadAssignmentsList(); // FORCE RELOAD
-                    Admin.loadClassTeachers(); // FORCE RELOAD
+                    Admin.loadAssignmentsList(); 
+                    Admin.loadClassTeachers(); 
                 }
             }
         });
@@ -192,13 +192,54 @@ const Admin = {
     generateCreds: () => { document.getElementById('new-t-user').value = 'T-' + Math.floor(1000 + Math.random() * 9000); document.getElementById('new-t-pass').value = Math.random().toString(36).slice(-6); },
     addTeacher: () => { const n=document.getElementById('new-t-name').value.toUpperCase(); const u=document.getElementById('new-t-user').value; const p=document.getElementById('new-t-pass').value; if(n && u && p) { const exists = DB.data.users.find(x => x.id === u); if (exists) { alert("Exists!"); return; } DB.data.users.push({id:u, pass:p, role:'teacher', name:n}); DB.save(); Admin.loadTeachers(); } },
     delTeacher: (id) => { if(confirm("Del?")){DB.data.users=DB.data.users.filter(x=>x.id!==id); DB.save(); Admin.loadTeachers();} },
+    
+    /* --- DATA ASSIGNMENT FIXES WITH STRICT VALIDATION --- */
     assignTeacher: () => { 
-        const tid=document.getElementById('assign-teacher-select').value, cid=document.getElementById('assign-class-select').value, s=document.getElementById('assign-section-select').value, sub=document.getElementById('assign-subject-select').value; 
+        const tid=document.getElementById('assign-teacher-select').value;
+        const cid=document.getElementById('assign-class-select').value;
+        const s=document.getElementById('assign-section-select').value;
+        const sub=document.getElementById('assign-subject-select').value; 
         const isClassTeacher = document.getElementById('assign-is-ct').checked;
-        if(isClassTeacher) { const key = `${cid}_${s}`; if(DB.data.classTeachers[key]) { alert(`Error: ${DB.data.classTeachers[key]} is already Class Teacher.`); return; } DB.data.classTeachers[key] = tid; DB.save(); alert("Class Teacher Assigned!"); Admin.loadClassTeachers(); return; }
-        if(tid&&cid&&s&&sub){ DB.data.assignments.push({teacherId:tid, classId:cid, section:s, subjectId:sub}); DB.save(); Admin.loadAssignmentsList(); alert("Assigned"); } 
+        
+        // 1. MUST HAVE TEACHER, CLASS, SECTION
+        if(!tid || !cid || !s) { 
+            alert("ERROR: You must select a Class, Section, and Teacher."); 
+            return; 
+        }
+
+        // 2. CLASS TEACHER ASSIGNMENT
+        if(isClassTeacher) { 
+            const key = `${cid}_${s}`; 
+            if(DB.data.classTeachers[key]) { alert(`Error: This section already has a Class Teacher.`); return; } 
+            DB.data.classTeachers[key] = tid; 
+            DB.save(); 
+            alert("Class Teacher Assigned!"); 
+            Admin.loadClassTeachers(); // Instantly update UI
+            return; 
+        }
+        
+        // 3. SUBJECT TEACHER ASSIGNMENT
+        if(!sub) { 
+            alert("ERROR: Please select a Subject to assign this teacher to."); 
+            return; 
+        }
+
+        DB.data.assignments.push({teacherId:tid, classId:cid, section:s, subjectId:sub}); 
+        DB.save(); 
+        Admin.loadAssignmentsList(); // Instantly update UI
+        alert("Subject Teacher Assigned!"); 
     },
-    loadAssignmentsList: () => { const l=document.getElementById('assignment-list-table'); if(l){l.innerHTML=''; DB.data.assignments.forEach((a, i) => { const t=DB.data.users.find(u=>u.id===a.teacherId), c=DB.data.classes.find(x=>x.id===a.classId), s=DB.data.subjects[a.subjectId]; if(t&&c&&s) l.innerHTML+=`<tr><td>${c.name}</td><td>${a.section}</td><td>${s.name}</td><td>${t.name}</td><td><button onclick="Admin.remAssign(${i})" class="btn-xs-danger">X</button></td></tr>`; });} },
+    
+    loadAssignmentsList: () => { 
+        const l=document.getElementById('assignment-list-table'); 
+        if(l){
+            l.innerHTML=''; 
+            DB.data.assignments.forEach((a, i) => { 
+                const t=DB.data.users.find(u=>u.id===a.teacherId), c=DB.data.classes.find(x=>x.id===a.classId), s=DB.data.subjects[a.subjectId]; 
+                if(t&&c&&s) l.innerHTML+=`<tr><td>${c.name}</td><td>${a.section}</td><td>${s.name}</td><td>${t.name}</td><td><button onclick="Admin.remAssign(${i})" class="btn-xs-danger">X</button></td></tr>`; 
+            });
+        } 
+    },
     remAssign: (i) => { DB.data.assignments.splice(i,1); DB.save(); Admin.loadAssignmentsList(); },
     
     // LOAD CLASS TEACHERS
@@ -251,8 +292,10 @@ const Teacher = {
 
         // FIXED: CLASS TEACHER DROPDOWN SHOWS SECTION INFO
         const ctSections = [];
-        for(let key in DB.data.classTeachers) {
-            if(DB.data.classTeachers[key] === t) ctSections.push(key);
+        if(DB.data.classTeachers) {
+            for(let key in DB.data.classTeachers) {
+                if(DB.data.classTeachers[key] === t) ctSections.push(key);
+            }
         }
 
         const ctDiv = document.getElementById('class-teacher-section');
@@ -263,9 +306,13 @@ const Teacher = {
             ctSections.forEach(k => {
                 const parts = k.split('_');
                 const cls = DB.data.classes.find(c => c.id === parts[0]);
-                // SHOWS "GRADE 1 - Section A"
-                sel.innerHTML += `<option value="${k}">${cls.name} - Section ${parts[1]}</option>`;
+                if(cls) {
+                    // SHOWS "GRADE 1 - Section A"
+                    sel.innerHTML += `<option value="${k}">${cls.name} - Section ${parts[1]}</option>`;
+                }
             });
+        } else {
+            ctDiv.classList.add('hidden');
         }
     }, 
     loadStudents:()=>{const i=document.getElementById('teacher-subject-select').value;if(i==="")return;const a=DB.data.assignments.filter(as=>as.teacherId===Auth.user.id)[i];Teacher.currSub=a.subjectId;const l=document.getElementById('teacher-student-list');l.innerHTML='';DB.data.students.filter(s=>s.classId===a.classId&&s.section===a.section).forEach(s=>{const d=DB.data.marks[s.id]?.[a.subjectId]?.completed;l.innerHTML+=`<tr><td>${s.roll}</td><td>${s.name}</td><td>${d?'Done':'Pending'}</td><td><button onclick="Teacher.openReport(${s.id})" class="btn btn-sm btn-accent">Edit</button></td></tr>`})}, 
@@ -281,7 +328,7 @@ const Teacher = {
         // Show photo
         const photo = DB.data.classPhotos[key];
         const preview = document.getElementById('ct-photo-preview');
-        preview.innerHTML = photo ? `<img src="${photo}" style="max-height:100px;">` : 'No photo';
+        preview.innerHTML = photo ? `<img src="${photo}" style="max-height:100px;">` : 'No photo uploaded yet.';
 
         // List Students
         const l = document.getElementById('ct-student-list');
@@ -293,17 +340,19 @@ const Teacher = {
     },
     uploadPhoto: () => {
         const key = document.getElementById('ct-class-select').value;
-        if(!key) { alert("Select Section"); return; }
+        if(!key) { alert("Please select a Section first."); return; }
         const f = document.getElementById('ct-photo-upload').files[0];
         if(f) {
             const r = new FileReader();
             r.onload = (e) => {
                 DB.data.classPhotos[key] = e.target.result;
                 DB.save();
-                Teacher.loadCTStudents(); // Refresh
-                alert("Photo Saved");
+                Teacher.loadCTStudents(); // Refresh visually
+                alert("Photo Saved Successfully!");
             };
             r.readAsDataURL(f);
+        } else {
+            alert("Please choose a file to upload.");
         }
     },
     saveRemark: (sid, val) => {
