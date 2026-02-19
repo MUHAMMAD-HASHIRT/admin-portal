@@ -1,5 +1,5 @@
 /* ==========================================================================
-   APP ENGINE (v125.0) - A4 BLEED FIX & DATA SANITIZATION
+   APP ENGINE (v126.0) - DYNAMIC SIGNATURES & A4 FIX
    ========================================================================== */
 
 const firebaseConfig = {
@@ -20,7 +20,14 @@ const Mobile = { toggleMenu: () => { document.getElementById('app-sidebar').clas
 const Theme = { init: () => { const t = localStorage.getItem('academus_theme'); if (t === 'dark') { document.body.setAttribute('data-theme', 'dark'); const i = document.getElementById('theme-icon'); if(i) i.className = 'fas fa-sun'; } else { document.body.removeAttribute('data-theme'); const i = document.getElementById('theme-icon'); if(i) i.className = 'fas fa-moon'; } }, toggle: () => { const d = document.body.hasAttribute('data-theme'); if (d) { document.body.removeAttribute('data-theme'); localStorage.setItem('academus_theme', 'light'); document.getElementById('theme-icon').className = 'fas fa-moon'; } else { document.body.setAttribute('data-theme', 'dark'); localStorage.setItem('academus_theme', 'dark'); document.getElementById('theme-icon').className = 'fas fa-sun'; } } };
 
 const DB = {
-    defaults: { users: [{ id: 'admin', pass: 'admin', role: 'admin', name: 'Administrator' }], classes: [], subjects: {}, assignments: [], students: [], marks: {}, classTeachers: {}, classPhotos: {}, generalRemarks: {} },
+    // UPDATED DEFAULTS FOR SIGNATURES
+    defaults: { 
+        users: [{ id: 'admin', pass: 'admin', role: 'admin', name: 'Administrator' }], 
+        classes: [], subjects: {}, assignments: [], students: [], marks: {}, 
+        classTeachers: {}, classPhotos: {}, generalRemarks: {},
+        globalSignatures: {}, // Stores static images (Manager, Directress)
+        classTeacherSignatures: {} // Stores individual teacher signatures mapped by TID
+    },
     data: {}, 
     sanitize: (val) => {
         if (!val) return DB.defaults;
@@ -33,6 +40,9 @@ const DB = {
         if (!val.classTeachers) val.classTeachers = {};
         if (!val.classPhotos) val.classPhotos = {};
         if (!val.generalRemarks) val.generalRemarks = {};
+        // Sanitize new fields
+        if (!val.globalSignatures) val.globalSignatures = {};
+        if (!val.classTeacherSignatures) val.classTeacherSignatures = {};
         return val;
     },
     init: (callback) => {
@@ -45,7 +55,6 @@ const DB = {
             const val = snapshot.val();
             if (val) { 
                 DB.data = DB.sanitize(val); 
-                // Auto Refresh active views securely
                 if (!document.getElementById('view-admin-classes').classList.contains('hidden')) Admin.loadClassesHierarchy(); 
                 if (!document.getElementById('view-admin-teachers').classList.contains('hidden')) {
                     Admin.loadTeachers(); 
@@ -57,7 +66,20 @@ const DB = {
     },
     save: () => { dbRef.set(DB.data).then(() => { console.log("Cloud Saved."); }).catch(e => alert("Save Error: " + e.message)); },
     reset: () => { if(confirm("⚠️ DANGER: RESET ALL DATA?")) { DB.data = DB.defaults; DB.save(); alert("Reset."); location.reload(); } },
-    createDefaultTemplate: (t) => { return { title: t||'REPORT CARD', sub: 'TERM EVALUATION', desc: 'Student performance report.', qTotals: { t1:25, t2:25, mid:50, tot:100 }, items: [], showQuant: true, showRemarks: true }; }
+    // UPDATED DEFAULT TEMPLATE WITH SIGNATURE CONFIG
+    createDefaultTemplate: (t) => { 
+        return { 
+            title: t||'REPORT CARD', sub: 'TERM EVALUATION', desc: 'Student performance report.', 
+            qTotals: { t1:25, t2:25, mid:50, tot:100 }, 
+            items: [], showQuant: true, showRemarks: true,
+            // Default 3 signatures
+            signatures: [
+                { title: "Class Teacher", role: "ct", imgKey: null },
+                { title: "Academic Manager", role: "static", imgKey: "manager_default" },
+                { title: "Directress", role: "static", imgKey: "directress_default" }
+            ]
+        }; 
+    }
 };
 
 const UI = { 
@@ -119,11 +141,43 @@ const ReportEngine = {
     },
     generateRubricPage: () => { return `<div class="details-page"><img src="header footer.png" class="layer-frame"><img src="background.png" class="layer-lion"><div class="content-area"><div style="height: 40px;"></div> <div class="rubric-title">UNDERSTANDING THE REPORT</div><div class="rubric-text"><b>Objectives</b><br>Academus has an academic and co-curricular checkpoints for students...</div><div class="rubric-text"><b>Testing</b><br>Academus has a set standard of assessing its students using formal and informal methods. Our testing is based on year round evaluation and portfolio analysis of students.</div><div class="rubric-text" style="margin-bottom:10px;"><b>Evaluation Rubric</b></div><table class="rubric-table"><thead><tr><th style="width:20%">Key Attributes</th><th style="width:15%">Key Symbol</th><th>Description</th></tr></thead><tbody><tr class="rubric-row-grey"><td class="rubric-col-attr">Exceeds<br>Learning<br>Expectations</td><td class="rubric-col-sym">ELE</td><td class="rubric-col-desc">The child displays impeccable progress towards set objectives and goals. The child achieves all milestones independently.</td></tr><tr class="rubric-row-white"><td class="rubric-col-attr">Meets Learning<br>Expectations</td><td class="rubric-col-sym">MLE</td><td class="rubric-col-desc">The child meets all the learning outcomes with precision and clarity of understanding.</td></tr><tr class="rubric-row-grey"><td class="rubric-col-attr">Progressing</td><td class="rubric-col-sym">P</td><td class="rubric-col-desc">The child is at an intermediate level, and is completing the given tasks in a satisfactory manner.</td></tr><tr class="rubric-row-white"><td class="rubric-col-attr">Needs<br>Improvement</td><td class="rubric-col-sym">NI</td><td class="rubric-col-desc">The child is starting to attempt or is in a phase of development.</td></tr></tbody></table></div></div>`; },
     
-    generateLastPage: (s) => {
-        const key = `${s.classId}_${s.section}`;
-        const photo = DB.data.classPhotos[key] || ''; 
+    // --- NEW: DYNAMIC SIGNATURE GENERATION ---
+    generateLastPage: (s, templateConfig) => {
+        const classKey = `${s.classId}_${s.section}`;
+        const photo = DB.data.classPhotos[classKey] || ''; 
         const remark = DB.data.generalRemarks[s.id] || '';
-        return `<div class="last-page"><img src="header footer.png" class="layer-frame"><img src="background.png" class="layer-lion"><div class="last-page-content"><div class="general-remarks-box"><div class="general-remarks-header">TEACHER REMARKS & NOTES</div><div style="margin-top:20px; font-family:'Courier New', cursive; font-size:14pt; line-height:1.5;">${remark}</div></div><div class="photo-section-header">CLASS PHOTOGRAPH</div><div class="photo-frame">${photo ? `<img src="${photo}">` : '<span style="color:#ccc;">No Class Photo Uploaded</span>'}</div><div class="signatures-row"><div class="sig-block"><div class="sig-line"><span class="fake-sig">Teacher</span></div><div class="sig-title">Class Teacher</div></div><div class="sig-block"><div class="sig-line"><span class="fake-sig">Manager</span></div><div class="sig-title">Academic Manager</div></div><div class="sig-block"><div class="sig-line"><span class="fake-sig">Directress</span></div><div class="sig-title">School Directress</div></div></div><div class="disclaimer-footer">Disclaimer: This report card is copyright property of Academus International School, and privy to all intellectual property rights. This report card is a highly confidential, and pertains to only intended individuals. If lost, please return to Academus International School: ST 4/1-3, Block I, Gulistan e Jauhar, Karachi, Pakistan.<div style="text-align:right; margin-top:5px;">Term-I/2025-26</div></div></div></div>`;
+        
+        // 1. Find the Class Teacher ID for this section
+        const teacherId = DB.data.classTeachers[classKey];
+        // 2. Get that teacher's signature image if it exists
+        const ctSigImage = (teacherId && DB.data.classTeacherSignatures[teacherId]) ? DB.data.classTeacherSignatures[teacherId] : null;
+
+        let signaturesHTML = '';
+        
+        // 3. Build signature blocks based on template configuration
+        if (templateConfig && templateConfig.signatures && Array.isArray(templateConfig.signatures)) {
+            templateConfig.signatures.forEach(sig => {
+                let imgSrc = '';
+                // If role is Class Teacher, use the dynamic CT signature found above
+                if (sig.role === 'ct') {
+                    imgSrc = ctSigImage;
+                } 
+                // If role is Static, look up the global signature image by key
+                else if (sig.role === 'static' && sig.imgKey && DB.data.globalSignatures[sig.imgKey]) {
+                    imgSrc = DB.data.globalSignatures[sig.imgKey];
+                }
+                
+                const imgTag = imgSrc ? `<img src="${imgSrc}" class="sig-image">` : `<span class="fake-sig">.</span>`; // Fake sig as placeholder if no image
+
+                signaturesHTML += `
+                <div class="sig-block" style="width: ${100 / templateConfig.signatures.length}%">
+                    <div class="sig-line">${imgTag}</div>
+                    <div class="sig-title">${sig.title}</div>
+                </div>`;
+            });
+        }
+
+        return `<div class="last-page"><img src="header footer.png" class="layer-frame"><img src="background.png" class="layer-lion"><div class="last-page-content"><div class="general-remarks-box"><div class="general-remarks-header">TEACHER REMARKS & NOTES</div><div style="margin-top:20px; font-family:'Courier New', cursive; font-size:14pt; line-height:1.5;">${remark}</div></div><div class="photo-section-header">CLASS PHOTOGRAPH</div><div class="photo-frame">${photo ? `<img src="${photo}">` : '<span style="color:#ccc;">No Class Photo Uploaded</span>'}</div><div class="signatures-row">${signaturesHTML}</div><div class="disclaimer-footer">Disclaimer: This report card is copyright property of Academus International School, and privy to all intellectual property rights. This report card is a highly confidential, and pertains to only intended individuals. If lost, please return to Academus International School: ST 4/1-3, Block I, Gulistan e Jauhar, Karachi, Pakistan.<div style="text-align:right; margin-top:5px;">Term-I/2025-26</div></div></div></div>`;
     },
 
     addHeader: (c, t, s, d) => { c.innerHTML += `<div class="main-title">${t}</div>`; if (s) c.innerHTML += `<div class="sub-title">${s}</div>`; if (d) c.innerHTML += `<div class="description">${d}</div>`; return 60 + (d ? (d.length / 90 * 18) + 20 : 0); },
@@ -160,7 +214,6 @@ const ReportEngine = {
     openPrintView: (sid, subIds) => ReportEngine.buildAndOpen(sid, Array.isArray(subIds) ? subIds : [subIds]),
     openFullPrintView: (sid) => { const s = DB.data.students.find(x => x.id === sid); const cls = DB.data.classes.find(c => c.id === s.classId); ReportEngine.buildAndOpen(sid, cls.subjects); },
     
-    // STRICT FIX: Dimensions on Cover Page and onerror handler for missing image
     buildAndOpen: (sid, subIds) => { 
         const s = DB.data.students.find(x => x.id === sid); 
         const cls = DB.data.classes.find(c => c.id === s.classId); 
@@ -175,8 +228,16 @@ const ReportEngine = {
         const details = ReportEngine.generateDetailsPage(s); 
         const rubric = ReportEngine.generateRubricPage(); 
         let reports = ''; 
+        // Find template config
+        let templateConfig = null;
+        if(subIds.length > 0 && DB.data.subjects[subIds[0]]) {
+             templateConfig = DB.data.subjects[subIds[0]].template;
+        }
+
         subIds.forEach(id => { const sub = DB.data.subjects[id]; if (sub) { const m = (DB.data.marks[sid] && DB.data.marks[sid][id]) ? DB.data.marks[sid][id] : {}; reports += ReportEngine.render(null, sub.template, m, false); } }); 
-        const lastPage = ReportEngine.generateLastPage(s);
+        
+        // Pass template config to generateLastPage
+        const lastPage = ReportEngine.generateLastPage(s, templateConfig);
         
         const w = window.open('', '_blank'); 
         w.document.write(`<html><head><title>${s.name}</title><link rel="stylesheet" href="style.css"><style>.forced-print-bar { position: fixed; top: 0; left: 0; width: 100%; background: #1e293b; padding: 15px; text-align: center; z-index: 10000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); } .forced-btn { background: #10b981; color: white; border: none; padding: 10px 25px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; } @media print { .forced-print-bar { display: none !important; } }</style></head><body><div class="forced-print-bar"><button class="forced-btn" onclick="window.print()">🖨️ PRINT PDF</button></div><div class="print-container">${cover}${details}${rubric}${reports}${lastPage}</div></body></html>`); 
@@ -205,7 +266,6 @@ const Admin = {
     addTeacher: () => { const n=document.getElementById('new-t-name').value.toUpperCase(); const u=document.getElementById('new-t-user').value; const p=document.getElementById('new-t-pass').value; if(n && u && p) { const exists = DB.data.users.find(x => x.id === u); if (exists) { alert("Exists!"); return; } DB.data.users.push({id:u, pass:p, role:'teacher', name:n}); DB.save(); Admin.loadTeachers(); } },
     delTeacher: (id) => { if(confirm("Del?")){DB.data.users=DB.data.users.filter(x=>x.id!==id); DB.save(); Admin.loadTeachers();} },
     
-    // --- FIXED: STRICT ASSIGNMENT RULES TO PREVENT BAD DATA ---
     assignTeacher: () => { 
         const tid=document.getElementById('assign-teacher-select').value;
         const cid=document.getElementById('assign-class-select').value;
@@ -235,7 +295,6 @@ const Admin = {
         alert("Subject Teacher Assigned Successfully!"); 
     },
     
-    // FIXED: SAFETY FALLBACKS SO IT NEVER CRASHES
     loadAssignmentsList: () => { 
         const l=document.getElementById('assignment-list-table'); 
         if(!l) return;
@@ -245,18 +304,14 @@ const Admin = {
             const t = DB.data.users ? DB.data.users.find(u=>u.id===a.teacherId) : null;
             const c = DB.data.classes ? DB.data.classes.find(x=>x.id===a.classId) : null;
             const s = DB.data.subjects ? DB.data.subjects[a.subjectId] : null;
-            
-            // Fallbacks in case an item was deleted
             const cName = c ? c.name : `<span style="color:red">Data Error (ID: ${a.classId})</span>`;
             const tName = t ? t.name : `<span style="color:red">Data Error (ID: ${a.teacherId})</span>`;
             const sName = s ? s.name : `<span style="color:red">Data Error (ID: ${a.subjectId})</span>`;
-            
             l.innerHTML+=`<tr><td>${cName}</td><td>${a.section}</td><td>${sName}</td><td>${tName}</td><td><button onclick="Admin.remAssign(${i})" class="btn-xs-danger">Remove</button></td></tr>`; 
         });
     },
     remAssign: (i) => { DB.data.assignments.splice(i,1); DB.save(); Admin.loadAssignmentsList(); },
     
-    // FIXED: PERFECT STRING SPLITTING
     loadClassTeachers: () => {
         const l = document.getElementById('class-teacher-list');
         if(!l) return;
@@ -264,19 +319,13 @@ const Admin = {
         if(!DB.data.classTeachers) return;
         for(let key in DB.data.classTeachers) {
             const teacherId = DB.data.classTeachers[key];
-            
-            // Only split at the LAST underscore to prevent Class IDs from breaking
             const lastIdx = key.lastIndexOf('_');
             const cid = key.substring(0, lastIdx);
             const sec = key.substring(lastIdx + 1);
-            
             const cls = DB.data.classes ? DB.data.classes.find(c => c.id === cid) : null;
             const t = DB.data.users ? DB.data.users.find(u => u.id === teacherId) : null;
-            
-            // Fallbacks
             const cName = cls ? cls.name : `<span style="color:red">Data Error</span>`;
             const tName = t ? t.name : `<span style="color:red">Data Error</span>`;
-            
             l.innerHTML += `<tr><td>${cName}</td><td>${sec}</td><td>${tName}</td><td><button onclick="Admin.remClassTeacher('${key}')" class="btn-xs-danger">Remove</button></td></tr>`;
         }
     },
@@ -293,13 +342,107 @@ const Template = {
     initSelect:()=>{Admin.refreshDropdowns()}, 
     onClassChange:()=>{const c=document.getElementById('tpl-class-select').value,s=document.getElementById('tpl-subject-select');s.innerHTML='<option>Subj</option>';const cl=DB.data.classes.find(x=>x.id===c);if(cl)cl.subjects.forEach(sid=>{if(DB.data.subjects[sid])s.innerHTML+=`<option value="${sid}">${DB.data.subjects[sid].name}</option>`})}, 
     scale: 0.42, zoom: (delta) => { Template.scale += delta; if(Template.scale < 0.1) Template.scale = 0.1; if(Template.scale > 2) Template.scale = 2; const el = document.getElementById('editor-preview'); if(el) el.style.transform = `scale(${Template.scale})`; const lbl = document.getElementById('zoom-label'); if(lbl) lbl.innerText = Math.round(Template.scale * 100) + '%'; },
-    load:()=>{const sid=document.getElementById('tpl-subject-select').value;if(!sid)return;Template.currentSubjectId=sid;const t=DB.data.subjects[sid].template; document.getElementById('tpl-title').value=t.title;document.getElementById('tpl-sub').value=t.sub;document.getElementById('tpl-desc').value=t.desc; const qt=t.qTotals||{t1:25,t2:25,mid:50,tot:100};document.getElementById('qt-1').value=qt.t1;document.getElementById('qt-2').value=qt.t2;document.getElementById('qt-3').value=qt.mid;document.getElementById('qt-4').value=qt.tot; document.getElementById('tpl-show-quant').checked = t.showQuant !== false; document.getElementById('tpl-show-remarks').checked = t.showRemarks !== false; Template.renderRows(t.items);ReportEngine.render('editor-preview',t,{},false)}, 
-    syncToDB:()=>{if(!Template.currentSubjectId)return;const i=[];document.querySelectorAll('#template-rows .row-item').forEach(r=>i.push({type:r.dataset.type,text:r.querySelector('input').value}));const t=DB.data.subjects[Template.currentSubjectId].template; t.title=document.getElementById('tpl-title').value;t.sub=document.getElementById('tpl-sub').value;t.desc=document.getElementById('tpl-desc').value;t.items=i; t.qTotals={t1:document.getElementById('qt-1').value,t2:document.getElementById('qt-2').value,mid:document.getElementById('qt-3').value,tot:document.getElementById('qt-4').value}; t.showQuant = document.getElementById('tpl-show-quant').checked; t.showRemarks = document.getElementById('tpl-show-remarks').checked; }, 
+    load:()=>{
+        const sid=document.getElementById('tpl-subject-select').value;if(!sid)return;Template.currentSubjectId=sid;const t=DB.data.subjects[sid].template; 
+        document.getElementById('tpl-title').value=t.title;document.getElementById('tpl-sub').value=t.sub;document.getElementById('tpl-desc').value=t.desc; 
+        const qt=t.qTotals||{t1:25,t2:25,mid:50,tot:100};document.getElementById('qt-1').value=qt.t1;document.getElementById('qt-2').value=qt.t2;document.getElementById('qt-3').value=qt.mid;document.getElementById('qt-4').value=qt.tot; 
+        document.getElementById('tpl-show-quant').checked = t.showQuant !== false; document.getElementById('tpl-show-remarks').checked = t.showRemarks !== false; 
+        Template.renderRows(t.items);
+        Template.renderSignatures(t.signatures); // Load signature config UI
+        ReportEngine.render('editor-preview',t,{},false)
+    }, 
+    syncToDB:()=>{
+        if(!Template.currentSubjectId)return;
+        const i=[];document.querySelectorAll('#template-rows .row-item').forEach(r=>i.push({type:r.dataset.type,text:r.querySelector('input').value}));
+        
+        // Sync Signatures
+        const sigs = [];
+        document.querySelectorAll('.signature-config-item').forEach(row => {
+            sigs.push({
+                title: row.querySelector('.sig-title-inp').value,
+                role: row.querySelector('.sig-role-select').value,
+                imgKey: row.dataset.imgKey || null // Keep existing key if not changed
+            });
+        });
+
+        const t=DB.data.subjects[Template.currentSubjectId].template; 
+        t.title=document.getElementById('tpl-title').value;t.sub=document.getElementById('tpl-sub').value;t.desc=document.getElementById('tpl-desc').value;
+        t.items=i; 
+        t.signatures = sigs; // Save sig config
+        t.qTotals={t1:document.getElementById('qt-1').value,t2:document.getElementById('qt-2').value,mid:document.getElementById('qt-3').value,tot:document.getElementById('qt-4').value}; 
+        t.showQuant = document.getElementById('tpl-show-quant').checked; t.showRemarks = document.getElementById('tpl-show-remarks').checked; 
+    }, 
     liveUpdate:()=>{if(!Template.currentSubjectId)return;Template.syncToDB();ReportEngine.render('editor-preview',DB.data.subjects[Template.currentSubjectId].template,{},false)}, 
     renderRows:(i)=>{const c=document.getElementById('template-rows');c.innerHTML='';i.forEach((item,idx)=>{c.innerHTML+=`<div class="row-item" data-type="${item.type}" style="display:flex;gap:5px;margin-bottom:5px;"><span style="font-size:10px;width:15px;font-weight:bold;">${item.type[0].toUpperCase()}</span><input value="${item.text||''}" oninput="Template.liveUpdate()"><button onclick="Template.delItem(${idx})" style="color:red;border:none;">x</button></div>`})}, 
     add:(t)=>{if(Template.currentSubjectId){Template.syncToDB();DB.data.subjects[Template.currentSubjectId].template.items.push({type:t,text:''});Template.load()}}, 
     delItem:(i)=>{Template.syncToDB();DB.data.subjects[Template.currentSubjectId].template.items.splice(i,1);Template.load()}, 
-    save:()=>{if(Template.currentSubjectId){Template.syncToDB();DB.save();alert('Saved')}} 
+    save:()=>{if(Template.currentSubjectId){Template.syncToDB();DB.save();alert('Saved')}},
+
+    // --- NEW: SIGNATURE EDITOR FUNCTIONS ---
+    renderSignatures: (sigs) => {
+        const c = document.getElementById('signature-config-list');
+        c.innerHTML = '';
+        if(!sigs) sigs = [];
+        sigs.forEach((sig, idx) => {
+            const isStatic = sig.role === 'static';
+            const imgUploadStyle = isStatic ? 'display:block' : 'display:none';
+            
+            c.innerHTML += `
+            <div class="signature-config-item" data-img-key="${sig.imgKey || ''}" style="background:#f8fafc; padding:10px; border:1px solid #e2e8f0; margin-bottom:10px; border-radius:8px;">
+                <div style="display:flex; gap:10px; margin-bottom:10px;">
+                    <input type="text" class="sig-title-inp" value="${sig.title}" placeholder="Title (e.g., Principal)" style="flex:1; margin:0;">
+                    <select class="sig-role-select" onchange="Template.onSigRoleChange(this)" style="flex:1; margin:0;">
+                        <option value="ct" ${sig.role === 'ct' ? 'selected' : ''}>Class Teacher (Automatic)</option>
+                        <option value="static" ${sig.role === 'static' ? 'selected' : ''}>Static Image (Fixed)</option>
+                    </select>
+                    <button onclick="Template.delSignature(${idx})" class="btn-xs-danger">X</button>
+                </div>
+                <div class="sig-upload-container" style="${imgUploadStyle}">
+                     <input type="file" accept="image/*" class="sig-file-inp" style="font-size:11px;">
+                     <button onclick="Template.uploadStaticSignature(this, ${idx})" class="btn btn-sm btn-accent">Upload Image</button>
+                     <span style="font-size:10px; color:#666;">${sig.imgKey ? 'Image set.' : 'No image.'}</span>
+                </div>
+            </div>`;
+        });
+    },
+    addSignatureSlot: () => {
+        if(Template.currentSubjectId){
+            Template.syncToDB();
+            // Add default new slot
+            DB.data.subjects[Template.currentSubjectId].template.signatures.push({ title: "New Signature", role: "static", imgKey: null });
+            Template.load();
+        }
+    },
+    delSignature: (i) => {
+         Template.syncToDB();
+         DB.data.subjects[Template.currentSubjectId].template.signatures.splice(i,1);
+         Template.load();
+    },
+    onSigRoleChange: (selectEl) => {
+        const container = selectEl.closest('.signature-config-item').querySelector('.sig-upload-container');
+        container.style.display = selectEl.value === 'static' ? 'block' : 'none';
+        Template.liveUpdate();
+    },
+    uploadStaticSignature: (btn, idx) => {
+        const fileInp = btn.previousElementSibling;
+        const f = fileInp.files[0];
+        if(!f) { alert("Select an image."); return; }
+        const r = new FileReader();
+        r.onload = (e) => {
+            const imgKey = 'sig_' + Date.now();
+            // Save image globally
+            if(!DB.data.globalSignatures) DB.data.globalSignatures = {};
+            DB.data.globalSignatures[imgKey] = e.target.result;
+            
+            // Update template config with new key
+            const row = btn.closest('.signature-config-item');
+            row.dataset.imgKey = imgKey;
+            row.querySelector('span').innerText = "Image saved.";
+            Template.liveUpdate(); // Will sync and refresh
+            DB.save(); // Save global sig immediately
+        };
+        r.readAsDataURL(f);
+    }
 };
 
 const Teacher = { 
@@ -334,6 +477,10 @@ const Teacher = {
                     sel.innerHTML += `<option value="${k}">${cls.name} - Section ${sec}</option>`;
                 }
             });
+            
+            // LOAD TEACHER'S EXISTING SIGNATURE PREVIEW
+            Teacher.loadSignaturePreview();
+
         } else {
             ctDiv.classList.add('hidden');
         }
@@ -377,6 +524,31 @@ const Teacher = {
             alert("Please choose a file to upload.");
         }
     },
+    // --- NEW: TEACHER SIGNATURE UPLOAD ---
+    uploadSignature: () => {
+        const f = document.getElementById('ct-sig-upload').files[0];
+        if(f) {
+            const r = new FileReader();
+            r.onload = (e) => {
+                const tid = Auth.user.id;
+                if(!DB.data.classTeacherSignatures) DB.data.classTeacherSignatures = {};
+                DB.data.classTeacherSignatures[tid] = e.target.result;
+                DB.save();
+                Teacher.loadSignaturePreview();
+                alert("Signature Saved Successfully!");
+            };
+            r.readAsDataURL(f);
+        } else {
+            alert("Please select an image file.");
+        }
+    },
+    loadSignaturePreview: () => {
+        const tid = Auth.user.id;
+        const sig = (DB.data.classTeacherSignatures && DB.data.classTeacherSignatures[tid]) ? DB.data.classTeacherSignatures[tid] : null;
+        const preview = document.getElementById('ct-sig-preview');
+        preview.innerHTML = sig ? `<img src="${sig}" style="max-height:50px;">` : 'No signature uploaded.';
+    },
+
     saveRemark: (sid, val) => {
         if(!DB.data.generalRemarks) DB.data.generalRemarks = {};
         DB.data.generalRemarks[sid] = val;
