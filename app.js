@@ -1,5 +1,5 @@
 /* ==========================================================================
-   APP ENGINE (v127.0) - SIGNATURE PREVIEW & TEACHER UPLOAD FIX
+   APP ENGINE (v128.0) - TABBED LIVE PREVIEWS & SIGNATURES
    ========================================================================== */
 
 const firebaseConfig = {
@@ -20,13 +20,7 @@ const Mobile = { toggleMenu: () => { document.getElementById('app-sidebar').clas
 const Theme = { init: () => { const t = localStorage.getItem('academus_theme'); if (t === 'dark') { document.body.setAttribute('data-theme', 'dark'); const i = document.getElementById('theme-icon'); if(i) i.className = 'fas fa-sun'; } else { document.body.removeAttribute('data-theme'); const i = document.getElementById('theme-icon'); if(i) i.className = 'fas fa-moon'; } }, toggle: () => { const d = document.body.hasAttribute('data-theme'); if (d) { document.body.removeAttribute('data-theme'); localStorage.setItem('academus_theme', 'light'); document.getElementById('theme-icon').className = 'fas fa-moon'; } else { document.body.setAttribute('data-theme', 'dark'); localStorage.setItem('academus_theme', 'dark'); document.getElementById('theme-icon').className = 'fas fa-sun'; } } };
 
 const DB = {
-    defaults: { 
-        users: [{ id: 'admin', pass: 'admin', role: 'admin', name: 'Administrator' }], 
-        classes: [], subjects: {}, assignments: [], students: [], marks: {}, 
-        classTeachers: {}, classPhotos: {}, generalRemarks: {},
-        globalSignatures: {}, 
-        classTeacherSignatures: {} 
-    },
+    defaults: { users: [{ id: 'admin', pass: 'admin', role: 'admin', name: 'Administrator' }], classes: [], subjects: {}, assignments: [], students: [], marks: {}, classTeachers: {}, classPhotos: {}, generalRemarks: {}, globalSignatures: {}, classTeacherSignatures: {} },
     data: {}, 
     sanitize: (val) => {
         if (!val) return DB.defaults;
@@ -54,11 +48,7 @@ const DB = {
             if (val) { 
                 DB.data = DB.sanitize(val); 
                 if (!document.getElementById('view-admin-classes').classList.contains('hidden')) Admin.loadClassesHierarchy(); 
-                if (!document.getElementById('view-admin-teachers').classList.contains('hidden')) {
-                    Admin.loadTeachers(); 
-                    Admin.loadAssignmentsList(); 
-                    Admin.loadClassTeachers(); 
-                }
+                if (!document.getElementById('view-admin-teachers').classList.contains('hidden')) { Admin.loadTeachers(); Admin.loadAssignmentsList(); Admin.loadClassTeachers(); }
             }
         });
     },
@@ -133,14 +123,14 @@ const ReportEngine = {
     generateDetailsPage: (s) => { 
         const cls = DB.data.classes.find(c => c.id === s.classId) || {name:'Preview Grade'}; 
         const avgAgeY = ReportEngine.calcAvg(s.classId, s.section, 'ageY'); const avgHt = ReportEngine.calcAvg(s.classId, s.section, 'height'); const avgWt = ReportEngine.calcAvg(s.classId, s.section, 'weight'); const totalAtt = (parseInt(s.attendanceP)||0) + (parseInt(s.attendanceA)||0); const check = (val) => `<span class="dt-check ${val?'checked':''}"></span>`; 
-        return `<div class="details-page"><img src="header footer.png" class="layer-frame"><img src="background.png" class="layer-lion"><div class="details-content" style="padding-top:140px;"><div class="details-header">Student Details</div><table class="details-table-new"><tr><th>Name</th><td colspan="3">${s.name}</td></tr><tr><th>Parent/Guardian's Name (1)</th><td colspan="3">${s.parent1 || '-'}</td></tr><tr><th>Parent/Guardian's Name (2)</th><td colspan="3">${s.parent2 || '-'}</td></tr><tr><th>Level</th><td>${cls.name}</td><td style="width:25%;">Section:</td><td>${s.section}</td></tr><tr><th>Age</th><td>Years: ${s.ageY}</td><td style="width:25%;">Months: ${s.ageM}</td><td>Class Average: ${avgAgeY} Yrs</td></tr><tr><th>Gender</th><td colspan="3">Male ${check(s.gender==='M')} Female ${check(s.gender==='F')}</td></tr><tr><th>Attendance</th><td>Present: ${s.attendanceP||0}</td><td style="width:25%;">Absent: ${s.attendanceA||0}</td><td>Total: ${totalAtt}</td></tr><tr><th>Physical Measurement</th><td>Height (cm): ${s.height}</td><td style="width:25%;">Weight (Kg): ${s.weight}</td><td>Class Average: <br>H: ${avgHt} | W: ${avgWt}</td></tr><tr><th>Parent Teacher Conference 1</th><td colspan="3">Yes ${check(s.pt1)} No ${check(!s.pt1)}</td></tr><tr><th>Parent Teacher Conference 2</th><td colspan="3">Yes ${check(s.pt2)} No ${check(!s.pt2)}</td></tr></table></div></div>`; 
+        return `<div class="details-page"><img src="header footer.png" class="layer-frame"><img src="background.png" class="layer-lion"><div class="details-content"><div class="details-header">Student Details</div><table class="details-table-new"><tr><th>Name</th><td colspan="3">${s.name}</td></tr><tr><th>Parent/Guardian's Name (1)</th><td colspan="3">${s.parent1 || '-'}</td></tr><tr><th>Parent/Guardian's Name (2)</th><td colspan="3">${s.parent2 || '-'}</td></tr><tr><th>Level</th><td>${cls.name}</td><td style="width:25%;">Section:</td><td>${s.section}</td></tr><tr><th>Age</th><td>Years: ${s.ageY}</td><td style="width:25%;">Months: ${s.ageM}</td><td>Class Average: ${avgAgeY} Yrs</td></tr><tr><th>Gender</th><td colspan="3">Male ${check(s.gender==='M')} Female ${check(s.gender==='F')}</td></tr><tr><th>Attendance</th><td>Present: ${s.attendanceP||0}</td><td style="width:25%;">Absent: ${s.attendanceA||0}</td><td>Total: ${totalAtt}</td></tr><tr><th>Physical Measurement</th><td>Height (cm): ${s.height}</td><td style="width:25%;">Weight (Kg): ${s.weight}</td><td>Class Average: <br>H: ${avgHt} | W: ${avgWt}</td></tr><tr><th>Parent Teacher Conference 1</th><td colspan="3">Yes ${check(s.pt1)} No ${check(!s.pt1)}</td></tr><tr><th>Parent Teacher Conference 2</th><td colspan="3">Yes ${check(s.pt2)} No ${check(!s.pt2)}</td></tr></table></div></div>`; 
     },
     generateRubricPage: () => { return `<div class="details-page"><img src="header footer.png" class="layer-frame"><img src="background.png" class="layer-lion"><div class="content-area"><div style="height: 40px;"></div> <div class="rubric-title">UNDERSTANDING THE REPORT</div><div class="rubric-text"><b>Objectives</b><br>Academus has an academic and co-curricular checkpoints for students...</div><div class="rubric-text"><b>Testing</b><br>Academus has a set standard of assessing its students using formal and informal methods. Our testing is based on year round evaluation and portfolio analysis of students.</div><div class="rubric-text" style="margin-bottom:10px;"><b>Evaluation Rubric</b></div><table class="rubric-table"><thead><tr><th style="width:20%">Key Attributes</th><th style="width:15%">Key Symbol</th><th>Description</th></tr></thead><tbody><tr class="rubric-row-grey"><td class="rubric-col-attr">Exceeds<br>Learning<br>Expectations</td><td class="rubric-col-sym">ELE</td><td class="rubric-col-desc">The child displays impeccable progress towards set objectives and goals. The child achieves all milestones independently.</td></tr><tr class="rubric-row-white"><td class="rubric-col-attr">Meets Learning<br>Expectations</td><td class="rubric-col-sym">MLE</td><td class="rubric-col-desc">The child meets all the learning outcomes with precision and clarity of understanding.</td></tr><tr class="rubric-row-grey"><td class="rubric-col-attr">Progressing</td><td class="rubric-col-sym">P</td><td class="rubric-col-desc">The child is at an intermediate level, and is completing the given tasks in a satisfactory manner.</td></tr><tr class="rubric-row-white"><td class="rubric-col-attr">Needs<br>Improvement</td><td class="rubric-col-sym">NI</td><td class="rubric-col-desc">The child is starting to attempt or is in a phase of development.</td></tr></tbody></table></div></div>`; },
     
     generateLastPage: (s, templateConfig) => {
         const classKey = s.classId && s.section ? `${s.classId}_${s.section}` : null;
         const photo = classKey ? (DB.data.classPhotos[classKey] || '') : ''; 
-        const remark = s.id ? (DB.data.generalRemarks[s.id] || '') : '';
+        const remark = s.id ? (DB.data.generalRemarks[s.id] || '') : 'Remarks will appear here...';
         
         // Find CT signature if applicable
         const teacherId = classKey ? DB.data.classTeachers[classKey] : null;
@@ -160,7 +150,6 @@ const ReportEngine = {
                     imgSrc = DB.data.globalSignatures[sig.imgKey]; // Use Static Admin signature
                 }
                 
-                // Use a fake signature font as a placeholder if no image is available yet
                 const imgTag = imgSrc ? `<img src="${imgSrc}" class="sig-image">` : `<span class="fake-sig">Signature</span>`;
 
                 signaturesHTML += `
@@ -171,7 +160,7 @@ const ReportEngine = {
             });
         }
 
-        return `<div class="last-page"><img src="header footer.png" class="layer-frame"><img src="background.png" class="layer-lion"><div class="last-page-content"><div class="general-remarks-box"><div class="general-remarks-header">TEACHER REMARKS & NOTES</div><div style="margin-top:20px; font-family:'Courier New', cursive; font-size:14pt; line-height:1.5;">${remark || 'Remarks will appear here...'}</div></div><div class="photo-section-header">CLASS PHOTOGRAPH</div><div class="photo-frame">${photo ? `<img src="${photo}">` : '<span style="color:#ccc;">Class Photo Placeholder</span>'}</div><div class="signatures-row">${signaturesHTML}</div><div class="disclaimer-footer">Disclaimer: This report card is copyright property of Academus International School, and privy to all intellectual property rights. This report card is a highly confidential, and pertains to only intended individuals. If lost, please return to Academus International School: ST 4/1-3, Block I, Gulistan e Jauhar, Karachi, Pakistan.<div style="text-align:right; margin-top:5px;">Term-I/2025-26</div></div></div></div>`;
+        return `<div class="last-page"><img src="header footer.png" class="layer-frame"><img src="background.png" class="layer-lion"><div class="last-page-content"><div class="general-remarks-box"><div class="general-remarks-header">TEACHER REMARKS & NOTES</div><div style="margin-top:20px; font-family:'Courier New', cursive; font-size:14pt; line-height:1.5;">${remark}</div></div><div class="photo-section-header">CLASS PHOTOGRAPH</div><div class="photo-frame">${photo ? `<img src="${photo}">` : '<span style="color:#ccc;">Class Photo Placeholder</span>'}</div><div class="signatures-row">${signaturesHTML}</div><div class="disclaimer-footer">Disclaimer: This report card is copyright property of Academus International School, and privy to all intellectual property rights. This report card is a highly confidential, and pertains to only intended individuals. If lost, please return to Academus International School: ST 4/1-3, Block I, Gulistan e Jauhar, Karachi, Pakistan.<div style="text-align:right; margin-top:5px;">Term-I/2025-26</div></div></div></div>`;
     },
 
     addHeader: (c, t, s, d) => { c.innerHTML += `<div class="main-title">${t}</div>`; if (s) c.innerHTML += `<div class="sub-title">${s}</div>`; if (d) c.innerHTML += `<div class="description">${d}</div>`; return 60 + (d ? (d.length / 90 * 18) + 20 : 0); },
@@ -296,9 +285,9 @@ const Admin = {
             const t = DB.data.users ? DB.data.users.find(u=>u.id===a.teacherId) : null;
             const c = DB.data.classes ? DB.data.classes.find(x=>x.id===a.classId) : null;
             const s = DB.data.subjects ? DB.data.subjects[a.subjectId] : null;
-            const cName = c ? c.name : `<span style="color:red">Data Error (ID: ${a.classId})</span>`;
-            const tName = t ? t.name : `<span style="color:red">Data Error (ID: ${a.teacherId})</span>`;
-            const sName = s ? s.name : `<span style="color:red">Data Error (ID: ${a.subjectId})</span>`;
+            const cName = c ? c.name : `<span style="color:red">Data Error</span>`;
+            const tName = t ? t.name : `<span style="color:red">Data Error</span>`;
+            const sName = s ? s.name : `<span style="color:red">Data Error</span>`;
             l.innerHTML+=`<tr><td>${cName}</td><td>${a.section}</td><td>${sName}</td><td>${tName}</td><td><button onclick="Admin.remAssign(${i})" class="btn-xs-danger">Remove</button></td></tr>`; 
         });
     },
@@ -330,10 +319,33 @@ const Admin = {
     delStudent: (i) => { if(confirm("Delete?")) { DB.data.students.splice(i, 1); DB.save(); Admin.loadStudents(); } }
 };
 
+/* --- NEW: TEMPLATE WITH TABS --- */
 const Template = { 
+    currentView: 'subject', // Track active tab
+    
     initSelect:()=>{Admin.refreshDropdowns()}, 
     onClassChange:()=>{const c=document.getElementById('tpl-class-select').value,s=document.getElementById('tpl-subject-select');s.innerHTML='<option>Subj</option>';const cl=DB.data.classes.find(x=>x.id===c);if(cl)cl.subjects.forEach(sid=>{if(DB.data.subjects[sid])s.innerHTML+=`<option value="${sid}">${DB.data.subjects[sid].name}</option>`})}, 
     scale: 0.42, zoom: (delta) => { Template.scale += delta; if(Template.scale < 0.1) Template.scale = 0.1; if(Template.scale > 2) Template.scale = 2; const el = document.getElementById('editor-preview'); if(el) el.style.transform = `scale(${Template.scale})`; const lbl = document.getElementById('zoom-label'); if(lbl) lbl.innerText = Math.round(Template.scale * 100) + '%'; },
+    
+    // TAB SWITCHER
+    switchView: (view) => {
+        Template.currentView = view;
+        if(view === 'subject') {
+            document.getElementById('tpl-subject-editor').classList.remove('hidden');
+            document.getElementById('tpl-lastpage-editor').classList.add('hidden');
+            document.getElementById('tab-btn-subject').className = 'btn btn-primary';
+            document.getElementById('tab-btn-lastpage').className = 'btn btn-accent';
+            document.getElementById('preview-title-label').innerText = 'LIVE PREVIEW (SUBJECT TEMPLATE)';
+        } else {
+            document.getElementById('tpl-subject-editor').classList.add('hidden');
+            document.getElementById('tpl-lastpage-editor').classList.remove('hidden');
+            document.getElementById('tab-btn-subject').className = 'btn btn-accent';
+            document.getElementById('tab-btn-lastpage').className = 'btn btn-primary';
+            document.getElementById('preview-title-label').innerText = 'LIVE PREVIEW (LAST PAGE)';
+        }
+        Template.liveUpdate();
+    },
+
     load:()=>{
         const sid=document.getElementById('tpl-subject-select').value;if(!sid)return;Template.currentSubjectId=sid;const t=DB.data.subjects[sid].template; 
         document.getElementById('tpl-title').value=t.title;document.getElementById('tpl-sub').value=t.sub;document.getElementById('tpl-desc').value=t.desc; 
@@ -341,8 +353,7 @@ const Template = {
         document.getElementById('tpl-show-quant').checked = t.showQuant !== false; document.getElementById('tpl-show-remarks').checked = t.showRemarks !== false; 
         Template.renderRows(t.items);
         Template.renderSignatures(t.signatures); 
-        // FIXED: Render the LAST PAGE preview instead of the report items page
-        Template.renderLastPagePreview();
+        Template.liveUpdate(); // Renders correct preview based on tab
     }, 
     syncToDB:()=>{
         if(!Template.currentSubjectId)return;
@@ -364,22 +375,22 @@ const Template = {
     liveUpdate:()=>{
         if(!Template.currentSubjectId)return;
         Template.syncToDB();
-        // FIXED: Live update the LAST PAGE preview
-        Template.renderLastPagePreview();
-    }, 
-    // --- NEW: FUNCTION TO RENDER LAST PAGE IN PREVIEW WINDOW ---
-    renderLastPagePreview: () => {
-        if(!Template.currentSubjectId) return;
+        
+        // DYNAMIC PREVIEW RENDERING
         const t = DB.data.subjects[Template.currentSubjectId].template;
-        // Create a dummy student to render the preview
-        const dummyStudent = { id: null, classId: null, section: null };
-        const previewHTML = ReportEngine.generateLastPage(dummyStudent, t);
         const previewContainer = document.getElementById('editor-preview');
-        previewContainer.innerHTML = previewHTML;
-        // Ensure the container has the correct class for styling
-        previewContainer.className = 'report-page';
-    },
-
+        
+        if(Template.currentView === 'subject') {
+            ReportEngine.render('editor-preview', t, {}, false);
+            previewContainer.className = 'report-page'; // Ensure base class
+        } else {
+            // Render Last Page Preview
+            const dummyStudent = { id: null, classId: null, section: null, name: "Student Name Preview" };
+            previewContainer.innerHTML = ReportEngine.generateLastPage(dummyStudent, t);
+            previewContainer.className = 'report-page';
+        }
+    }, 
+    
     renderRows:(i)=>{const c=document.getElementById('template-rows');c.innerHTML='';i.forEach((item,idx)=>{c.innerHTML+=`<div class="row-item" data-type="${item.type}" style="display:flex;gap:5px;margin-bottom:5px;"><span style="font-size:10px;width:15px;font-weight:bold;">${item.type[0].toUpperCase()}</span><input value="${item.text||''}" oninput="Template.liveUpdate()"><button onclick="Template.delItem(${idx})" style="color:red;border:none;">x</button></div>`})}, 
     add:(t)=>{if(Template.currentSubjectId){Template.syncToDB();DB.data.subjects[Template.currentSubjectId].template.items.push({type:t,text:''});Template.load()}}, 
     delItem:(i)=>{Template.syncToDB();DB.data.subjects[Template.currentSubjectId].template.items.splice(i,1);Template.load()}, 
@@ -392,7 +403,6 @@ const Template = {
         sigs.forEach((sig, idx) => {
             const isStatic = sig.role === 'static';
             const imgUploadStyle = isStatic ? 'display:block' : 'display:none';
-            
             c.innerHTML += `
             <div class="signature-config-item" data-img-key="${sig.imgKey || ''}" style="background:#f8fafc; padding:10px; border:1px solid #e2e8f0; margin-bottom:10px; border-radius:8px;">
                 <div style="display:flex; gap:10px; margin-bottom:10px;">
@@ -411,27 +421,13 @@ const Template = {
             </div>`;
         });
     },
-    addSignatureSlot: () => {
-        if(Template.currentSubjectId){
-            Template.syncToDB();
-            DB.data.subjects[Template.currentSubjectId].template.signatures.push({ title: "New Signature", role: "static", imgKey: null });
-            Template.load();
-        }
-    },
-    delSignature: (i) => {
-         Template.syncToDB();
-         DB.data.subjects[Template.currentSubjectId].template.signatures.splice(i,1);
-         Template.load();
-    },
-    onSigRoleChange: (selectEl) => {
-        const container = selectEl.closest('.signature-config-item').querySelector('.sig-upload-container');
-        container.style.display = selectEl.value === 'static' ? 'block' : 'none';
-        Template.liveUpdate();
-    },
+    addSignatureSlot: () => { if(Template.currentSubjectId){ Template.syncToDB(); DB.data.subjects[Template.currentSubjectId].template.signatures.push({ title: "New Signature", role: "static", imgKey: null }); Template.load(); } },
+    delSignature: (i) => { Template.syncToDB(); DB.data.subjects[Template.currentSubjectId].template.signatures.splice(i,1); Template.load(); },
+    onSigRoleChange: (selectEl) => { const container = selectEl.closest('.signature-config-item').querySelector('.sig-upload-container'); container.style.display = selectEl.value === 'static' ? 'block' : 'none'; Template.liveUpdate(); },
     uploadStaticSignature: (btn, idx) => {
-        const fileInp = btn.previousElementSibling;
-        const f = fileInp.files[0];
+        const fileInp = btn.previousElementSibling; const f = fileInp.files[0];
         if(!f) { alert("Select an image."); return; }
+        btn.innerText = "Saving..."; btn.disabled = true;
         const r = new FileReader();
         r.onload = (e) => {
             const imgKey = 'sig_' + Date.now();
@@ -440,8 +436,8 @@ const Template = {
             const row = btn.closest('.signature-config-item');
             row.dataset.imgKey = imgKey;
             row.querySelector('span').innerText = "Image saved.";
-            Template.liveUpdate(); 
-            DB.save(); 
+            btn.innerText = "Upload Image"; btn.disabled = false;
+            Template.liveUpdate(); DB.save(); 
         };
         r.readAsDataURL(f);
     }
@@ -494,9 +490,11 @@ const Teacher = {
         const lastIdx = key.lastIndexOf('_');
         const cid = key.substring(0, lastIdx);
         const sec = key.substring(lastIdx + 1);
+        
         const photo = DB.data.classPhotos[key];
         const preview = document.getElementById('ct-photo-preview');
         preview.innerHTML = photo ? `<img src="${photo}" style="max-height:100px;">` : 'No photo uploaded yet.';
+
         const l = document.getElementById('ct-student-list');
         l.innerHTML = '';
         DB.data.students.filter(s => s.classId === cid && s.section === sec).forEach(s => {
@@ -509,23 +507,24 @@ const Teacher = {
         if(!key) { alert("Please select a Section first."); return; }
         const f = document.getElementById('ct-photo-upload').files[0];
         if(f) {
+            const btn = document.querySelector('#ct-photo-upload + button');
+            const orig = btn.innerText; btn.innerText = "Uploading..."; btn.disabled = true;
             const r = new FileReader();
             r.onload = (e) => {
                 DB.data.classPhotos[key] = e.target.result;
                 DB.save();
                 Teacher.loadCTStudents(); 
                 alert("Photo Saved Successfully!");
+                btn.innerText = orig; btn.disabled = false;
             };
             r.readAsDataURL(f);
         } else {
             alert("Please choose a file to upload.");
         }
     },
-    // --- FIXED: TEACHER SIGNATURE UPLOAD WITH BETTER FEEDBACK ---
     uploadSignature: () => {
         const f = document.getElementById('ct-sig-upload').files[0];
         if(f) {
-            // Add loading state feedback
             const btn = document.querySelector('#ct-sig-upload + button');
             const originalText = btn.innerText;
             btn.innerText = "Saving..."; btn.disabled = true;
@@ -534,12 +533,10 @@ const Teacher = {
             r.onload = (e) => {
                 const tid = Auth.user.id;
                 if(!DB.data.classTeacherSignatures) DB.data.classTeacherSignatures = {};
-                // Save the image data URI
                 DB.data.classTeacherSignatures[tid] = e.target.result;
                 DB.save();
                 Teacher.loadSignaturePreview();
                 alert("Signature Saved Successfully! It will now appear on reports for classes you manage.");
-                // Reset button
                 btn.innerText = originalText; btn.disabled = false;
             };
             r.readAsDataURL(f);
