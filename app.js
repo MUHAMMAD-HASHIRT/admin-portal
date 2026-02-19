@@ -1,5 +1,5 @@
 /* ==========================================================================
-   APP ENGINE (v123.0) - ERROR ALERTS & DATA FIX
+   APP ENGINE (v124.0) - ULTIMATE FIX FOR PRINT & DATA
    ========================================================================== */
 
 const firebaseConfig = {
@@ -45,6 +45,7 @@ const DB = {
             const val = snapshot.val();
             if (val) { 
                 DB.data = DB.sanitize(val); 
+                // Auto Refresh active views
                 if (!document.getElementById('view-admin-classes').classList.contains('hidden')) Admin.loadClassesHierarchy(); 
                 if (!document.getElementById('view-admin-teachers').classList.contains('hidden')) {
                     Admin.loadTeachers(); 
@@ -102,7 +103,7 @@ const Auth = {
         setTimeout(() => {
             const f = DB.data.users.find(x => x.id === u && x.pass === p);
             if (f) { btn.innerHTML = 'Success!'; setTimeout(() => { sessionStorage.setItem('uid', f.id); location.reload(); }, 500); } 
-            else { btn.innerHTML = 'Login'; btn.disabled = false; alert('Invalid'); }
+            else { btn.innerHTML = 'Login'; btn.disabled = false; alert('Invalid Credentials'); }
         }, 1000); 
     },
     logout: () => { sessionStorage.clear(); location.reload(); }
@@ -114,7 +115,7 @@ const ReportEngine = {
     generateDetailsPage: (s) => { 
         const cls = DB.data.classes.find(c => c.id === s.classId); 
         const avgAgeY = ReportEngine.calcAvg(s.classId, s.section, 'ageY'); const avgHt = ReportEngine.calcAvg(s.classId, s.section, 'height'); const avgWt = ReportEngine.calcAvg(s.classId, s.section, 'weight'); const totalAtt = (parseInt(s.attendanceP)||0) + (parseInt(s.attendanceA)||0); const check = (val) => `<span class="dt-check ${val?'checked':''}"></span>`; 
-        return `<div class="details-page"><img src="header footer.png" class="layer-frame"><img src="background.png" class="layer-lion"><div class="details-content" style="padding-top:140px;"><div class="details-header">Student Details</div><table class="details-table-new"><tr><th>Name</th><td colspan="3">${s.name}</td></tr><tr><th>Parent/Guardian's Name (1)</th><td colspan="3">${s.parent1 || '-'}</td></tr><tr><th>Parent/Guardian's Name (2)</th><td colspan="3">${s.parent2 || '-'}</td></tr><tr><th>Level</th><td>${cls.name}</td><td style="width:25%;">Section:</td><td>${s.section}</td></tr><tr><th>Age</th><td>Years: ${s.ageY}</td><td style="width:25%;">Months: ${s.ageM}</td><td>Class Average: ${avgAgeY} Yrs</td></tr><tr><th>Gender</th><td colspan="3">Male ${check(s.gender==='M')} Female ${check(s.gender==='F')}</td></tr><tr><th>Attendance</th><td>Present: ${s.attendanceP||0}</td><td style="width:25%;">Absent: ${s.attendanceA||0}</td><td>Total: ${totalAtt}</td></tr><tr><th>Physical Measurement</th><td>Height (cm): ${s.height}</td><td style="width:25%;">Weight (Kg): ${s.weight}</td><td>Class Average: <br>H: ${avgHt} | W: ${avgWt}</td></tr><tr><th>Parent Teacher Conference 1</th><td colspan="3">Yes ${check(s.pt1)} No ${check(!s.pt1)}</td></tr><tr><th>Parent Teacher Conference 2</th><td colspan="3">Yes ${check(s.pt2)} No ${check(!s.pt2)}</td></tr></table></div></div>`; 
+        return `<div class="details-page"><img src="header footer.png" class="layer-frame"><img src="background.png" class="layer-lion"><div class="details-content"><div class="details-header">Student Details</div><table class="details-table-new"><tr><th>Name</th><td colspan="3">${s.name}</td></tr><tr><th>Parent/Guardian's Name (1)</th><td colspan="3">${s.parent1 || '-'}</td></tr><tr><th>Parent/Guardian's Name (2)</th><td colspan="3">${s.parent2 || '-'}</td></tr><tr><th>Level</th><td>${cls.name}</td><td style="width:25%;">Section:</td><td>${s.section}</td></tr><tr><th>Age</th><td>Years: ${s.ageY}</td><td style="width:25%;">Months: ${s.ageM}</td><td>Class Average: ${avgAgeY} Yrs</td></tr><tr><th>Gender</th><td colspan="3">Male ${check(s.gender==='M')} Female ${check(s.gender==='F')}</td></tr><tr><th>Attendance</th><td>Present: ${s.attendanceP||0}</td><td style="width:25%;">Absent: ${s.attendanceA||0}</td><td>Total: ${totalAtt}</td></tr><tr><th>Physical Measurement</th><td>Height (cm): ${s.height}</td><td style="width:25%;">Weight (Kg): ${s.weight}</td><td>Class Average: <br>H: ${avgHt} | W: ${avgWt}</td></tr><tr><th>Parent Teacher Conference 1</th><td colspan="3">Yes ${check(s.pt1)} No ${check(!s.pt1)}</td></tr><tr><th>Parent Teacher Conference 2</th><td colspan="3">Yes ${check(s.pt2)} No ${check(!s.pt2)}</td></tr></table></div></div>`; 
     },
     generateRubricPage: () => { return `<div class="details-page"><img src="header footer.png" class="layer-frame"><img src="background.png" class="layer-lion"><div class="content-area"><div style="height: 40px;"></div> <div class="rubric-title">UNDERSTANDING THE REPORT</div><div class="rubric-text"><b>Objectives</b><br>Academus has an academic and co-curricular checkpoints for students...</div><div class="rubric-text"><b>Testing</b><br>Academus has a set standard of assessing its students using formal and informal methods. Our testing is based on year round evaluation and portfolio analysis of students.</div><div class="rubric-text" style="margin-bottom:10px;"><b>Evaluation Rubric</b></div><table class="rubric-table"><thead><tr><th style="width:20%">Key Attributes</th><th style="width:15%">Key Symbol</th><th>Description</th></tr></thead><tbody><tr class="rubric-row-grey"><td class="rubric-col-attr">Exceeds<br>Learning<br>Expectations</td><td class="rubric-col-sym">ELE</td><td class="rubric-col-desc">The child displays impeccable progress towards set objectives and goals. The child achieves all milestones independently.</td></tr><tr class="rubric-row-white"><td class="rubric-col-attr">Meets Learning<br>Expectations</td><td class="rubric-col-sym">MLE</td><td class="rubric-col-desc">The child meets all the learning outcomes with precision and clarity of understanding.</td></tr><tr class="rubric-row-grey"><td class="rubric-col-attr">Progressing</td><td class="rubric-col-sym">P</td><td class="rubric-col-desc">The child is at an intermediate level, and is completing the given tasks in a satisfactory manner.</td></tr><tr class="rubric-row-white"><td class="rubric-col-attr">Needs<br>Improvement</td><td class="rubric-col-sym">NI</td><td class="rubric-col-desc">The child is starting to attempt or is in a phase of development.</td></tr></tbody></table></div></div>`; },
     
@@ -158,10 +159,19 @@ const ReportEngine = {
     pg: () => { const d = document.createElement('div'); d.className = 'report-page'; d.innerHTML = `<img src="header footer.png" class="layer-frame"><img src="background.png" class="layer-lion"><div class="content-area"></div>`; return d; },
     openPrintView: (sid, subIds) => ReportEngine.buildAndOpen(sid, Array.isArray(subIds) ? subIds : [subIds]),
     openFullPrintView: (sid) => { const s = DB.data.students.find(x => x.id === sid); const cls = DB.data.classes.find(c => c.id === s.classId); ReportEngine.buildAndOpen(sid, cls.subjects); },
+    
     buildAndOpen: (sid, subIds) => { 
         const s = DB.data.students.find(x => x.id === sid); 
         const cls = DB.data.classes.find(c => c.id === s.classId); 
-        const cover = `<div class="cover-page"><img src="cover.jpg" class="cover-img"><div class="cover-field cover-name">${s.name}</div><div class="cover-field cover-class">${cls.name} - ${s.section}</div></div>`; 
+        
+        // ULTIMATE COVER PAGE FIX: Hardcoded Absolute positioning inside the div
+        const cover = `
+        <div class="cover-page" style="width: 210mm; height: 297mm; position: relative; overflow: hidden;">
+            <img src="cover.jpg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1;">
+            <div style="position: absolute; left: 200px; bottom: 135px; font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 700; color: #002060; z-index: 10;">${s.name}</div>
+            <div style="position: absolute; left: 200px; bottom: 75px; font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 700; color: #002060; z-index: 10;">${cls.name} - ${s.section}</div>
+        </div>`; 
+        
         const details = ReportEngine.generateDetailsPage(s); 
         const rubric = ReportEngine.generateRubricPage(); 
         let reports = ''; 
@@ -173,6 +183,7 @@ const ReportEngine = {
     }
 };
 
+/* --- ADMIN --- */
 const Admin = {
     refreshDropdowns: () => { const ids = ['subject-class-select', 'stu-class-select', 'assign-class-select', 'tpl-class-select', 'ct-class-select']; ids.forEach(id => { const el = document.getElementById(id); if(!el) return; const cv = el.value; el.innerHTML = '<option value="">SELECT GRADE</option>'; DB.data.classes.forEach(c => el.innerHTML += `<option value="${c.id}">${c.name}</option>`); if(cv) el.value = cv; }); },
     loadDashboard: () => { const t = document.getElementById('admin-status-table'); if(!t) return; t.innerHTML = ''; let hasStudents = false; DB.data.classes.forEach(cls => { const classStudents = DB.data.students.filter(s => s.classId === cls.id); if (classStudents.length > 0) hasStudents = true; classStudents.forEach(s => { let btns = '', cCount = 0; if(cls.subjects) { cls.subjects.forEach(sid => { const m = (DB.data.marks[s.id] && DB.data.marks[s.id][sid]); if(m && m.completed) cCount++; const sub = DB.data.subjects[sid]; if(sub) { const btnColor = (m && m.completed) ? '#10b981' : '#cbd5e1'; const txtColor = (m && m.completed) ? 'white' : '#333'; btns += `<button onclick="ReportEngine.openPrintView(${s.id}, '${sid}')" class="btn btn-sm" style="background:${btnColor}; color:${txtColor}; margin-right:4px;">${sub.name.substring(0,3)}</button>`; } }); } const st = (cls.subjects && cls.subjects.length > 0 && cCount === cls.subjects.length) ? '<span style="color:#10b981;font-weight:bold">COMPLETED</span>' : '<span style="color:#f59e0b">PENDING</span>'; t.innerHTML += `<tr><td>${s.roll}</td><td>${s.name}</td><td>${cls.name} (${s.section || 'A'})</td><td>${st}</td><td><button onclick="ReportEngine.openFullPrintView(${s.id})" class="btn btn-sm btn-primary">FULL REPORT</button> ${btns}</td></tr>`; }); }); if (!hasStudents) { t.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:30px; color:#64748b;">No students found. <br><button onclick="UI.show('admin-students')" class="btn btn-sm btn-accent" style="margin-top:10px;">+ Register Student</button></td></tr>`; } },
@@ -188,12 +199,12 @@ const Admin = {
     addSubject: () => { try { const cid=document.getElementById('subject-class-select').value; const n=document.getElementById('new-subject-name').value.toUpperCase(); if(!cid) { alert("Select Grade"); return; } if(!n) { alert("Enter Name"); return; } const sid='s_'+Date.now(); if(!DB.data.subjects) DB.data.subjects = {}; DB.data.subjects[sid]={name:n,template:DB.createDefaultTemplate(n)}; const c = DB.data.classes.find(x=>x.id===cid); if (!c) { alert("Error: Class ID not found in database."); return; } if (!c.subjects) c.subjects = []; c.subjects.push(sid); DB.save(); document.getElementById('new-subject-name').value=''; Admin.loadClassesHierarchy(); } catch(e) { alert("Error"); } },
     deleteSubject: (cid, sid) => { if(confirm("Del Subject?")){const c=DB.data.classes.find(x=>x.id===cid);c.subjects=c.subjects.filter(s=>s!==sid);delete DB.data.subjects[sid];DB.save();Admin.loadClassesHierarchy();} },
     onAssignClassChange: () => { const cid = document.getElementById('assign-class-select').value; const sec = document.getElementById('assign-section-select'); sec.innerHTML='<option value="">Sec</option>'; const sub = document.getElementById('assign-subject-select'); sub.innerHTML='<option value="">Subj</option>'; if(!cid) return; const cls = DB.data.classes.find(c => c.id === cid); cls.sections.forEach(s => sec.innerHTML += `<option value="${s}">${s}</option>`); cls.subjects.forEach(sid => { if(DB.data.subjects[sid]) sub.innerHTML += `<option value="${sid}">${DB.data.subjects[sid].name}</option>`; }); },
-    loadTeachers: () => { const t=document.getElementById('teacher-list-body'); const s=document.getElementById('assign-teacher-select'); t.innerHTML=''; s.innerHTML='<option value="">Select</option>'; DB.data.users.filter(u=>u.role==='teacher').forEach(u => { t.innerHTML+=`<tr><td>${u.name}</td><td>${u.id}</td><td>${u.pass}</td><td><button onclick="Admin.delTeacher('${u.id}')" class="btn-xs-danger">X</button></td></tr>`; s.innerHTML+=`<option value="${u.id}">${u.name}</option>`; }); Admin.refreshDropdowns(); Admin.loadAssignmentsList(); Admin.loadClassTeachers(); },
+    loadTeachers: () => { const t=document.getElementById('teacher-list-body'); const s=document.getElementById('assign-teacher-select'); t.innerHTML=''; s.innerHTML='<option value="">Select Teacher</option>'; DB.data.users.filter(u=>u.role==='teacher').forEach(u => { t.innerHTML+=`<tr><td>${u.name}</td><td>${u.id}</td><td>${u.pass}</td><td><button onclick="Admin.delTeacher('${u.id}')" class="btn-xs-danger">X</button></td></tr>`; s.innerHTML+=`<option value="${u.id}">${u.name}</option>`; }); Admin.refreshDropdowns(); Admin.loadAssignmentsList(); Admin.loadClassTeachers(); },
     generateCreds: () => { document.getElementById('new-t-user').value = 'T-' + Math.floor(1000 + Math.random() * 9000); document.getElementById('new-t-pass').value = Math.random().toString(36).slice(-6); },
     addTeacher: () => { const n=document.getElementById('new-t-name').value.toUpperCase(); const u=document.getElementById('new-t-user').value; const p=document.getElementById('new-t-pass').value; if(n && u && p) { const exists = DB.data.users.find(x => x.id === u); if (exists) { alert("Exists!"); return; } DB.data.users.push({id:u, pass:p, role:'teacher', name:n}); DB.save(); Admin.loadTeachers(); } },
     delTeacher: (id) => { if(confirm("Del?")){DB.data.users=DB.data.users.filter(x=>x.id!==id); DB.save(); Admin.loadTeachers();} },
     
-    /* --- DATA ASSIGNMENT FIXES WITH STRICT VALIDATION --- */
+    // STRICT ASSIGNMENT FIXES
     assignTeacher: () => { 
         const tid=document.getElementById('assign-teacher-select').value;
         const cid=document.getElementById('assign-class-select').value;
@@ -201,48 +212,52 @@ const Admin = {
         const sub=document.getElementById('assign-subject-select').value; 
         const isClassTeacher = document.getElementById('assign-is-ct').checked;
         
-        // 1. MUST HAVE TEACHER, CLASS, SECTION
         if(!tid || !cid || !s) { 
-            alert("ERROR: You must select a Class, Section, and Teacher."); 
+            alert("ERROR: You must select a Grade, Section, and Teacher."); 
             return; 
         }
 
-        // 2. CLASS TEACHER ASSIGNMENT
         if(isClassTeacher) { 
             const key = `${cid}_${s}`; 
+            if(!DB.data.classTeachers) DB.data.classTeachers = {};
             if(DB.data.classTeachers[key]) { alert(`Error: This section already has a Class Teacher.`); return; } 
             DB.data.classTeachers[key] = tid; 
             DB.save(); 
-            alert("Class Teacher Assigned!"); 
-            Admin.loadClassTeachers(); // Instantly update UI
+            alert("Class Teacher Assigned Successfully!"); 
+            Admin.loadClassTeachers(); 
             return; 
         }
         
-        // 3. SUBJECT TEACHER ASSIGNMENT
-        if(!sub) { 
-            alert("ERROR: Please select a Subject to assign this teacher to."); 
-            return; 
-        }
-
+        if(!sub) { alert("ERROR: Please select a Subject to assign."); return; }
+        
+        if(!DB.data.assignments) DB.data.assignments = [];
         DB.data.assignments.push({teacherId:tid, classId:cid, section:s, subjectId:sub}); 
         DB.save(); 
-        Admin.loadAssignmentsList(); // Instantly update UI
-        alert("Subject Teacher Assigned!"); 
+        Admin.loadAssignmentsList(); 
+        alert("Subject Teacher Assigned Successfully!"); 
     },
     
+    // BULLETPROOF LOAD LIST
     loadAssignmentsList: () => { 
         const l=document.getElementById('assignment-list-table'); 
-        if(l){
-            l.innerHTML=''; 
-            DB.data.assignments.forEach((a, i) => { 
-                const t=DB.data.users.find(u=>u.id===a.teacherId), c=DB.data.classes.find(x=>x.id===a.classId), s=DB.data.subjects[a.subjectId]; 
-                if(t&&c&&s) l.innerHTML+=`<tr><td>${c.name}</td><td>${a.section}</td><td>${s.name}</td><td>${t.name}</td><td><button onclick="Admin.remAssign(${i})" class="btn-xs-danger">X</button></td></tr>`; 
-            });
-        } 
+        if(!l) return;
+        l.innerHTML=''; 
+        if(!DB.data.assignments) return;
+        DB.data.assignments.forEach((a, i) => { 
+            const t = DB.data.users ? DB.data.users.find(u=>u.id===a.teacherId) : null;
+            const c = DB.data.classes ? DB.data.classes.find(x=>x.id===a.classId) : null;
+            const s = DB.data.subjects ? DB.data.subjects[a.subjectId] : null;
+            
+            const cName = c ? c.name : 'Unknown Grade';
+            const tName = t ? t.name : 'Unknown Teacher';
+            const sName = s ? s.name : 'Unknown Subject';
+
+            l.innerHTML+=`<tr><td>${cName}</td><td>${a.section}</td><td>${sName}</td><td>${tName}</td><td><button onclick="Admin.remAssign(${i})" class="btn-xs-danger">Remove</button></td></tr>`; 
+        });
     },
     remAssign: (i) => { DB.data.assignments.splice(i,1); DB.save(); Admin.loadAssignmentsList(); },
     
-    // LOAD CLASS TEACHERS
+    // BULLETPROOF CLASS TEACHER LIST
     loadClassTeachers: () => {
         const l = document.getElementById('class-teacher-list');
         if(!l) return;
@@ -251,11 +266,14 @@ const Admin = {
         for(let key in DB.data.classTeachers) {
             const teacherId = DB.data.classTeachers[key];
             const [cid, sec] = key.split('_');
-            const cls = DB.data.classes.find(c => c.id === cid);
-            const t = DB.data.users.find(u => u.id === teacherId);
-            if(cls && t) {
-                l.innerHTML += `<tr><td>${cls.name}</td><td>${sec}</td><td>${t.name}</td><td><button onclick="Admin.remClassTeacher('${key}')" class="btn-xs-danger">X</button></td></tr>`;
-            }
+            
+            const cls = DB.data.classes ? DB.data.classes.find(c => c.id === cid) : null;
+            const t = DB.data.users ? DB.data.users.find(u => u.id === teacherId) : null;
+            
+            const cName = cls ? cls.name : 'Unknown Grade';
+            const tName = t ? t.name : 'Unknown Teacher';
+            
+            l.innerHTML += `<tr><td>${cName}</td><td>${sec}</td><td>${tName}</td><td><button onclick="Admin.remClassTeacher('${key}')" class="btn-xs-danger">Remove</button></td></tr>`;
         }
     },
     remClassTeacher: (key) => { if(confirm("Remove Class Teacher?")) { delete DB.data.classTeachers[key]; DB.save(); Admin.loadClassTeachers(); } },
@@ -290,7 +308,7 @@ const Teacher = {
             if(c&&sub)s.innerHTML+=`<option value="${i}">${c.name} (${a.section}) - ${sub.name}</option>`
         });
 
-        // FIXED: CLASS TEACHER DROPDOWN SHOWS SECTION INFO
+        // CLASS TEACHER UI
         const ctSections = [];
         if(DB.data.classTeachers) {
             for(let key in DB.data.classTeachers) {
@@ -307,7 +325,6 @@ const Teacher = {
                 const parts = k.split('_');
                 const cls = DB.data.classes.find(c => c.id === parts[0]);
                 if(cls) {
-                    // SHOWS "GRADE 1 - Section A"
                     sel.innerHTML += `<option value="${k}">${cls.name} - Section ${parts[1]}</option>`;
                 }
             });
