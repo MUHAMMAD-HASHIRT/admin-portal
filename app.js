@@ -1,5 +1,5 @@
 /* ==========================================================================
-   APP ENGINE (v129.0) - GLOBAL SIGNATURES & PREVIEW SEPARATION
+   APP ENGINE (v130.0) - SELF REFLECTION GLOBALS
    ========================================================================== */
 
 const firebaseConfig = {
@@ -22,14 +22,27 @@ const Theme = { init: () => { const t = localStorage.getItem('academus_theme'); 
 const DB = {
     defaults: { 
         users: [{ id: 'admin', pass: 'admin', role: 'admin', name: 'Administrator' }], 
-        classes: [], subjects: {}, assignments: [], students: [], marks: {}, classTeachers: {}, classPhotos: {}, generalRemarks: {}, 
-        globalSignatures: {}, classTeacherSignatures: {},
-        // NEW: Dedicated global configuration for the Last Page
+        classes: [], subjects: {}, assignments: [], students: [], marks: {}, classTeachers: {}, classPhotos: {}, generalRemarks: {}, globalSignatures: {}, classTeacherSignatures: {},
         globalConfig: {
             signatures: [
                 { title: "Class Teacher", role: "ct", imgKey: null },
                 { title: "Academic Manager", role: "static", imgKey: null },
-                { title: "Directress", role: "static", imgKey: null }
+                { title: "School Directress", role: "static", imgKey: null }
+            ],
+            // NEW: Default reflection questions
+            reflectionEval: [
+                "My teachers provide me with feedback about my learning on a regular basis.",
+                "My teachers help me to understand the mistakes I have made.",
+                "My teachers regularly mark my work and return it to me promptly.",
+                "My teachers provide support when I am having difficulties.",
+                "I am encouraged to give feedback to teachers on my learning.",
+                "In my assignments, I know what I have to do to be successful."
+            ],
+            reflectionVoice: [
+                "Did the lesson/topic achieve its stated aims?",
+                "Did you find the work easy?",
+                "Were you able to ask for help if you didn't understand something?",
+                "Did the feedback you received from the teacher improved your learning?"
             ]
         }
     },
@@ -47,9 +60,10 @@ const DB = {
         if (!val.generalRemarks) val.generalRemarks = {};
         if (!val.globalSignatures) val.globalSignatures = {};
         if (!val.classTeacherSignatures) val.classTeacherSignatures = {};
-        // Ensure globalConfig exists
-        if (!val.globalConfig) val.globalConfig = { signatures: DB.defaults.globalConfig.signatures };
+        if (!val.globalConfig) val.globalConfig = DB.defaults.globalConfig;
         if (!val.globalConfig.signatures) val.globalConfig.signatures = DB.defaults.globalConfig.signatures;
+        if (!val.globalConfig.reflectionEval) val.globalConfig.reflectionEval = DB.defaults.globalConfig.reflectionEval;
+        if (!val.globalConfig.reflectionVoice) val.globalConfig.reflectionVoice = DB.defaults.globalConfig.reflectionVoice;
         return val;
     },
     init: (callback) => {
@@ -64,9 +78,7 @@ const DB = {
                 DB.data = DB.sanitize(val); 
                 if (!document.getElementById('view-admin-classes').classList.contains('hidden')) Admin.loadClassesHierarchy(); 
                 if (!document.getElementById('view-admin-teachers').classList.contains('hidden')) {
-                    Admin.loadTeachers(); 
-                    Admin.loadAssignmentsList(); 
-                    Admin.loadClassTeachers(); 
+                    Admin.loadTeachers(); Admin.loadAssignmentsList(); Admin.loadClassTeachers(); 
                 }
             }
         });
@@ -135,7 +147,45 @@ const ReportEngine = {
     },
     generateRubricPage: () => { return `<div class="details-page"><img src="header footer.png" class="layer-frame"><img src="background.png" class="layer-lion"><div class="content-area"><div style="height: 40px;"></div> <div class="rubric-title">UNDERSTANDING THE REPORT</div><div class="rubric-text"><b>Objectives</b><br>Academus has an academic and co-curricular checkpoints for students...</div><div class="rubric-text"><b>Testing</b><br>Academus has a set standard of assessing its students using formal and informal methods. Our testing is based on year round evaluation and portfolio analysis of students.</div><div class="rubric-text" style="margin-bottom:10px;"><b>Evaluation Rubric</b></div><table class="rubric-table"><thead><tr><th style="width:20%">Key Attributes</th><th style="width:15%">Key Symbol</th><th>Description</th></tr></thead><tbody><tr class="rubric-row-grey"><td class="rubric-col-attr">Exceeds<br>Learning<br>Expectations</td><td class="rubric-col-sym">ELE</td><td class="rubric-col-desc">The child displays impeccable progress towards set objectives and goals. The child achieves all milestones independently.</td></tr><tr class="rubric-row-white"><td class="rubric-col-attr">Meets Learning<br>Expectations</td><td class="rubric-col-sym">MLE</td><td class="rubric-col-desc">The child meets all the learning outcomes with precision and clarity of understanding.</td></tr><tr class="rubric-row-grey"><td class="rubric-col-attr">Progressing</td><td class="rubric-col-sym">P</td><td class="rubric-col-desc">The child is at an intermediate level, and is completing the given tasks in a satisfactory manner.</td></tr><tr class="rubric-row-white"><td class="rubric-col-attr">Needs<br>Improvement</td><td class="rubric-col-sym">NI</td><td class="rubric-col-desc">The child is starting to attempt or is in a phase of development.</td></tr></tbody></table></div></div>`; },
     
-    // FETCHES FROM GLOBAL CONFIG INSTEAD OF SUBJECT TEMPLATE
+    // --- NEW: GENERATE SELF REFLECTION PAGE ---
+    generateReflectionPage: () => {
+        const evalQs = DB.data.globalConfig.reflectionEval || [];
+        const voiceQs = DB.data.globalConfig.reflectionVoice || [];
+
+        let evalHTML = '';
+        evalQs.forEach((q, i) => {
+            evalHTML += `<tr><td class="ref-col-num">${i+1}</td><td class="ref-col-q">${q}</td><td><div class="ref-box"></div></td><td><div class="ref-box"></div></td><td><div class="ref-box"></div></td></tr>`;
+        });
+
+        let voiceHTML = '';
+        voiceQs.forEach((q, i) => {
+            voiceHTML += `<tr><td class="ref-col-num">${i+1}</td><td class="ref-col-q">${q}</td><td><div class="ref-box"></div></td><td><div class="ref-box"></div></td><td><div class="ref-box"></div></td></tr>`;
+        });
+
+        return `
+        <div class="report-page">
+            <img src="header footer.png" class="layer-frame">
+            <img src="background.png" class="layer-lion">
+            <div class="content-area">
+                <div class="reflection-title" style="margin-top: 10px;">SELF REFLECTION</div>
+                
+                <table class="ref-table">
+                    <thead>
+                        <tr><th></th><th>MY LEARNING EVALUATION</th><th>ALWAYS</th><th>MOST OF THE<br>TIME</th><th>SOMETIMES</th></tr>
+                    </thead>
+                    <tbody>${evalHTML}</tbody>
+                </table>
+
+                <table class="ref-table">
+                    <thead>
+                        <tr><th></th><th>MY VOICE</th><th>YES</th><th>NO</th><th>MAYBE</th></tr>
+                    </thead>
+                    <tbody>${voiceHTML}</tbody>
+                </table>
+            </div>
+        </div>`;
+    },
+
     generateLastPage: (s) => {
         const classKey = s.classId && s.section ? `${s.classId}_${s.section}` : null;
         const photo = classKey ? (DB.data.classPhotos[classKey] || '') : ''; 
@@ -145,8 +195,8 @@ const ReportEngine = {
         const ctSigImage = (teacherId && DB.data.classTeacherSignatures[teacherId]) ? DB.data.classTeacherSignatures[teacherId] : null;
 
         let signaturesHTML = '';
-        
         const sigConfig = DB.data.globalConfig.signatures;
+        
         if (sigConfig && Array.isArray(sigConfig)) {
             const count = sigConfig.length;
             const width = count > 0 ? (100 / count) : 100;
@@ -158,14 +208,8 @@ const ReportEngine = {
                 } else if (sig.role === 'static' && sig.imgKey && DB.data.globalSignatures[sig.imgKey]) {
                     imgSrc = DB.data.globalSignatures[sig.imgKey]; 
                 }
-                
                 const imgTag = imgSrc ? `<img src="${imgSrc}" class="sig-image">` : `<span class="fake-sig">Signature</span>`;
-
-                signaturesHTML += `
-                <div class="sig-block" style="width: ${width}%">
-                    <div class="sig-line">${imgTag}</div>
-                    <div class="sig-title">${sig.title}</div>
-                </div>`;
+                signaturesHTML += `<div class="sig-block" style="width: ${width}%"><div class="sig-line">${imgTag}</div><div class="sig-title">${sig.title}</div></div>`;
             });
         }
 
@@ -220,13 +264,14 @@ const ReportEngine = {
         const details = ReportEngine.generateDetailsPage(s); 
         const rubric = ReportEngine.generateRubricPage(); 
         let reports = ''; 
-        
         subIds.forEach(id => { const sub = DB.data.subjects[id]; if (sub) { const m = (DB.data.marks[sid] && DB.data.marks[sid][id]) ? DB.data.marks[sid][id] : {}; reports += ReportEngine.render(null, sub.template, m, false); } }); 
         
-        const lastPage = ReportEngine.generateLastPage(s); // Uses global config inside
+        // APPEND REFLECTION THEN LAST PAGE
+        const reflectionPage = ReportEngine.generateReflectionPage();
+        const lastPage = ReportEngine.generateLastPage(s);
         
         const w = window.open('', '_blank'); 
-        w.document.write(`<html><head><title>${s.name}</title><link rel="stylesheet" href="style.css"><style>.forced-print-bar { position: fixed; top: 0; left: 0; width: 100%; background: #1e293b; padding: 15px; text-align: center; z-index: 10000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); } .forced-btn { background: #10b981; color: white; border: none; padding: 10px 25px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; } @media print { .forced-print-bar { display: none !important; } }</style></head><body><div class="forced-print-bar"><button class="forced-btn" onclick="window.print()">🖨️ PRINT PDF</button></div><div class="print-container">${cover}${details}${rubric}${reports}${lastPage}</div></body></html>`); 
+        w.document.write(`<html><head><title>${s.name}</title><link rel="stylesheet" href="style.css"><style>.forced-print-bar { position: fixed; top: 0; left: 0; width: 100%; background: #1e293b; padding: 15px; text-align: center; z-index: 10000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); } .forced-btn { background: #10b981; color: white; border: none; padding: 10px 25px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; } @media print { .forced-print-bar { display: none !important; } }</style></head><body><div class="forced-print-bar"><button class="forced-btn" onclick="window.print()">🖨️ PRINT PDF</button></div><div class="print-container">${cover}${details}${rubric}${reports}${reflectionPage}${lastPage}</div></body></html>`); 
         w.document.close(); 
     }
 };
@@ -304,6 +349,7 @@ const Admin = {
         }
     },
     remClassTeacher: (key) => { if(confirm("Remove Class Teacher?")) { delete DB.data.classTeachers[key]; DB.save(); Admin.loadClassTeachers(); } },
+
     importCSV: () => { const i = document.getElementById('csv-upload'); const f = i.files[0]; if (!f) { alert("Select file"); return; } const r = new FileReader(); r.onload = function(e) { const t = e.target.result; const rows = t.split('\n'); if (rows.length < 2) return; for (let i = 1; i < rows.length; i++) { const row = rows[i].trim(); if (!row) continue; const c = row.split(','); if (c.length < 13) continue; const gName = c[2].toUpperCase().trim(); const sName = c[3].toUpperCase().trim(); let cid = null; let cls = DB.data.classes.find(c => c.name === gName); if (!cls) { cid = 'c_' + Date.now() + Math.random().toString(36).substr(2, 5); cls = { id: cid, name: gName, sections: [sName], subjects: [] }; DB.data.classes.push(cls); } else { cid = cls.id; if (!cls.sections.includes(sName)) { cls.sections.push(sName); } } DB.data.students.push({ id: Date.now() + i, roll: c[0].trim(), name: c[1].trim().toUpperCase(), classId: cid, section: sName, parent1: c[4].trim(), parent2: c[5].trim(), gender: c[6].trim(), ageY: c[7].trim(), ageM: c[8].trim(), height: c[9].trim(), weight: c[10].trim(), attendanceP: c[11].trim(), attendanceA: c[12].trim(), pt1: false, pt2: false }); } DB.save(); alert("Imported!"); Admin.loadStudents(); Admin.loadClassesHierarchy(); }; r.readAsText(f); },
     onStudentClassChange: () => { const cid = document.getElementById('stu-class-select').value; const sec = document.getElementById('stu-section-select'); sec.innerHTML = '<option value="">Sec</option>'; const cls = DB.data.classes.find(c => c.id === cid); if(cls) cls.sections.forEach(s => sec.innerHTML += `<option value="${s}">${s}</option>`); },
     loadStudents: () => { const t = document.getElementById('admin-student-list'); if(!t) return; t.innerHTML = ''; Admin.refreshDropdowns(); DB.data.students.forEach((s, idx) => { const cls = DB.data.classes.find(c => c.id === s.classId)?.name || '-'; t.innerHTML += `<tr><td>${s.roll}</td><td>${s.name}</td><td>${cls} [${s.section}]</td><td>${s.parent1 || '-'}</td><td><button onclick="Admin.delStudent(${idx})" class="btn btn-sm btn-danger">X</button></td></tr>`; }); },
@@ -311,7 +357,6 @@ const Admin = {
     delStudent: (i) => { if(confirm("Delete?")) { DB.data.students.splice(i, 1); DB.save(); Admin.loadStudents(); } }
 };
 
-/* --- TABBED TEMPLATE EDITOR --- */
 const Template = { 
     currentView: 'subject',
     
@@ -321,22 +366,32 @@ const Template = {
     
     switchView: (view) => {
         Template.currentView = view;
+        document.getElementById('tpl-subject-editor').classList.add('hidden');
+        document.getElementById('tpl-reflection-editor').classList.add('hidden');
+        document.getElementById('tpl-lastpage-editor').classList.add('hidden');
+        document.getElementById('tab-btn-subject').className = 'btn btn-accent';
+        document.getElementById('tab-btn-reflection').className = 'btn btn-accent';
+        document.getElementById('tab-btn-lastpage').className = 'btn btn-accent';
+
         if(view === 'subject') {
             document.getElementById('tpl-subject-selector-card').classList.remove('hidden');
             document.getElementById('tpl-subject-editor').classList.remove('hidden');
-            document.getElementById('tpl-lastpage-editor').classList.add('hidden');
             document.getElementById('tab-btn-subject').className = 'btn btn-primary';
-            document.getElementById('tab-btn-lastpage').className = 'btn btn-accent';
             document.getElementById('preview-title-label').innerText = 'LIVE PREVIEW (SUBJECT TEMPLATE)';
             Template.liveUpdate();
+        } else if (view === 'reflection') {
+            document.getElementById('tpl-subject-selector-card').classList.add('hidden');
+            document.getElementById('tpl-reflection-editor').classList.remove('hidden');
+            document.getElementById('tab-btn-reflection').className = 'btn btn-primary';
+            document.getElementById('preview-title-label').innerText = 'LIVE PREVIEW (SELF REFLECTION)';
+            Template.loadGlobals();
+            Template.renderReflectionPreview();
         } else {
             document.getElementById('tpl-subject-selector-card').classList.add('hidden');
-            document.getElementById('tpl-subject-editor').classList.add('hidden');
             document.getElementById('tpl-lastpage-editor').classList.remove('hidden');
-            document.getElementById('tab-btn-subject').className = 'btn btn-accent';
             document.getElementById('tab-btn-lastpage').className = 'btn btn-primary';
             document.getElementById('preview-title-label').innerText = 'LIVE PREVIEW (LAST PAGE)';
-            Template.loadSignatures();
+            Template.loadGlobals();
             Template.renderLastPagePreview();
         }
     },
@@ -376,6 +431,12 @@ const Template = {
         previewContainer.className = 'report-page';
     },
 
+    renderReflectionPreview: () => {
+        const previewContainer = document.getElementById('editor-preview');
+        previewContainer.innerHTML = ReportEngine.generateReflectionPage();
+        previewContainer.className = 'report-page';
+    },
+
     renderRows:(i)=>{const c=document.getElementById('template-rows');c.innerHTML='';i.forEach((item,idx)=>{c.innerHTML+=`<div class="row-item" data-type="${item.type}" style="display:flex;gap:5px;margin-bottom:5px;"><span style="font-size:10px;width:15px;font-weight:bold;">${item.type[0].toUpperCase()}</span><input value="${item.text||''}" oninput="Template.liveUpdate()"><button onclick="Template.delItem(${idx})" style="color:red;border:none;">x</button></div>`})}, 
     add:(t)=>{if(Template.currentSubjectId){Template.syncToDB();DB.data.subjects[Template.currentSubjectId].template.items.push({type:t,text:''});Template.load()}}, 
     delItem:(i)=>{Template.syncToDB();DB.data.subjects[Template.currentSubjectId].template.items.splice(i,1);Template.load()}, 
@@ -384,16 +445,16 @@ const Template = {
         if(Template.currentView === 'subject') {
             if(!Template.currentSubjectId) return;
             Template.syncToDB(); DB.save(); alert('Subject Template Saved');
-        } else {
-            Template.syncSignaturesToDB(); alert('Global Signatures Saved');
         }
     },
 
-    // --- GLOBAL SIGNATURE LOGIC ---
-    loadSignatures: () => {
+    // --- GLOBAL TEMPLATE LOGIC (Signatures & Reflection) ---
+    loadGlobals: () => {
         Template.renderSignatures(DB.data.globalConfig.signatures);
+        Template.renderReflectionLists(DB.data.globalConfig.reflectionEval, 'eval');
+        Template.renderReflectionLists(DB.data.globalConfig.reflectionVoice, 'voice');
     },
-    syncSignaturesToDB: () => {
+    syncGlobalsToDB: () => {
         const sigs = [];
         document.querySelectorAll('.signature-config-item').forEach(row => {
             sigs.push({
@@ -403,8 +464,22 @@ const Template = {
             });
         });
         DB.data.globalConfig.signatures = sigs;
+
+        const evals = [];
+        document.querySelectorAll('.ref-eval-item input').forEach(inp => evals.push(inp.value));
+        DB.data.globalConfig.reflectionEval = evals;
+
+        const voices = [];
+        document.querySelectorAll('.ref-voice-item input').forEach(inp => voices.push(inp.value));
+        DB.data.globalConfig.reflectionVoice = voices;
+
         DB.save();
+        if(Template.currentView === 'reflection') Template.renderReflectionPreview();
+        if(Template.currentView === 'lastpage') Template.renderLastPagePreview();
+        alert('Global Settings Saved!');
     },
+    
+    // SIGNATURE EDITOR LOGIC
     renderSignatures: (sigs) => {
         const c = document.getElementById('signature-config-list');
         c.innerHTML = '';
@@ -415,7 +490,7 @@ const Template = {
             c.innerHTML += `
             <div class="signature-config-item" data-img-key="${sig.imgKey || ''}" style="background:#f8fafc; padding:10px; border:1px solid #e2e8f0; margin-bottom:10px; border-radius:8px;">
                 <div style="display:flex; gap:10px; margin-bottom:10px;">
-                    <input type="text" class="sig-title-inp" value="${sig.title}" placeholder="Title (e.g., Principal)" style="flex:1; margin:0;" oninput="Template.liveUpdateSignatures()">
+                    <input type="text" class="sig-title-inp" value="${sig.title}" placeholder="Title (e.g., Principal)" style="flex:1; margin:0;" onchange="Template.liveUpdateGlobals()">
                     <select class="sig-role-select" onchange="Template.onSigRoleChange(this)" style="flex:1; margin:0;">
                         <option value="ct" ${sig.role === 'ct' ? 'selected' : ''}>Class Teacher (Automatic)</option>
                         <option value="static" ${sig.role === 'static' ? 'selected' : ''}>Static Image (Fixed)</option>
@@ -430,28 +505,39 @@ const Template = {
             </div>`;
         });
     },
-    liveUpdateSignatures: () => {
-        Template.syncSignaturesToDB();
-        Template.renderLastPagePreview();
+    liveUpdateGlobals: () => {
+        // Sync silently and update the current preview without showing alerts
+        const sigs = [];
+        document.querySelectorAll('.signature-config-item').forEach(row => {
+            sigs.push({ title: row.querySelector('.sig-title-inp').value, role: row.querySelector('.sig-role-select').value, imgKey: row.dataset.imgKey || null });
+        });
+        DB.data.globalConfig.signatures = sigs;
+
+        const evals = [];
+        document.querySelectorAll('.ref-eval-item input').forEach(inp => evals.push(inp.value));
+        DB.data.globalConfig.reflectionEval = evals;
+
+        const voices = [];
+        document.querySelectorAll('.ref-voice-item input').forEach(inp => voices.push(inp.value));
+        DB.data.globalConfig.reflectionVoice = voices;
+
+        if(Template.currentView === 'reflection') Template.renderReflectionPreview();
+        if(Template.currentView === 'lastpage') Template.renderLastPagePreview();
     },
     addSignatureSlot: () => { 
-        Template.syncSignaturesToDB(); 
         DB.data.globalConfig.signatures.push({ title: "New Signature", role: "static", imgKey: null }); 
-        DB.save(); 
-        Template.loadSignatures();
-        Template.renderLastPagePreview();
+        Template.loadGlobals();
+        Template.liveUpdateGlobals();
     },
     delSignature: (i) => { 
-        Template.syncSignaturesToDB(); 
         DB.data.globalConfig.signatures.splice(i,1); 
-        DB.save(); 
-        Template.loadSignatures();
-        Template.renderLastPagePreview();
+        Template.loadGlobals();
+        Template.liveUpdateGlobals();
     },
     onSigRoleChange: (selectEl) => { 
         const container = selectEl.closest('.signature-config-item').querySelector('.sig-upload-container'); 
         container.style.display = selectEl.value === 'static' ? 'block' : 'none'; 
-        Template.liveUpdateSignatures(); 
+        Template.liveUpdateGlobals(); 
     },
     uploadStaticSignature: (btn, idx) => {
         const fileInp = btn.previousElementSibling; const f = fileInp.files[0];
@@ -466,9 +552,35 @@ const Template = {
             row.dataset.imgKey = imgKey;
             row.querySelector('span').innerText = "Image saved.";
             btn.innerText = "Upload Image"; btn.disabled = false;
-            Template.liveUpdateSignatures(); // Syncs to DB and Refreshes Preview
+            Template.liveUpdateGlobals(); 
         };
         r.readAsDataURL(f);
+    },
+
+    // REFLECTION EDITOR LOGIC
+    renderReflectionLists: (list, type) => {
+        const c = document.getElementById(`ref-${type}-list`);
+        c.innerHTML = '';
+        if(!list) list = [];
+        list.forEach((q, idx) => {
+            c.innerHTML += `
+            <div class="ref-${type}-item" style="display:flex; gap:5px; margin-bottom:5px;">
+                <input type="text" value="${q}" style="flex:1; margin:0;" oninput="Template.liveUpdateGlobals()">
+                <button onclick="Template.delRefRow('${type}', ${idx})" class="btn-xs-danger">X</button>
+            </div>`;
+        });
+    },
+    addRefRow: (type) => {
+        if(type === 'eval') DB.data.globalConfig.reflectionEval.push("");
+        if(type === 'voice') DB.data.globalConfig.reflectionVoice.push("");
+        Template.loadGlobals();
+        Template.liveUpdateGlobals();
+    },
+    delRefRow: (type, idx) => {
+        if(type === 'eval') DB.data.globalConfig.reflectionEval.splice(idx, 1);
+        if(type === 'voice') DB.data.globalConfig.reflectionVoice.splice(idx, 1);
+        Template.loadGlobals();
+        Template.liveUpdateGlobals();
     }
 };
 
