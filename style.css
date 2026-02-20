@@ -63,63 +63,74 @@ input:focus { outline: none; border-color: var(--accent); }
 #editor-preview { transform: scale(0.42); transform-origin: top center; width: 794px; min-height: 1123px; background: white; margin: 0 auto; color: black; box-shadow: 0 10px 25px rgba(0,0,0,0.2); transition: transform 0.2s ease; }
 
 /* ==========================================================================
-   UPDATED LOGIN PAGE STYLES
+   UPDATED LOGIN PAGE STYLES (STRICT 50/50 SPLIT)
    ========================================================================== */
 #app-login { 
     position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     display: flex; align-items: center; justify-content: center; z-index: 10000; 
+    padding: 20px; /* Prevent edge touching on smaller screens */
 }
 
 .login-container {
     display: flex;
-    width: 800px;
-    height: 500px;
+    width: 900px; /* Increased width for better 50/50 look */
+    height: 550px; /* Increased height */
     background: #fff;
     border-radius: 20px;
-    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+    box-shadow: 0 30px 60px -12px rgba(0,0,0,0.6);
     overflow: hidden;
 }
 
-/* Left side with the animated image */
+/* Left side with the animated image - STRICT 50% width */
 .login-image-side {
-    flex: 1;
+    flex: 0 0 50%; /* Forces exactly 50% width, no growing/shrinking */
+    width: 50%;
     position: relative;
     overflow: hidden;
+    background: #000; /* Fallback color */
 }
 
 .animated-login-img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: cover; /* Ensures the image covers the entire 50% area */
     /* Simple zoom animation on load */
-    animation: zoomIn 10s ease-out forwards;
+    animation: zoomIn 15s ease-out forwards;
+    opacity: 0.9;
 }
 
 @keyframes zoomIn {
     0% { transform: scale(1); }
-    100% { transform: scale(1.1); }
+    100% { transform: scale(1.15); }
 }
 
 .login-overlay {
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: linear-gradient(to right, rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.1));
+    /* Stronger gradient overlay to ensure text on right pops */
+    background: linear-gradient(to right, rgba(15, 23, 42, 0.5) 0%, rgba(255,255,255,0) 100%);
 }
 
-/* Right side with the login form */
+/* Right side with the login form - STRICT 50% width */
 .login-form-side {
-    flex: 1;
-    padding: 50px;
+    flex: 0 0 50%; /* Forces exactly 50% width */
+    width: 50%;
+    padding: 60px 50px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     text-align: center;
+    background: #ffffff;
 }
 
-.login-icon-wrap { display: inline-block; color: var(--accent); margin-bottom: 15px; }
+.login-icon-wrap { display: inline-block; color: var(--accent); margin-bottom: 20px; }
+.login-form-side h2 { font-size: 28px; letter-spacing: 1px; }
+.login-form-side p { font-size: 14px; margin-bottom: 40px; }
+.login-form-side input { background: #f8fafc; padding: 15px; font-size: 15px; }
+.login-form-side .btn-primary { padding: 15px; font-size: 16px; margin-top: 10px; }
 
-/* MOBILE */
+/* MOBILE MEDIA QUERY UPDATED */
 .mobile-menu-btn { display: none; }
 .overlay-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 55; }
 @media screen and (max-width: 768px) {
@@ -131,10 +142,10 @@ input:focus { outline: none; border-color: var(--accent); }
     .overlay-backdrop.active { display: block; }
     .template-container { flex-direction: column !important; }
     
-    /* Login changes for mobile */
-    .login-container { width: 90%; height: auto; flex-direction: column; }
-    .login-image-side { height: 200px; }
-    .login-form-side { padding: 30px; }
+    /* Login changes for mobile - Stack vertically and reset widths */
+    .login-container { width: 100%; max-width: 450px; height: auto; flex-direction: column; border-radius: 16px; }
+    .login-image-side { height: 250px; width: 100%; flex: none; } 
+    .login-form-side { width: 100%; flex: none; padding: 40px 30px; }
 }
 
 /* --- REPORT PAGE (STRICT PIXEL SIZING PREVENTS BLEED) --- */
