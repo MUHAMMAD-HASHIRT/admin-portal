@@ -122,10 +122,12 @@ const Auth = {
             document.getElementById('app-login').style.display = 'flex';
         });
     },
+    // UPDATED LOGIN FUNCTION WITH ANIMATION TRIGGER
     login: () => {
         const u = document.getElementById('username').value;
         const p = document.getElementById('password').value;
         const btn = document.getElementById('login-btn');
+        const originalText = btn.innerHTML;
         btn.innerHTML = 'Verifying...'; btn.disabled = true;
         
         setTimeout(() => {
@@ -133,17 +135,25 @@ const Auth = {
                 const usersList = DB.data.users || DB.defaults.users;
                 const f = usersList.find(x => x.id === u && x.pass === p);
                 if (f) { 
-                    btn.innerHTML = 'Success!'; 
-                    setTimeout(() => { sessionStorage.setItem('uid', f.id); location.reload(); }, 500); 
+                    btn.innerHTML = 'Success! Redirecting...'; 
+                    btn.style.background = '#10b981';
+                    // Trigger Exit Animation
+                    document.getElementById('login-container-box').classList.add('login-exit-anim');
+                    // Wait for animation to finish before reloading
+                    setTimeout(() => { 
+                        sessionStorage.setItem('uid', f.id); 
+                        location.reload(); 
+                    }, 800); 
                 } else { 
-                    btn.innerHTML = 'Login'; 
+                    btn.innerHTML = originalText; 
                     btn.disabled = false; 
                     alert('Invalid Credentials'); 
                 }
             } catch(e) {
-                btn.innerHTML = 'Login'; 
+                btn.innerHTML = originalText; 
                 btn.disabled = false; 
-                alert('Database is still syncing from the cloud. Please try again in 2 seconds.');
+                alert('Database sync issue. Retrying...');
+                console.error(e);
             }
         }, 1000); 
     },
