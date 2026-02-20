@@ -1,5 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;600;700&family=Great+Vibes&display=swap');
 
 :root {
     --bg-color: #f1f5f9;
@@ -25,20 +24,7 @@ body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-c
 .btn-success { background: #10b981; color: white; }
 .btn-sm { padding: 5px 10px; font-size: 11px; }
 .btn-block { width: 100%; }
-
-.btn-xs-danger { 
-    background: #ef4444; color: white; border: none; 
-    border-radius: 20px; padding: 5px 12px; font-size: 10px; font-weight: 700; cursor: pointer; 
-    transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2); letter-spacing: 0.5px;
-}
-.btn-xs-danger:hover { background: #dc2626; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(239, 68, 68, 0.35); }
-
-.btn-xs-accent { 
-    background: var(--accent); color: white; border: none; 
-    border-radius: 20px; padding: 5px 12px; font-size: 10px; font-weight: 700; cursor: pointer; 
-    transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2); letter-spacing: 0.5px;
-}
-.btn-xs-accent:hover { background: #1d4ed8; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(37, 99, 235, 0.35); }
+.btn-xs-danger { background: #ef4444; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 10px; font-weight: 700; cursor: pointer; }
 
 input, select, textarea { padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 12px; background: var(--glass-card); color: var(--text-main); font-family: inherit; font-size: 14px; }
 input:focus { outline: none; border-color: var(--accent); }
@@ -49,15 +35,8 @@ input:focus { outline: none; border-color: var(--accent); }
 .sidebar-header { height: 70px; display: flex; align-items: center; padding: 0 24px; font-size: 20px; font-weight: 700; color: var(--text-main); border-bottom: var(--glass-border); }
 .nav-menu { padding: 20px 12px; flex-grow: 1; overflow-y: auto; list-style: none; margin: 0; }
 .nav-category { font-size: 11px; text-transform: uppercase; color: var(--text-secondary); margin: 24px 12px 8px; font-weight: 700; letter-spacing: 0.5px; }
-
-.nav-item { 
-    padding: 12px 14px; margin-bottom: 4px; border-radius: 8px; cursor: pointer; color: var(--text-secondary); 
-    display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 500; border: 1px solid transparent; 
-    transition: all 0.2s ease; 
-}
-.nav-item:hover:not(.active) { background: rgba(37, 99, 235, 0.08); color: var(--accent); }
+.nav-item { padding: 12px 14px; margin-bottom: 4px; border-radius: 8px; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 500; transition: all 0.2s; }
 .nav-item.active { background: var(--accent); color: white; font-weight: 600; box-shadow: var(--shadow-sm); }
-
 .main-content { margin-left: 260px; margin-top: 70px; padding: 40px; height: calc(100vh - 70px); overflow-y: auto; }
 
 /* COMPONENTS */
@@ -84,22 +63,23 @@ input:focus { outline: none; border-color: var(--accent); }
 #editor-preview { transform: scale(0.42); transform-origin: top center; width: 794px; min-height: 1123px; background: white; margin: 0 auto; color: black; box-shadow: 0 10px 25px rgba(0,0,0,0.2); transition: transform 0.2s ease; }
 
 /* ==========================================================================
-   PERFECT MATCH SPLIT-SCREEN LOGIN 
+   PERFECT MATCH FULL-SCREEN LOGIN
    ========================================================================== */
 #app-login { 
     position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-    background-color: #0f172a; /* Exact deep navy from screenshot */
-    display: flex; align-items: center; justify-content: center; z-index: 10000; 
+    background-color: #ffffff; 
+    z-index: 10000; 
+    /* Removed padding so it touches the absolute edge */
+    padding: 0; 
 }
 
 .login-container {
     display: flex;
-    width: 850px;
-    height: 480px;
+    width: 100vw;  /* Force 100% of Viewport Width */
+    height: 100vh; /* Force 100% of Viewport Height */
     background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.4);
-    overflow: hidden; /* Clips the child elements to the border radius */
+    border-radius: 0; /* Removed rounded corners to touch edges */
+    overflow: hidden;
 }
 
 /* LEFT SIDE - STRICTLY 50% */
@@ -113,14 +93,14 @@ input:focus { outline: none; border-color: var(--accent); }
 
 .login-image-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 40%;
-    background: linear-gradient(to bottom, rgba(15,23,42,0.8) 0%, transparent 100%);
+    background: linear-gradient(to bottom, rgba(15,23,42,0.6) 0%, transparent 100%);
     z-index: 2;
 }
 
 .login-img {
     width: 100%; 
     height: 100%;
-    object-fit: cover; /* Ensures the image fills the box perfectly without warping */
+    object-fit: cover; 
     display: block;
     z-index: 1;
 }
@@ -140,18 +120,18 @@ input:focus { outline: none; border-color: var(--accent); }
 
 .login-header {
     text-align: center;
-    margin-bottom: 25px;
+    margin-bottom: 30px;
 }
 
 .login-header i {
     color: #2563eb;
-    font-size: 42px;
-    margin-bottom: 12px;
+    font-size: 48px;
+    margin-bottom: 15px;
 }
 
 .login-header h2 {
     font-family: 'Poppins', sans-serif;
-    font-size: 22px;
+    font-size: 26px;
     font-weight: 700;
     color: #0f172a;
     margin: 0 0 5px 0;
@@ -159,14 +139,14 @@ input:focus { outline: none; border-color: var(--accent); }
 }
 
 .login-header p {
-    font-size: 13px;
+    font-size: 14px;
     color: #64748b;
     margin: 0;
 }
 
 #loginForm {
     width: 100%;
-    max-width: 280px;
+    max-width: 320px; /* Slightly wider for full screen look */
     display: flex;
     flex-direction: column;
     gap: 15px;
@@ -174,13 +154,13 @@ input:focus { outline: none; border-color: var(--accent); }
 
 #loginForm input {
     width: 100%;
-    padding: 12px 15px;
+    padding: 14px 16px;
     border: 1px solid #cbd5e1;
     border-radius: 6px;
-    font-size: 13px;
+    font-size: 14px;
     background: #f8fafc;
     color: #1e293b;
-    margin-bottom: 0; /* Overrides global CSS */
+    margin-bottom: 0; 
     transition: all 0.2s ease;
 }
 
@@ -193,22 +173,23 @@ input:focus { outline: none; border-color: var(--accent); }
 
 #login-btn {
     width: 100%;
-    padding: 12px;
+    padding: 14px;
     background-color: #2563eb;
     color: #ffffff;
     border: none;
     border-radius: 6px;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 600;
     cursor: pointer;
     transition: background-color 0.2s ease;
+    margin-top: 5px;
 }
 
 #login-btn:hover {
     background-color: #1d4ed8;
 }
 
-/* MOBILE */
+/* MOBILE RESPONSIVENESS FOR FULL SCREEN */
 .mobile-menu-btn { display: none; }
 .overlay-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 55; }
 @media screen and (max-width: 768px) {
@@ -220,10 +201,10 @@ input:focus { outline: none; border-color: var(--accent); }
     .overlay-backdrop.active { display: block; }
     .template-container { flex-direction: column !important; }
     
-    /* Login Mobile Fixes */
-    .login-container { width: 90%; max-width: 400px; height: auto; flex-direction: column; }
-    .login-image-side { width: 100%; height: 180px; }
-    .login-form-side { width: 100%; padding: 40px 20px; }
+    /* Login Mobile Fixes: Stack them to fill screen vertically */
+    .login-container { width: 100vw; height: 100vh; flex-direction: column; }
+    .login-image-side { width: 100%; height: 40vh; flex: 0 0 40vh; }
+    .login-form-side { width: 100%; flex: 1; padding: 30px 20px; justify-content: center; }
 }
 
 /* --- REPORT PAGE (STRICT PIXEL SIZING PREVENTS BLEED) --- */
