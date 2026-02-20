@@ -100,20 +100,18 @@ input:focus { outline: none; border-color: var(--accent); }
     box-sizing: border-box !important;
     display: block;
 }
-
 .report-page *, .details-page *, .last-page * { box-sizing: border-box !important; }
 
 /* LAYERS */
 .layer-frame { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
 
-/* --- FIXED: LION NOW COVERS ENTIRE PAGE --- */
+/* --- REVERTED TO PREVIOUS CENTERED LION STYLE --- */
 .layer-lion { 
     position: absolute; 
-    top: 0; 
-    left: 0; 
-    width: 100%; 
-    height: 100%; 
-    object-fit: cover; /* Ensures it stretches nicely to every edge */
+    top: 54%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); 
+    width: 85%; 
     opacity: 0.75; 
     pointer-events: none; 
     z-index: 5; 
@@ -121,11 +119,7 @@ input:focus { outline: none; border-color: var(--accent); }
 
 /* CONTENT */
 .content-area, .details-content { 
-    position: relative;
-    z-index: 50; 
-    width: 100%; height: 100%;
-    padding: 130px 50px 70px 50px; 
-    background: transparent !important;
+    position: relative; z-index: 50; width: 100%; height: 100%; padding: 130px 50px 70px 50px; background: transparent !important;
 }
 
 /* COVER PAGE */
@@ -220,6 +214,6 @@ input:focus { outline: none; border-color: var(--accent); }
     
     .print-container > div:last-child { page-break-after: auto !important; break-after: auto !important; }
     
-    /* Ensure lion background is forced on print */
-    .layer-lion { opacity: 0.75 !important; object-fit: cover !important; }
+    /* Ensure opacity prints correctly */
+    .layer-lion { opacity: 0.75 !important; }
 }
