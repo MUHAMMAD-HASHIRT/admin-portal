@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Academus Portal</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700;800&family=Great+Vibes&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -13,24 +14,26 @@
     <div class="overlay-backdrop" id="mobile-backdrop" onclick="Mobile.toggleMenu()"></div>
 
     <div id="app-login">
-        <div class="login-container">
+        <div class="login-container" id="login-container-box">
             <div class="login-image-side">
                 <div class="login-image-overlay"></div>
                 <img src="titlepicture.png" alt="Academus Building" class="login-img">
             </div>
             
             <div class="login-form-side">
-                <div class="login-header">
-                    <i class="fas fa-school"></i>
-                    <h2>ACADEMUS</h2>
-                    <p>Portal Access</p>
+                <div class="login-form-content animated-form-entrance">
+                    <div class="login-header">
+                        <i class="fas fa-school"></i>
+                        <h2>ACADEMUS</h2>
+                        <p>Portal Access</p>
+                    </div>
+                    
+                    <form id="loginForm">
+                        <input type="text" id="username" placeholder="User ID" required>
+                        <input type="password" id="password" placeholder="Password" required>
+                        <button type="submit" id="login-btn">Login &rarr;</button>
+                    </form>
                 </div>
-                
-                <form id="loginForm">
-                    <input type="text" id="username" placeholder="User ID" required>
-                    <input type="password" id="password" placeholder="Password" required>
-                    <button type="submit" id="login-btn">Login</button>
-                </form>
             </div>
         </div>
     </div>
