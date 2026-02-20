@@ -1,5 +1,5 @@
 /* ==========================================================================
-   APP ENGINE (v130.0) - SELF REFLECTION GLOBALS
+   APP ENGINE (v131.0) - LOGIN FAILSAFE & GLOBAL REFLECTIONS
    ========================================================================== */
 
 const firebaseConfig = {
@@ -29,7 +29,6 @@ const DB = {
                 { title: "Academic Manager", role: "static", imgKey: null },
                 { title: "School Directress", role: "static", imgKey: null }
             ],
-            // NEW: Default reflection questions
             reflectionEval: [
                 "My teachers provide me with feedback about my learning on a regular basis.",
                 "My teachers help me to understand the mistakes I have made.",
@@ -123,15 +122,33 @@ const Auth = {
             document.getElementById('app-login').style.display = 'flex';
         });
     },
+    // --- FIXED LOGIN FUNCTION (PREVENTS GETTING STUCK) ---
     login: () => {
         const u = document.getElementById('username').value;
         const p = document.getElementById('password').value;
         const btn = document.getElementById('login-btn');
         btn.innerHTML = 'Verifying...'; btn.disabled = true;
+        
         setTimeout(() => {
-            const f = DB.data.users.find(x => x.id === u && x.pass === p);
-            if (f) { btn.innerHTML = 'Success!'; setTimeout(() => { sessionStorage.setItem('uid', f.id); location.reload(); }, 500); } 
-            else { btn.innerHTML = 'Login'; btn.disabled = false; alert('Invalid Credentials'); }
+            try {
+                // Failsafe: If database is still loading, use defaults to check
+                const usersList = DB.data.users || DB.defaults.users;
+                
+                const f = usersList.find(x => x.id === u && x.pass === p);
+                if (f) { 
+                    btn.innerHTML = 'Success!'; 
+                    setTimeout(() => { sessionStorage.setItem('uid', f.id); location.reload(); }, 500); 
+                } else { 
+                    btn.innerHTML = 'Login'; 
+                    btn.disabled = false; 
+                    alert('Invalid Credentials'); 
+                }
+            } catch(e) {
+                console.error("Login Error:", e);
+                btn.innerHTML = 'Login'; 
+                btn.disabled = false; 
+                alert('Database is still syncing from the cloud. Please try again in 2 seconds.');
+            }
         }, 1000); 
     },
     logout: () => { sessionStorage.clear(); location.reload(); }
@@ -147,43 +164,14 @@ const ReportEngine = {
     },
     generateRubricPage: () => { return `<div class="details-page"><img src="header footer.png" class="layer-frame"><img src="background.png" class="layer-lion"><div class="content-area"><div style="height: 40px;"></div> <div class="rubric-title">UNDERSTANDING THE REPORT</div><div class="rubric-text"><b>Objectives</b><br>Academus has an academic and co-curricular checkpoints for students...</div><div class="rubric-text"><b>Testing</b><br>Academus has a set standard of assessing its students using formal and informal methods. Our testing is based on year round evaluation and portfolio analysis of students.</div><div class="rubric-text" style="margin-bottom:10px;"><b>Evaluation Rubric</b></div><table class="rubric-table"><thead><tr><th style="width:20%">Key Attributes</th><th style="width:15%">Key Symbol</th><th>Description</th></tr></thead><tbody><tr class="rubric-row-grey"><td class="rubric-col-attr">Exceeds<br>Learning<br>Expectations</td><td class="rubric-col-sym">ELE</td><td class="rubric-col-desc">The child displays impeccable progress towards set objectives and goals. The child achieves all milestones independently.</td></tr><tr class="rubric-row-white"><td class="rubric-col-attr">Meets Learning<br>Expectations</td><td class="rubric-col-sym">MLE</td><td class="rubric-col-desc">The child meets all the learning outcomes with precision and clarity of understanding.</td></tr><tr class="rubric-row-grey"><td class="rubric-col-attr">Progressing</td><td class="rubric-col-sym">P</td><td class="rubric-col-desc">The child is at an intermediate level, and is completing the given tasks in a satisfactory manner.</td></tr><tr class="rubric-row-white"><td class="rubric-col-attr">Needs<br>Improvement</td><td class="rubric-col-sym">NI</td><td class="rubric-col-desc">The child is starting to attempt or is in a phase of development.</td></tr></tbody></table></div></div>`; },
     
-    // --- NEW: GENERATE SELF REFLECTION PAGE ---
     generateReflectionPage: () => {
         const evalQs = DB.data.globalConfig.reflectionEval || [];
         const voiceQs = DB.data.globalConfig.reflectionVoice || [];
-
         let evalHTML = '';
-        evalQs.forEach((q, i) => {
-            evalHTML += `<tr><td class="ref-col-num">${i+1}</td><td class="ref-col-q">${q}</td><td><div class="ref-box"></div></td><td><div class="ref-box"></div></td><td><div class="ref-box"></div></td></tr>`;
-        });
-
+        evalQs.forEach((q, i) => { evalHTML += `<tr><td class="ref-col-num">${i+1}</td><td class="ref-col-q">${q}</td><td><div class="ref-box"></div></td><td><div class="ref-box"></div></td><td><div class="ref-box"></div></td></tr>`; });
         let voiceHTML = '';
-        voiceQs.forEach((q, i) => {
-            voiceHTML += `<tr><td class="ref-col-num">${i+1}</td><td class="ref-col-q">${q}</td><td><div class="ref-box"></div></td><td><div class="ref-box"></div></td><td><div class="ref-box"></div></td></tr>`;
-        });
-
-        return `
-        <div class="report-page">
-            <img src="header footer.png" class="layer-frame">
-            <img src="background.png" class="layer-lion">
-            <div class="content-area">
-                <div class="reflection-title" style="margin-top: 10px;">SELF REFLECTION</div>
-                
-                <table class="ref-table">
-                    <thead>
-                        <tr><th></th><th>MY LEARNING EVALUATION</th><th>ALWAYS</th><th>MOST OF THE<br>TIME</th><th>SOMETIMES</th></tr>
-                    </thead>
-                    <tbody>${evalHTML}</tbody>
-                </table>
-
-                <table class="ref-table">
-                    <thead>
-                        <tr><th></th><th>MY VOICE</th><th>YES</th><th>NO</th><th>MAYBE</th></tr>
-                    </thead>
-                    <tbody>${voiceHTML}</tbody>
-                </table>
-            </div>
-        </div>`;
+        voiceQs.forEach((q, i) => { voiceHTML += `<tr><td class="ref-col-num">${i+1}</td><td class="ref-col-q">${q}</td><td><div class="ref-box"></div></td><td><div class="ref-box"></div></td><td><div class="ref-box"></div></td></tr>`; });
+        return `<div class="report-page"><img src="header footer.png" class="layer-frame"><img src="background.png" class="layer-lion"><div class="content-area"><div class="reflection-title" style="margin-top: 10px;">SELF REFLECTION</div><table class="ref-table"><thead><tr><th></th><th>MY LEARNING EVALUATION</th><th>ALWAYS</th><th>MOST OF THE<br>TIME</th><th>SOMETIMES</th></tr></thead><tbody>${evalHTML}</tbody></table><table class="ref-table"><thead><tr><th></th><th>MY VOICE</th><th>YES</th><th>NO</th><th>MAYBE</th></tr></thead><tbody>${voiceHTML}</tbody></table></div></div>`;
     },
 
     generateLastPage: (s) => {
@@ -203,11 +191,8 @@ const ReportEngine = {
 
             sigConfig.forEach(sig => {
                 let imgSrc = '';
-                if (sig.role === 'ct') {
-                    imgSrc = ctSigImage; 
-                } else if (sig.role === 'static' && sig.imgKey && DB.data.globalSignatures[sig.imgKey]) {
-                    imgSrc = DB.data.globalSignatures[sig.imgKey]; 
-                }
+                if (sig.role === 'ct') { imgSrc = ctSigImage; } 
+                else if (sig.role === 'static' && sig.imgKey && DB.data.globalSignatures[sig.imgKey]) { imgSrc = DB.data.globalSignatures[sig.imgKey]; }
                 const imgTag = imgSrc ? `<img src="${imgSrc}" class="sig-image">` : `<span class="fake-sig">Signature</span>`;
                 signaturesHTML += `<div class="sig-block" style="width: ${width}%"><div class="sig-line">${imgTag}</div><div class="sig-title">${sig.title}</div></div>`;
             });
@@ -254,21 +239,15 @@ const ReportEngine = {
         const s = DB.data.students.find(x => x.id === sid); 
         const cls = DB.data.classes.find(c => c.id === s.classId); 
         
-        const cover = `
-        <div class="cover-page" style="width: 794px; height: 1123px; position: relative; overflow: hidden; display: block;">
-            <img src="cover.jpg" onerror="this.style.display='none'" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1;">
-            <div style="position: absolute; left: 200px; bottom: 135px; font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 700; color: #002060; z-index: 10;">${s.name}</div>
-            <div style="position: absolute; left: 200px; bottom: 75px; font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 700; color: #002060; z-index: 10;">${cls.name} - ${s.section}</div>
-        </div>`; 
-        
+        const cover = `<div class="cover-page" style="width: 794px; height: 1123px; position: relative; overflow: hidden; display: block;"><img src="cover.jpg" onerror="this.style.display='none'" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1;"><div style="position: absolute; left: 200px; bottom: 135px; font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 700; color: #002060; z-index: 10;">${s.name}</div><div style="position: absolute; left: 200px; bottom: 75px; font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 700; color: #002060; z-index: 10;">${cls.name} - ${s.section}</div></div>`; 
         const details = ReportEngine.generateDetailsPage(s); 
         const rubric = ReportEngine.generateRubricPage(); 
         let reports = ''; 
+        
         subIds.forEach(id => { const sub = DB.data.subjects[id]; if (sub) { const m = (DB.data.marks[sid] && DB.data.marks[sid][id]) ? DB.data.marks[sid][id] : {}; reports += ReportEngine.render(null, sub.template, m, false); } }); 
         
-        // APPEND REFLECTION THEN LAST PAGE
         const reflectionPage = ReportEngine.generateReflectionPage();
-        const lastPage = ReportEngine.generateLastPage(s);
+        const lastPage = ReportEngine.generateLastPage(s); 
         
         const w = window.open('', '_blank'); 
         w.document.write(`<html><head><title>${s.name}</title><link rel="stylesheet" href="style.css"><style>.forced-print-bar { position: fixed; top: 0; left: 0; width: 100%; background: #1e293b; padding: 15px; text-align: center; z-index: 10000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); } .forced-btn { background: #10b981; color: white; border: none; padding: 10px 25px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; } @media print { .forced-print-bar { display: none !important; } }</style></head><body><div class="forced-print-bar"><button class="forced-btn" onclick="window.print()">🖨️ PRINT PDF</button></div><div class="print-container">${cover}${details}${rubric}${reports}${reflectionPage}${lastPage}</div></body></html>`); 
@@ -349,7 +328,6 @@ const Admin = {
         }
     },
     remClassTeacher: (key) => { if(confirm("Remove Class Teacher?")) { delete DB.data.classTeachers[key]; DB.save(); Admin.loadClassTeachers(); } },
-
     importCSV: () => { const i = document.getElementById('csv-upload'); const f = i.files[0]; if (!f) { alert("Select file"); return; } const r = new FileReader(); r.onload = function(e) { const t = e.target.result; const rows = t.split('\n'); if (rows.length < 2) return; for (let i = 1; i < rows.length; i++) { const row = rows[i].trim(); if (!row) continue; const c = row.split(','); if (c.length < 13) continue; const gName = c[2].toUpperCase().trim(); const sName = c[3].toUpperCase().trim(); let cid = null; let cls = DB.data.classes.find(c => c.name === gName); if (!cls) { cid = 'c_' + Date.now() + Math.random().toString(36).substr(2, 5); cls = { id: cid, name: gName, sections: [sName], subjects: [] }; DB.data.classes.push(cls); } else { cid = cls.id; if (!cls.sections.includes(sName)) { cls.sections.push(sName); } } DB.data.students.push({ id: Date.now() + i, roll: c[0].trim(), name: c[1].trim().toUpperCase(), classId: cid, section: sName, parent1: c[4].trim(), parent2: c[5].trim(), gender: c[6].trim(), ageY: c[7].trim(), ageM: c[8].trim(), height: c[9].trim(), weight: c[10].trim(), attendanceP: c[11].trim(), attendanceA: c[12].trim(), pt1: false, pt2: false }); } DB.save(); alert("Imported!"); Admin.loadStudents(); Admin.loadClassesHierarchy(); }; r.readAsText(f); },
     onStudentClassChange: () => { const cid = document.getElementById('stu-class-select').value; const sec = document.getElementById('stu-section-select'); sec.innerHTML = '<option value="">Sec</option>'; const cls = DB.data.classes.find(c => c.id === cid); if(cls) cls.sections.forEach(s => sec.innerHTML += `<option value="${s}">${s}</option>`); },
     loadStudents: () => { const t = document.getElementById('admin-student-list'); if(!t) return; t.innerHTML = ''; Admin.refreshDropdowns(); DB.data.students.forEach((s, idx) => { const cls = DB.data.classes.find(c => c.id === s.classId)?.name || '-'; t.innerHTML += `<tr><td>${s.roll}</td><td>${s.name}</td><td>${cls} [${s.section}]</td><td>${s.parent1 || '-'}</td><td><button onclick="Admin.delStudent(${idx})" class="btn btn-sm btn-danger">X</button></td></tr>`; }); },
@@ -448,7 +426,6 @@ const Template = {
         }
     },
 
-    // --- GLOBAL TEMPLATE LOGIC (Signatures & Reflection) ---
     loadGlobals: () => {
         Template.renderSignatures(DB.data.globalConfig.signatures);
         Template.renderReflectionLists(DB.data.globalConfig.reflectionEval, 'eval');
@@ -479,7 +456,6 @@ const Template = {
         alert('Global Settings Saved!');
     },
     
-    // SIGNATURE EDITOR LOGIC
     renderSignatures: (sigs) => {
         const c = document.getElementById('signature-config-list');
         c.innerHTML = '';
@@ -506,17 +482,14 @@ const Template = {
         });
     },
     liveUpdateGlobals: () => {
-        // Sync silently and update the current preview without showing alerts
         const sigs = [];
         document.querySelectorAll('.signature-config-item').forEach(row => {
             sigs.push({ title: row.querySelector('.sig-title-inp').value, role: row.querySelector('.sig-role-select').value, imgKey: row.dataset.imgKey || null });
         });
         DB.data.globalConfig.signatures = sigs;
-
         const evals = [];
         document.querySelectorAll('.ref-eval-item input').forEach(inp => evals.push(inp.value));
         DB.data.globalConfig.reflectionEval = evals;
-
         const voices = [];
         document.querySelectorAll('.ref-voice-item input').forEach(inp => voices.push(inp.value));
         DB.data.globalConfig.reflectionVoice = voices;
@@ -557,7 +530,6 @@ const Template = {
         r.readAsDataURL(f);
     },
 
-    // REFLECTION EDITOR LOGIC
     renderReflectionLists: (list, type) => {
         const c = document.getElementById(`ref-${type}-list`);
         c.innerHTML = '';
