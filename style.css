@@ -63,76 +63,97 @@ input:focus { outline: none; border-color: var(--accent); }
 #editor-preview { transform: scale(0.42); transform-origin: top center; width: 794px; min-height: 1123px; background: white; margin: 0 auto; color: black; box-shadow: 0 10px 25px rgba(0,0,0,0.2); transition: transform 0.2s ease; }
 
 /* ==========================================================================
-   UPDATED LOGIN PAGE STYLES (STRICT 50/50 SPLIT)
+   NEW SPLIT-SCREEN LOGIN PAGE (MATCHING SCREENSHOT)
    ========================================================================== */
 #app-login { 
     position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    background: #121826; /* Dark navy background matching the screenshot */
     display: flex; align-items: center; justify-content: center; z-index: 10000; 
-    padding: 20px; /* Prevent edge touching on smaller screens */
 }
 
 .login-container {
     display: flex;
-    width: 900px; /* Increased width for better 50/50 look */
-    height: 550px; /* Increased height */
-    background: #fff;
-    border-radius: 20px;
-    box-shadow: 0 30px 60px -12px rgba(0,0,0,0.6);
+    width: 750px;
+    height: 450px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
     overflow: hidden;
 }
 
-/* Left side with the animated image - STRICT 50% width */
 .login-image-side {
-    flex: 0 0 50%; /* Forces exactly 50% width, no growing/shrinking */
-    width: 50%;
+    flex: 1;
     position: relative;
     overflow: hidden;
-    background: #000; /* Fallback color */
+    background: #000;
 }
 
 .animated-login-img {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Ensures the image covers the entire 50% area */
-    /* Simple zoom animation on load */
-    animation: zoomIn 15s ease-out forwards;
-    opacity: 0.9;
+    object-fit: cover;
+    animation: slowPanZoom 20s ease-in-out infinite alternate;
 }
 
-@keyframes zoomIn {
-    0% { transform: scale(1); }
-    100% { transform: scale(1.15); }
+@keyframes slowPanZoom {
+    0% { transform: scale(1) translate(0, 0); }
+    100% { transform: scale(1.15) translate(-2%, -2%); }
 }
 
-.login-overlay {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    /* Stronger gradient overlay to ensure text on right pops */
-    background: linear-gradient(to right, rgba(15, 23, 42, 0.5) 0%, rgba(255,255,255,0) 100%);
-}
-
-/* Right side with the login form - STRICT 50% width */
 .login-form-side {
-    flex: 0 0 50%; /* Forces exactly 50% width */
-    width: 50%;
-    padding: 60px 50px;
+    flex: 1;
+    padding: 40px 50px;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-items: center;
     text-align: center;
     background: #ffffff;
 }
 
-.login-icon-wrap { display: inline-block; color: var(--accent); margin-bottom: 20px; }
-.login-form-side h2 { font-size: 28px; letter-spacing: 1px; }
-.login-form-side p { font-size: 14px; margin-bottom: 40px; }
-.login-form-side input { background: #f8fafc; padding: 15px; font-size: 15px; }
-.login-form-side .btn-primary { padding: 15px; font-size: 16px; margin-top: 10px; }
+.login-form-side form {
+    width: 100%;
+}
 
-/* MOBILE MEDIA QUERY UPDATED */
+.login-form-side input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 14px;
+    margin-bottom: 15px;
+    background: #ffffff;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+
+.login-form-side input:focus {
+    border-color: var(--accent);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+}
+
+.login-form-side button {
+    width: 100%;
+    padding: 12px;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.login-form-side button:hover {
+    background: #1d4ed8;
+}
+
+/* MOBILE */
 .mobile-menu-btn { display: none; }
 .overlay-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 55; }
+
 @media screen and (max-width: 768px) {
     .main-content { margin-left: 0; padding: 15px; }
     .navbar { left: 0; padding: 0 15px; }
@@ -142,10 +163,21 @@ input:focus { outline: none; border-color: var(--accent); }
     .overlay-backdrop.active { display: block; }
     .template-container { flex-direction: column !important; }
     
-    /* Login changes for mobile - Stack vertically and reset widths */
-    .login-container { width: 100%; max-width: 450px; height: auto; flex-direction: column; border-radius: 16px; }
-    .login-image-side { height: 250px; width: 100%; flex: none; } 
-    .login-form-side { width: 100%; flex: none; padding: 40px 30px; }
+    /* Mobile Login Fixes */
+    .login-container {
+        width: 90%;
+        height: auto;
+        flex-direction: column;
+    }
+    .login-image-side {
+        height: 200px;
+        width: 100%;
+    }
+    .login-form-side {
+        padding: 30px;
+        width: 100%;
+        box-sizing: border-box;
+    }
 }
 
 /* --- REPORT PAGE (STRICT PIXEL SIZING PREVENTS BLEED) --- */
