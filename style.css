@@ -24,27 +24,7 @@ body { margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-c
 .btn-success { background: #10b981; color: white; }
 .btn-sm { padding: 5px 10px; font-size: 11px; }
 .btn-block { width: 100%; }
-
-/* --- FIXED: MODERN ROUNDED SMALL ACTION BUTTONS --- */
-.btn-xs-danger { 
-    background: #ef4444; color: white; border: none; 
-    border-radius: 20px; /* Fully rounded pill shape */
-    padding: 5px 12px; font-size: 10px; font-weight: 700; cursor: pointer; 
-    transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2); letter-spacing: 0.5px;
-}
-.btn-xs-danger:hover { 
-    background: #dc2626; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(239, 68, 68, 0.35); 
-}
-
-.btn-xs-accent { 
-    background: var(--accent); color: white; border: none; 
-    border-radius: 20px; /* Fully rounded pill shape */
-    padding: 5px 12px; font-size: 10px; font-weight: 700; cursor: pointer; 
-    transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2); letter-spacing: 0.5px;
-}
-.btn-xs-accent:hover { 
-    background: #1d4ed8; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(37, 99, 235, 0.35); 
-}
+.btn-xs-danger { background: #ef4444; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 10px; font-weight: 700; cursor: pointer; }
 
 input, select, textarea { padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 12px; background: var(--glass-card); color: var(--text-main); font-family: inherit; font-size: 14px; }
 input:focus { outline: none; border-color: var(--accent); }
@@ -82,9 +62,61 @@ input:focus { outline: none; border-color: var(--accent); }
 #preview-wrapper { width: 100%; height: 100%; display: flex; justify-content: center; background: #cbd5e1; padding: 40px; border-radius: 8px; overflow: auto; }
 #editor-preview { transform: scale(0.42); transform-origin: top center; width: 794px; min-height: 1123px; background: white; margin: 0 auto; color: black; box-shadow: 0 10px 25px rgba(0,0,0,0.2); transition: transform 0.2s ease; }
 
-/* LOGIN */
-#app-login { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at top right, #1e293b, #0f172a); display: flex; align-items: center; justify-content: center; z-index: 10000; }
-.login-box { background: rgba(255, 255, 255, 1); width: 380px; padding: 40px; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); text-align: center; border: 1px solid rgba(255,255,255,0.1); position: relative; overflow: hidden; }
+/* ==========================================================================
+   UPDATED LOGIN PAGE STYLES
+   ========================================================================== */
+#app-login { 
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    display: flex; align-items: center; justify-content: center; z-index: 10000; 
+}
+
+.login-container {
+    display: flex;
+    width: 800px;
+    height: 500px;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+    overflow: hidden;
+}
+
+/* Left side with the animated image */
+.login-image-side {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+.animated-login-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Simple zoom animation on load */
+    animation: zoomIn 10s ease-out forwards;
+}
+
+@keyframes zoomIn {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.1); }
+}
+
+.login-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(to right, rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.1));
+}
+
+/* Right side with the login form */
+.login-form-side {
+    flex: 1;
+    padding: 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+}
+
 .login-icon-wrap { display: inline-block; color: var(--accent); margin-bottom: 15px; }
 
 /* MOBILE */
@@ -98,7 +130,11 @@ input:focus { outline: none; border-color: var(--accent); }
     .sidebar.active { transform: translateX(0); }
     .overlay-backdrop.active { display: block; }
     .template-container { flex-direction: column !important; }
-    .login-box { width: 85%; padding: 30px 20px; }
+    
+    /* Login changes for mobile */
+    .login-container { width: 90%; height: auto; flex-direction: column; }
+    .login-image-side { height: 200px; }
+    .login-form-side { padding: 30px; }
 }
 
 /* --- REPORT PAGE (STRICT PIXEL SIZING PREVENTS BLEED) --- */
@@ -123,7 +159,6 @@ input:focus { outline: none; border-color: var(--accent); }
 
 /* LAYERS */
 .layer-frame { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
-
 .layer-lion { 
     position: absolute; 
     top: 54%; 
