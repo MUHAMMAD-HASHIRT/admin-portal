@@ -1,5 +1,5 @@
 /* ==========================================================================
-   APP ENGINE (v131.0) - LOGIN FAILSAFE & GLOBAL REFLECTIONS
+   APP ENGINE (STABLE REVERT - SECURE LOGIN, NO DATA CORRUPTION)
    ========================================================================== */
 
 const firebaseConfig = {
@@ -122,7 +122,6 @@ const Auth = {
             document.getElementById('app-login').style.display = 'flex';
         });
     },
-    // --- FIXED LOGIN FUNCTION (PREVENTS GETTING STUCK) ---
     login: () => {
         const u = document.getElementById('username').value;
         const p = document.getElementById('password').value;
@@ -131,9 +130,7 @@ const Auth = {
         
         setTimeout(() => {
             try {
-                // Failsafe: If database is still loading, use defaults to check
                 const usersList = DB.data.users || DB.defaults.users;
-                
                 const f = usersList.find(x => x.id === u && x.pass === p);
                 if (f) { 
                     btn.innerHTML = 'Success!'; 
@@ -144,7 +141,6 @@ const Auth = {
                     alert('Invalid Credentials'); 
                 }
             } catch(e) {
-                console.error("Login Error:", e);
                 btn.innerHTML = 'Login'; 
                 btn.disabled = false; 
                 alert('Database is still syncing from the cloud. Please try again in 2 seconds.');
@@ -275,13 +271,16 @@ const Admin = {
     generateCreds: () => { document.getElementById('new-t-user').value = 'T-' + Math.floor(1000 + Math.random() * 9000); document.getElementById('new-t-pass').value = Math.random().toString(36).slice(-6); },
     addTeacher: () => { const n=document.getElementById('new-t-name').value.toUpperCase(); const u=document.getElementById('new-t-user').value; const p=document.getElementById('new-t-pass').value; if(n && u && p) { const exists = DB.data.users.find(x => x.id === u); if (exists) { alert("Exists!"); return; } DB.data.users.push({id:u, pass:p, role:'teacher', name:n}); DB.save(); Admin.loadTeachers(); } },
     delTeacher: (id) => { if(confirm("Del?")){DB.data.users=DB.data.users.filter(x=>x.id!==id); DB.save(); Admin.loadTeachers();} },
+    
     assignTeacher: () => { 
         const tid=document.getElementById('assign-teacher-select').value;
         const cid=document.getElementById('assign-class-select').value;
         const s=document.getElementById('assign-section-select').value;
         const sub=document.getElementById('assign-subject-select').value; 
         const isClassTeacher = document.getElementById('assign-is-ct').checked;
+        
         if(!tid || !cid || !s) { alert("ERROR: You must select a Grade, Section, and Teacher."); return; }
+
         if(isClassTeacher) { 
             const key = `${cid}_${s}`; 
             if(!DB.data.classTeachers) DB.data.classTeachers = {};
@@ -289,11 +288,13 @@ const Admin = {
             DB.data.classTeachers[key] = tid; 
             DB.save(); alert("Class Teacher Assigned Successfully!"); Admin.loadClassTeachers(); return; 
         }
+        
         if(!sub) { alert("ERROR: Please select a Subject to assign."); return; }
         if(!DB.data.assignments) DB.data.assignments = [];
         DB.data.assignments.push({teacherId:tid, classId:cid, section:s, subjectId:sub}); 
         DB.save(); Admin.loadAssignmentsList(); alert("Subject Teacher Assigned Successfully!"); 
     },
+    
     loadAssignmentsList: () => { 
         const l=document.getElementById('assignment-list-table'); 
         if(!l) return;
@@ -310,6 +311,7 @@ const Admin = {
         });
     },
     remAssign: (i) => { DB.data.assignments.splice(i,1); DB.save(); Admin.loadAssignmentsList(); },
+    
     loadClassTeachers: () => {
         const l = document.getElementById('class-teacher-list');
         if(!l) return;
@@ -328,6 +330,7 @@ const Admin = {
         }
     },
     remClassTeacher: (key) => { if(confirm("Remove Class Teacher?")) { delete DB.data.classTeachers[key]; DB.save(); Admin.loadClassTeachers(); } },
+
     importCSV: () => { const i = document.getElementById('csv-upload'); const f = i.files[0]; if (!f) { alert("Select file"); return; } const r = new FileReader(); r.onload = function(e) { const t = e.target.result; const rows = t.split('\n'); if (rows.length < 2) return; for (let i = 1; i < rows.length; i++) { const row = rows[i].trim(); if (!row) continue; const c = row.split(','); if (c.length < 13) continue; const gName = c[2].toUpperCase().trim(); const sName = c[3].toUpperCase().trim(); let cid = null; let cls = DB.data.classes.find(c => c.name === gName); if (!cls) { cid = 'c_' + Date.now() + Math.random().toString(36).substr(2, 5); cls = { id: cid, name: gName, sections: [sName], subjects: [] }; DB.data.classes.push(cls); } else { cid = cls.id; if (!cls.sections.includes(sName)) { cls.sections.push(sName); } } DB.data.students.push({ id: Date.now() + i, roll: c[0].trim(), name: c[1].trim().toUpperCase(), classId: cid, section: sName, parent1: c[4].trim(), parent2: c[5].trim(), gender: c[6].trim(), ageY: c[7].trim(), ageM: c[8].trim(), height: c[9].trim(), weight: c[10].trim(), attendanceP: c[11].trim(), attendanceA: c[12].trim(), pt1: false, pt2: false }); } DB.save(); alert("Imported!"); Admin.loadStudents(); Admin.loadClassesHierarchy(); }; r.readAsText(f); },
     onStudentClassChange: () => { const cid = document.getElementById('stu-class-select').value; const sec = document.getElementById('stu-section-select'); sec.innerHTML = '<option value="">Sec</option>'; const cls = DB.data.classes.find(c => c.id === cid); if(cls) cls.sections.forEach(s => sec.innerHTML += `<option value="${s}">${s}</option>`); },
     loadStudents: () => { const t = document.getElementById('admin-student-list'); if(!t) return; t.innerHTML = ''; Admin.refreshDropdowns(); DB.data.students.forEach((s, idx) => { const cls = DB.data.classes.find(c => c.id === s.classId)?.name || '-'; t.innerHTML += `<tr><td>${s.roll}</td><td>${s.name}</td><td>${cls} [${s.section}]</td><td>${s.parent1 || '-'}</td><td><button onclick="Admin.delStudent(${idx})" class="btn btn-sm btn-danger">X</button></td></tr>`; }); },
@@ -487,9 +490,11 @@ const Template = {
             sigs.push({ title: row.querySelector('.sig-title-inp').value, role: row.querySelector('.sig-role-select').value, imgKey: row.dataset.imgKey || null });
         });
         DB.data.globalConfig.signatures = sigs;
+
         const evals = [];
         document.querySelectorAll('.ref-eval-item input').forEach(inp => evals.push(inp.value));
         DB.data.globalConfig.reflectionEval = evals;
+
         const voices = [];
         document.querySelectorAll('.ref-voice-item input').forEach(inp => voices.push(inp.value));
         DB.data.globalConfig.reflectionVoice = voices;
