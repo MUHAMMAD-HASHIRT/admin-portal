@@ -13,15 +13,21 @@
     <div class="overlay-backdrop" id="mobile-backdrop" onclick="Mobile.toggleMenu()"></div>
 
     <div id="app-login">
-        <div class="login-box">
-            <div class="login-icon-wrap"><i class="fas fa-school fa-3x"></i></div>
-            <h2 style="margin:10px 0; color:var(--primary);">ACADEMUS</h2>
-            <p style="color:var(--text-secondary); margin-bottom:30px;">Portal Access</p>
-            <form id="loginForm">
-                <input type="text" id="username" placeholder="User ID" required>
-                <input type="password" id="password" placeholder="Password" required>
-                <button type="submit" class="btn btn-primary btn-block" id="login-btn" style="padding:12px;">Login</button>
-            </form>
+        <div class="login-container">
+            <div class="login-image-side">
+                <img src="titlepicture.png" alt="Academus" class="animated-login-img">
+                <div class="login-overlay"></div>
+            </div>
+            <div class="login-form-side">
+                <div class="login-icon-wrap"><i class="fas fa-school fa-3x"></i></div>
+                <h2 style="margin:10px 0; color:var(--primary);">ACADEMUS</h2>
+                <p style="color:var(--text-secondary); margin-bottom:30px;">Portal Access</p>
+                <form id="loginForm">
+                    <input type="text" id="username" placeholder="User ID" required>
+                    <input type="password" id="password" placeholder="Password" required>
+                    <button type="submit" class="btn btn-primary btn-block" id="login-btn" style="padding:12px;">Login</button>
+                </form>
+            </div>
         </div>
     </div>
 
