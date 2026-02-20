@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Academus Portal v130.0</title>
+    <title>Academus Portal v134.0</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -13,15 +13,41 @@
     <div class="overlay-backdrop" id="mobile-backdrop" onclick="Mobile.toggleMenu()"></div>
 
     <div id="app-login">
-        <div class="login-box">
-            <div class="login-icon-wrap"><i class="fas fa-school fa-3x"></i></div>
-            <h2 style="margin:10px 0; color:var(--primary);">ACADEMUS</h2>
-            <p style="color:var(--text-secondary); margin-bottom:30px;">Portal Access</p>
-            <form id="loginForm">
-                <input type="text" id="username" placeholder="User ID" required>
-                <input type="password" id="password" placeholder="Password" required>
-                <button type="submit" class="btn btn-primary btn-block" id="login-btn" style="padding:12px;">Login</button>
-            </form>
+        <div class="login-wrapper">
+            <div class="login-branding">
+                <i class="fas fa-book-reader fa-3x" style="color:var(--accent); margin-bottom:15px;"></i>
+                <h1 style="margin:0; font-family:'Poppins', sans-serif; font-size:28px; color:#ffffff; letter-spacing:1px;">ACADEMUS</h1>
+                <h3 style="margin:5px 0 0 0; font-weight:400; color:#94a3b8; font-size:14px; text-transform:uppercase; letter-spacing:2px;">International School</h3>
+            </div>
+            
+            <div class="login-box">
+                <div style="text-align:left; margin-bottom:25px;">
+                    <h2 style="margin:0 0 5px 0; color:var(--text-main); font-size:20px;">Welcome Back</h2>
+                    <p style="margin:0; color:var(--text-secondary); font-size:13px;">Please log in to the Faculty & Administration Portal.</p>
+                </div>
+                
+                <form id="loginForm">
+                    <div class="input-group">
+                        <label>User ID</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="username" placeholder="Enter your ID" required>
+                        </div>
+                    </div>
+                    <div class="input-group" style="margin-top:15px;">
+                        <label>Password</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="password" placeholder="Enter your password" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block" id="login-btn" style="margin-top:25px; padding:14px; font-size:15px;">Secure Login</button>
+                </form>
+            </div>
+            
+            <div class="login-footer-text">
+                &copy; 2025 Academus International School. All rights reserved.
+            </div>
         </div>
     </div>
 
@@ -30,7 +56,7 @@
             <button class="mobile-menu-btn" onclick="Mobile.toggleMenu()"><i class="fas fa-bars"></i></button>
             <div style="font-weight:700; font-size:18px; color:var(--primary);"><i class="fas fa-graduation-cap" style="color:var(--accent);margin-right:8px;"></i> Academus</div>
             <div style="display:flex; align-items:center; gap:20px;">
-                <button onclick="Theme.toggle()" style="background:none; border:none; cursor:pointer; color:var(--text-secondary);"><i id="theme-icon" class="fas fa-moon"></i></button>
+                <button onclick="Theme.toggle()" style="background:none; border:none; cursor:pointer; color:var(--text-secondary); transition:color 0.3s;"><i id="theme-icon" class="fas fa-moon"></i></button>
                 <div style="text-align:right; font-size:13px;">
                     <div id="userDisplay" style="font-weight:600;">User</div>
                     <div id="roleDisplay" style="color:var(--text-secondary); font-size:11px; text-transform:uppercase;">Role</div>
@@ -155,7 +181,7 @@
                         </div>
                     </div>
                     <div style="flex:1.5;">
-                         <div class="card" style="border: 2px solid var(--accent); background: rgba(37, 99, 235, 0.03);">
+                         <div class="card" style="border: 2px solid var(--accent); background: rgba(37, 99, 235, 0.02);">
                             <h3>Assign Roles</h3>
                             <div style="background: #fff; padding: 15px; border-radius: 8px; border: 1px solid var(--glass-border); margin-bottom: 15px;">
                                 <div style="font-weight: 600; margin-bottom: 10px; color: var(--accent);">Step 1: Who & Where?</div>
@@ -169,7 +195,7 @@
                             <div style="background: #fff; padding: 15px; border-radius: 8px; border: 1px solid var(--glass-border);">
                                 <div style="font-weight: 600; margin-bottom: 10px; color: var(--accent);">Step 2: What Role?</div>
                                 <div style="display: flex; gap: 20px; align-items: flex-start;">
-                                    <div style="flex: 1; padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                                    <div style="flex: 1; padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; transition: all 0.2s;">
                                         <label style="display: flex; align-items: center; gap: 8px; font-weight: 700; cursor: pointer;">
                                             <input type="radio" name="assign-role-type" id="assign-is-ct" style="width: auto; margin: 0;" checked>
                                             Option A: Class Teacher
@@ -178,7 +204,7 @@
                                             Assigns this teacher to manage the entire section (Photo, Remarks, Signing).
                                         </div>
                                     </div>
-                                    <div style="flex: 1; padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                                    <div style="flex: 1; padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; transition: all 0.2s;">
                                         <label style="display: flex; align-items: center; gap: 8px; font-weight: 700; cursor: pointer;">
                                             <input type="radio" name="assign-role-type" id="assign-is-sub" style="width: auto; margin: 0;">
                                             Option B: Subject Teacher
@@ -208,23 +234,22 @@
             <div id="view-admin-template" class="page-section hidden" style="height: calc(100vh - 150px);">
                 <div class="template-container">
                     <div style="flex: 1; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; padding-right:10px;">
-                        
-                        <div style="display:flex; gap:5px; margin-top:5px;">
+                         <div class="card" style="margin-bottom:0; padding-bottom:15px;">
+                            <h3 style="margin-bottom:10px;">Select Subject Configuration</h3>
+                            <div style="display:flex; gap:10px;">
+                                <select id="tpl-class-select" onchange="Template.onClassChange()" style="margin:0;"></select>
+                                <select id="tpl-subject-select" style="margin:0;"></select>
+                                <button onclick="Template.load()" class="btn btn-accent">Load Details</button>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; gap:10px; margin-top:5px;">
                             <button id="tab-btn-subject" class="btn btn-primary" style="flex:1; font-size:11px;" onclick="Template.switchView('subject')"><i class="fas fa-table"></i> Subjects</button>
                             <button id="tab-btn-reflection" class="btn btn-accent" style="flex:1; font-size:11px;" onclick="Template.switchView('reflection')"><i class="fas fa-brain"></i> Reflection</button>
                             <button id="tab-btn-lastpage" class="btn btn-accent" style="flex:1; font-size:11px;" onclick="Template.switchView('lastpage')"><i class="fas fa-signature"></i> Signatures</button>
                         </div>
 
                         <div id="tpl-subject-editor">
-                            <div class="card" id="tpl-subject-selector-card" style="margin-bottom:15px; padding-bottom:15px;">
-                                <h3 style="margin-bottom:10px;">Select Subject Configuration</h3>
-                                <div style="display:flex; gap:10px;">
-                                    <select id="tpl-class-select" onchange="Template.onClassChange()" style="margin:0;"></select>
-                                    <select id="tpl-subject-select" style="margin:0;"></select>
-                                    <button onclick="Template.load()" class="btn btn-accent">Load Details</button>
-                                </div>
-                            </div>
-
                             <div class="card">
                                 <h3>Report Headers & Settings</h3>
                                 <input type="text" id="tpl-title" placeholder="Main Title" oninput="Template.liveUpdate()">
@@ -314,13 +339,12 @@
                             <div style="display:flex; gap:20px;">
                                 <div style="flex:1;">
                                     <select id="ct-class-select" onchange="Teacher.loadCTStudents()"></select>
-                                    
                                     <h4 style="margin-bottom:5px;">Class Photograph</h4>
                                     <div style="display:flex; gap:5px; align-items:center; margin-bottom:10px;">
                                         <input type="file" id="ct-photo-upload" accept="image/*" style="width:auto;">
                                         <button onclick="Teacher.uploadPhoto()" class="btn btn-sm btn-primary">Upload</button>
                                     </div>
-                                    <div id="ct-photo-preview" style="border:1px solid #ccc; padding:5px; text-align:center; min-height:100px; display:flex; align-items:center; justify-content:center; background:#f9f9f9;">Select Section</div>
+                                    <div id="ct-photo-preview" style="border:1px solid #ccc; padding:5px; text-align:center; min-height:100px; display:flex; align-items:center; justify-content:center; background:#f9f9f9; border-radius:8px;">Select Section</div>
                                 </div>
                                 <div style="flex:1; border-left:1px solid #eee; padding-left:20px;">
                                     <h4 style="margin-bottom:5px;">My Personal Signature</h4>
@@ -331,10 +355,9 @@
                                         <input type="file" id="ct-sig-upload" accept="image/*" style="width:auto;">
                                         <button onclick="Teacher.uploadSignature()" class="btn btn-sm btn-accent">Save Signature</button>
                                     </div>
-                                    <div id="ct-sig-preview" style="border:1px dashed #ccc; padding:5px; text-align:center; height:60px; display:flex; align-items:center; justify-content:center; background:#f9f9f9;">No signature uploaded.</div>
+                                    <div id="ct-sig-preview" style="border:1px dashed #ccc; padding:5px; text-align:center; height:60px; display:flex; align-items:center; justify-content:center; background:#f9f9f9; border-radius:8px;">No signature uploaded.</div>
                                 </div>
                             </div>
-
                             <h4 style="margin-top:20px;">General Remarks (Last Page)</h4>
                             <div style="max-height: 400px; overflow-y: auto;">
                                 <table class="data-table">
