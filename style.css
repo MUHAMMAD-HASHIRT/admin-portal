@@ -4,7 +4,7 @@
 :root {
     --bg-color: #f8fafc;
     --primary: #0f172a;
-    --accent: #3b82f6; /* Brighter blue for glass effect */
+    --accent: #3b82f6; 
     --text-main: #1e293b;
     --text-secondary: #64748b;
     --glass-card: #ffffff;
@@ -52,23 +52,16 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
     border: 1px solid transparent; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative; overflow: hidden;
 }
-
-/* Hover & Active Glass Effect */
-.nav-item:hover:not(.active),
-.nav-item.active {
-    background: rgba(59, 130, 246, 0.1) !important; /* Subtle blue tint */
-    backdrop-filter: blur(10px); /* The frosted glass effect */
+.nav-item:hover:not(.active), .nav-item.active {
+    background: rgba(59, 130, 246, 0.1) !important; 
+    backdrop-filter: blur(10px); 
     -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(59, 130, 246, 0.25); /* Subtle glassy border */
-    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.15), inset 0 0 20px rgba(255,255,255,0.2); /* Soft outer and inner glow */
+    border: 1px solid rgba(59, 130, 246, 0.25); 
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.15), inset 0 0 20px rgba(255,255,255,0.2); 
     color: var(--accent) !important;
-    transform: translateX(5px); /* Slight movement for depth */
+    transform: translateX(5px); 
 }
-.nav-item.active {
-     background: rgba(59, 130, 246, 0.18) !important; /* Slightly stronger tint for active */
-     box-shadow: 0 8px 20px rgba(59, 130, 246, 0.2), inset 0 0 20px rgba(255,255,255,0.3);
-}
-
+.nav-item.active { background: rgba(59, 130, 246, 0.18) !important; box-shadow: 0 8px 20px rgba(59, 130, 246, 0.2), inset 0 0 20px rgba(255,255,255,0.3); }
 .nav-item i { font-size: 18px; transition: transform 0.3s ease; }
 .nav-item:hover i, .nav-item.active i { transform: scale(1.1); }
 
@@ -80,11 +73,12 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
 .card h3 { margin-top: 0; color: var(--text-main); border-bottom: 1px solid #f1f5f9; padding-bottom: 20px; margin-bottom: 25px; font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
 .data-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 14px; }
 .data-table th { text-align: left; padding: 16px; background: #f8fafc; color: var(--text-secondary); font-weight: 700; font-size: 13px; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; letter-spacing: 0.5px; }
-.data-table td { padding: 16px; border-bottom: 1px solid #f1f5f9; color: var(--text-main); }
+.data-table td { padding: 16px; border-bottom: 1px solid #f1f5f9; color: var(--text-main); transition: background-color 0.2s ease; }
+.data-table tbody tr:hover td { background-color: rgba(37,99,235,0.03); } 
 .data-table tr:last-child td { border-bottom: none; }
 .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
 
-/* CLASSES VIEW & OTHERS (Kept mostly same for stability) */
+/* CLASSES VIEW & OTHERS */
 .class-tree-item { margin-bottom: 15px; border-radius: 12px; overflow: hidden; background: white; border: 1px solid #e2e8f0; box-shadow: var(--shadow-sm); display: block; }
 .tree-header { background: #f8fafc; color: #1e293b; padding: 12px 20px; font-weight: 700; font-size: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; }
 .tree-subjects { padding: 15px 20px; background: white; border-bottom: 1px solid #e2e8f0; display: flex; flex-wrap: wrap; gap: 8px; }
@@ -98,129 +92,110 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
 #editor-preview { transform: scale(0.42); transform-origin: top center; width: 794px; min-height: 1123px; background: white; margin: 0 auto; color: black; box-shadow: 0 10px 25px rgba(0,0,0,0.2); transition: transform 0.2s ease; }
 
 /* ==========================================================================
-   NEW 70/30 ROUNDED ANIMATED LOGIN PAGE
+   PERFECT MATCH LOGIN PAGE (65/35 EXACTLY CENTERED)
    ========================================================================== */
 #app-login { 
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); /* Dark Deep Background */
+    position: fixed; top: 0; left: 0; 
+    width: 100vw; height: 100vh; /* Absolute full screen */
+    background-color: #0b1121; /* Match the exact dark navy background */
     display: flex; align-items: center; justify-content: center; z-index: 10000; 
-    padding: 40px; /* Spacing from screen edges */
-    perspective: 1000px; /* For 3D exit effect */
+    overflow: hidden; /* Prevents stray animations from creating scrollbars */
 }
 
-/* The rounded container holding everything */
 .login-container {
     display: flex;
-    width: 100%; max-width: 1400px; /* Limits wide screens */
-    height: 90vh; /* Occupies most height */
+    width: 1100px; /* Locked width for perfect proportions */
+    max-width: 95vw; /* Failsafe for smaller screens */
+    height: 600px; /* Locked height */
     background: #ffffff;
-    border-radius: 30px; /* Prominent rounding */
-    box-shadow: 0 50px 100px -20px rgba(0,0,0,0.5); /* Deep shadow */
-    overflow: hidden; /* Clips the image to the rounded corners */
-    opacity: 0; /* Start invisible for entrance anim */
-    transform: scale(0.95);
-    animation: containerEntrance 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    border-radius: 20px; /* Smooth rounded corners */
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8); /* Deep shadow */
+    overflow: hidden; /* Vital to keep image inside rounded corners */
+    
+    /* Center Entrance Animation */
+    opacity: 0; transform: translateY(20px);
+    animation: fadeInContainer 0.8s ease-out forwards;
 }
 
-@keyframes containerEntrance {
-    to { opacity: 1; transform: scale(1); }
+@keyframes fadeInContainer {
+    to { opacity: 1; transform: translateY(0); }
 }
 
-/* LEFT SIDE - EXACTLY 70% WIDTH */
+/* LEFT SIDE - 65% */
 .login-image-side {
-    flex: 0 0 70%; width: 70%;
+    width: 65%; /* Dominant image area */
     position: relative;
     overflow: hidden;
-    background-color: #0f172a;
-}
-
-.login-image-overlay {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    /* subtle gradient to ensure text readability if needed later */
-    background: linear-gradient(to right, rgba(15,23,42,0.4) 0%, transparent 100%);
-    z-index: 2;
+    background-color: #000;
 }
 
 .login-img {
     width: 100%; height: 100%;
-    object-fit: cover; 
-    z-index: 1;
-    /* Subtle slow pan animation */
-    animation: slowPan 25s ease-in-out infinite alternate;
+    object-fit: cover; /* Guarantees image fills the box without stretching */
+    display: block;
+    animation: smoothZoom 25s ease-in-out infinite alternate;
 }
 
-@keyframes slowPan {
-    0% { transform: scale(1.1) translate(0, 0); }
-    100% { transform: scale(1.1) translate(-3%, -2%); }
+@keyframes smoothZoom {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.15); }
 }
 
-/* RIGHT SIDE - EXACTLY 30% WIDTH */
+/* RIGHT SIDE - 35% */
 .login-form-side {
-    flex: 0 0 30%; width: 30%;
+    width: 35%;
     display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
+    justify-content: center; align-items: center;
     background: #ffffff;
-    padding: 60px;
+    padding: 50px 40px;
     box-sizing: border-box;
     position: relative;
+    overflow: hidden; /* Prevents form animation from pushing layout */
 }
 
-/* Form Content Container for animation */
+/* The actual form content wrapper */
 .animated-form-entrance {
-    width: 100%; max-width: 320px;
-    opacity: 0; transform: translateX(40px); /* Start off-screen right */
-    animation: formEntrance 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.3s forwards; /* Delay start */
+    width: 100%; max-width: 280px; /* Keeps form tightly centered */
+    text-align: center;
+    opacity: 0; 
+    transform: translateX(10px); /* Small translation doesn't break layout */
+    animation: formSlideIn 0.8s ease 0.2s forwards;
 }
 
-@keyframes formEntrance {
+@keyframes formSlideIn {
     to { opacity: 1; transform: translateX(0); }
 }
 
-.login-header { text-align: center; margin-bottom: 40px; }
-.login-header i { color: var(--accent); font-size: 56px; margin-bottom: 20px; display: inline-block; filter: drop-shadow(0 4px 6px rgba(59,130,246,0.3)); }
-.login-header h2 { font-family: 'Poppins', sans-serif; font-size: 32px; font-weight: 800; color: var(--primary); margin: 0 0 8px 0; letter-spacing: -1px; }
-.login-header p { font-size: 16px; color: var(--text-secondary); margin: 0; font-weight: 500; }
+.login-header i { color: #3b82f6; font-size: 42px; margin-bottom: 15px; display: inline-block; filter: drop-shadow(0 4px 6px rgba(59,130,246,0.3)); }
+.login-header h2 { font-family: 'Poppins', sans-serif; font-size: 24px; font-weight: 800; color: #0f172a; margin: 0 0 5px 0; letter-spacing: -0.5px; }
+.login-header p { font-size: 14px; color: #64748b; margin: 0 0 35px 0; font-weight: 500; }
 
-#loginForm { display: flex; flex-direction: column; gap: 20px; }
+#loginForm { display: flex; flex-direction: column; gap: 15px; width: 100%; }
 #loginForm input {
-    padding: 16px 20px; border: 2px solid #f1f5f9; border-radius: 12px;
-    font-size: 15px; background: #f8fafc; color: var(--primary);
-    margin-bottom: 0; transition: all 0.3s ease; font-weight: 500;
+    width: 100%; padding: 14px 16px; border: 1px solid #e2e8f0; border-radius: 10px;
+    font-size: 14px; background: #f8fafc; color: #0f172a; margin-bottom: 0; transition: all 0.3s ease; box-sizing: border-box; font-weight: 500;
 }
-#loginForm input:focus {
-    background: #ffffff; border-color: var(--accent);
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
-}
+#loginForm input:focus { background: #ffffff; border-color: #3b82f6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15); outline: none; }
 #login-btn {
-    padding: 16px; background: var(--accent); color: #ffffff;
-    border: none; border-radius: 12px; font-size: 16px; font-weight: 700;
-    cursor: pointer; transition: all 0.3s ease; margin-top: 10px;
-    box-shadow: 0 10px 20px -10px rgba(59, 130, 246, 0.5);
+    width: 100%; padding: 14px; background: #3b82f6; color: #ffffff; border: none;
+    border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; margin-top: 5px; box-shadow: 0 8px 16px -8px rgba(59, 130, 246, 0.5);
 }
-#login-btn:hover {
-    background: #2563eb; transform: translateY(-3px);
-    box-shadow: 0 15px 30px -10px rgba(59, 130, 246, 0.6);
-}
-#login-btn:active { transform: translateY(-1px); }
+#login-btn:hover { background: #2563eb; transform: translateY(-2px); box-shadow: 0 12px 20px -8px rgba(59, 130, 246, 0.6); }
 
-/* --- CINEMATIC SUCCESS EXIT ANIMATION Class (Applied by JS) --- */
-.login-exit-anim {
-    animation: loginSuccessExit 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
-}
-
-@keyframes loginSuccessExit {
+/* Cinematic exit applied by JS */
+.login-exit-anim { animation: loginExit 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards !important; }
+@keyframes loginExit {
     0% { transform: scale(1); opacity: 1; filter: blur(0); }
-    40% { transform: scale(1.02); opacity: 1; filter: blur(2px); } /* Slight bounce up */
-    100% { transform: scale(0.8) translateY(50px); opacity: 0; filter: blur(20px); } /* Drop down and fade */
+    100% { transform: scale(0.9); opacity: 0; filter: blur(10px); }
 }
 
 /* MOBILE RESPONSIVENESS */
 .mobile-menu-btn { display: none; }
 .overlay-backdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 55; }
-@media screen and (max-width: 1024px) {
-    .login-container { height: auto; flex-direction: column; width: 95%; border-radius: 24px; }
-    .login-image-side { height: 250px; width: 100%; flex: none; }
-    .login-form-side { width: 100%; flex: none; padding: 40px 30px; }
+@media screen and (max-width: 900px) {
+    .login-container { flex-direction: column; width: 90vw; height: 90vh; }
+    .login-image-side { width: 100%; height: 40%; flex: 0 0 40%; }
+    .login-form-side { width: 100%; height: 60%; flex: 0 0 60%; padding: 30px; }
 }
 @media screen and (max-width: 768px) {
     .main-content { margin-left: 0; padding: 20px; margin-top: 70px; }
@@ -298,6 +273,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
 .fake-sig { font-family: 'Great Vibes', cursive; font-size: 20px; color: #002060; opacity: 0.3; }
 .sig-title { font-size: 9pt; color: #002060; font-weight: 500; }
 .disclaimer-footer { position: absolute; bottom: 90px; left: 50px; right: 50px; font-size: 8pt; color: #333; text-align: justify; line-height: 1.2; border-top: 2px solid #002060; padding-top: 5px; }
+
 @media print {
     .inp-mark { outline: none !important; }
     @page { size: A4 portrait; margin: 0 !important; padding: 0 !important; }
